@@ -233,7 +233,7 @@ details.wr{border:1px solid var(--ln);border-radius:12px;margin:8px 0;background
 </style></head><body><main>
 <h1>My Studying Session</h1>
 <div style="display:flex;justify-content:space-between;align-items:center"><p class="sub" id="dt"></p><div class="row" style="margin:0"><button class="ch" onclick="setOpen()">⚙</button><button class="ch" onclick="ttOpen()">الجدول</button></div></div>
-<p class="sub" id="ali" style="margin:0 0 8px;font-size:14px"></p>
+<span id="ali" hidden></span>
 <div id="tm"></div>
 <div id="bk"></div>
 
@@ -246,7 +246,7 @@ details.wr{border:1px solid var(--ln);border-radius:12px;margin:8px 0;background
 <div class="add">
  <div class="row" id="types"></div>
  <div class="row"><input type="text" id="title" placeholder="المهمة" oninput="szUpdate()" onkeydown="if(event.key==='Enter')addItem()"></div>
- <div class="row"><button class="pk" id="sqb" onclick="subjSheet()">📚 اختار المادة</button><button class="pk" id="dtb" onclick="dateSheet()" hidden>📅 اختار تاريخ الامتحان</button></div><div id="sz"></div>
+ <div class="row"><button class="pk" id="sqb" onclick="subjSheet()">اختار المادة</button><button class="pk" id="dtb" onclick="dateSheet()" hidden>اختار تاريخ الامتحان</button></div><div id="sz"></div>
  <div class="row"><button class="go" style="flex:1" onclick="addItem()">سجّل</button></div>
  <div class="msg" id="msg"></div>
 </div>
@@ -290,6 +290,7 @@ function nextClass(s){for(let i=1;i<=14;i++){const d=addD(NOW(),i);if(s.days.inc
 function lbl(n){return n<0?['فات',Math.abs(n)+' يوم']:n===0?['','']:n===1?['بكرة','']:[n,'أيام']}
 function sname(id){const s=S.subjects.find(x=>x.id===id);return s?s.name:''}
 let exDate='';
+const ICO_CAL='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-4px;margin-inline-end:8px"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>',ICO_BOOK='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-4px;margin-inline-end:8px"><path d="M12 6c-2-1.5-5-2-8-1.5v13c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5v-13c-3-.5-6 0-8 1.5zM12 6v13"/></svg>';
 function pick(){return{sb:type==='hw'?S.subjects.find(x=>x.id===subj):null,t:$('title').value.trim()}}
 function dueOf(sb){const dv=exDate;if(dv)return prs(dv);return sb?nextClass(sb):null}
 function szUpdate(){const el=$('sz');if(type!=='hw'){el.innerHTML='';return}const{sb}=pick(),d=dueOf(sb),n=d?diff(d,NOW()):0;if(n<2){el.innerHTML='';size='s';return}
@@ -300,7 +301,7 @@ function subjSheet(){closeSheet();const o=document.createElement('div');o.id='sh
  o.innerHTML=`<div class="sheet"><div class="shh"><b>اختار المادة</b><button class="ch" onclick="closeSheet()">إغلاق</button></div><div class="sgrid">${ls.map(s=>`<button class="sj2 ${subj===s.id?'on':''}" style="--c:${s.color}" onclick="pickSubj('${s.id}')"><b>${esc(s.alias||s.name)}</b>${s.alias&&s.alias!==s.name?`<small>${esc(s.name)}</small>`:''}</button>`).join('')||'<div class="tg">مفيش مواد</div>'}</div></div>`;
  document.body.appendChild(o)}
 function pickSubj(id){subj=id;closeSheet();subjBtn();szUpdate()}
-function dateBtn(){const b=$('dtb');if(!b)return;b.textContent=exDate?'📅 '+DN[prs(exDate).getDay()]+' '+fd(exDate):'📅 اختار تاريخ الامتحان'}
+function dateBtn(){const b=$('dtb');if(!b)return;b.innerHTML=ICO_CAL+(exDate?DN[prs(exDate).getDay()]+' '+fd(exDate):'اختار تاريخ الامتحان')}
 let dpY=null,dpM=null;
 function dateSheet(){closeSheet();const t=mid(NOW()),d=exDate?prs(exDate):t;dpY=d.getFullYear();dpM=d.getMonth();const o=document.createElement('div');o.id='shOv';o.className='ov';o.onclick=e=>{if(e.target===o)closeSheet()};o.innerHTML='<div class="sheet" id="dpS"></div>';document.body.appendChild(o);dpDraw()}
 function dpDraw(){const s=$('dpS');if(!s)return;const t=mid(NOW()),off=(new Date(dpY,dpM,1).getDay()+1)%7,dim=new Date(dpY,dpM+1,0).getDate();let c='';for(let i=0;i<off;i++)c+='<span></span>';
@@ -309,7 +310,7 @@ function dpDraw(){const s=$('dpS');if(!s)return;const t=mid(NOW()),off=(new Date
 function dpNav(n){dpM+=n;if(dpM<0){dpM=11;dpY--}if(dpM>11){dpM=0;dpY++}dpDraw()}
 function dpPick(k){exDate=k;closeSheet();dateBtn();szUpdate()}
 
-function subjBtn(){const s=S.subjects.find(x=>x.id===subj),b=$('sqb');if(!b)return;b.textContent=s?'📚 '+(s.alias||s.name):'📚 اختار المادة';b.style.borderColor=s?s.color:''}
+function subjBtn(){const s=S.subjects.find(x=>x.id===subj),b=$('sqb');if(!b)return;b.innerHTML=ICO_BOOK+esc(s?(s.alias||s.name):'اختار المادة');b.style.borderColor=s?s.color:''}
 
 function addItem(){
  const{sb,t}=pick();if(!t)return msg('اكتب اسم المهمة');
@@ -495,7 +496,7 @@ function wkDetail(k,sw){
  const t2=dt('zq'+k,`🧱 راكمت كم مرة <b class="cnt">${sw.acl.length}</b>`,(sw.acl.length?sw.acl.map(o=>li(esc(o.t),o.n+' · '+fd(o.dt))).join(''):'<div class="tg">لا يوجد</div>')+(prt.length?'<h4 style="margin:10px 0 2px">أسباب التأجيل</h4>'+prt.map(p=>li(esc(p.t),fd(p.d)+' · '+esc(p.r))).join(''):''),'tb o');
  const cur=ymd(wkStart(NOW())),pl=k===cur?prevLessons(cur):null;
  const plb=pl?dt('pl'+k,'📖 دروس الأسبوع اللي فات','<div class="lsn" style="margin:0">'+lsBody(pl)+'</div>','wc'):'';
- return `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b style="font-size:14px">${fd(clp(k))} – ${fd(wend)}</b><button class="ch" onclick="dV='${k}';draw()">الأيام</button></div>
+ return `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b dir="ltr" style="font-size:14px">${fd(clp(k))} – ${fd(wend)}</b><button class="ch" onclick="dV='${k}';draw()">الأيام</button></div>
  <div class="wcm">✅ ملتزم ${cs.c} يوم · ⬜ غايب ${cs.a} يوم</div>
  <div class="wc" style="border-color:${col};text-align:center;margin:10px 0;cursor:pointer" onclick="OP['dn${k}']=!OP['dn${k}'];draw()">${ring(pc,col,150)}</div>
  ${dp}<div class="tbw" style="min-width:0">${t1}${t2}</div>
@@ -505,7 +506,7 @@ function wkRender(){
  const th=NOW().getDay()===4,{cur,ks,data}=weeksAll(),A=activeSet();
  const rows=ks.slice().reverse().map(k=>{const d=data[k],c=d.pct==null?'#94a3b8':scCol(d.pct/10),key='w'+k,we=ymd(addD(prs(k),6)),cs=commitStats(k,we,A);
   if(OP[key]===undefined&&th&&k===cur)OP[key]=true;
-  return `<details class="wr" data-k="${key}" ${OP[key]?'open':''} ontoggle="OP[this.dataset.k]=this.open"><summary class="ws" style="border-right:5px solid ${c};${k===cur?'background:'+c+'22;':''}"><div class="wsr"><span class="ar"></span><b>أسبوع ${wn(k)}</b><small>${fd(clp(k))} – ${fd(we)}</small><span class="wpc" style="background:${c}">${d.pct==null?'—':d.pct+'%'}</span></div><div class="wch"><span>❌ ${d.never.length}</span><span>🧱 ${d.acl.length}</span><span>✅ ${cs.c}</span><span>⬜ ${cs.a}</span></div></summary><div class="wb">${wkDetail(k,d)}</div></details>`}).join('');
+  return `<details class="wr" data-k="${key}" ${OP[key]?'open':''} ontoggle="OP[this.dataset.k]=this.open"><summary class="ws" style="border-right:5px solid ${c};${k===cur?'background:'+c+'22;':''}"><div class="wsr"><span class="ar"></span><b>أسبوع ${wn(k)}</b><small dir="ltr" style="text-align:right">${fd(clp(k))} – ${fd(we)}</small><span class="wpc" style="background:${c}">${d.pct==null?'—':d.pct+'%'}</span></div></summary><div class="wb">${wkDetail(k,d)}</div></details>`}).join('');
  WB.innerHTML=`${th?'<div class="wkh"><h2>🏆 السجل الأسبوعي</h2></div>':''}${rows}`;
 }
 function moDetail(m,si,data){
@@ -518,7 +519,7 @@ function moDetail(m,si,data){
 function moRender(){
  const{ks,data}=weeksAll(),cm=ymk(NOW()),keys=new Set([cm]),A=activeSet();Object.keys(S.log).forEach(d=>keys.add(d.slice(0,7)));
  const rows=[...keys].sort().reverse().map(m=>{const i=mInfo(m,ks,data),[y,n]=m.split('-').map(Number),c=i.pct==null?'#94a3b8':scCol(i.pct/10),key='m'+m,cs=commitStats(ymd(new Date(y,n-1,1)),ymd(new Date(y,n,0)),A);
-  return `<details class="wr" data-k="${key}" ${OP[key]?'open':''} ontoggle="OP[this.dataset.k]=this.open"><summary class="ws" style="border-right:5px solid ${c};${m===cm?'background:'+c+'22;':''}"><div class="wsr"><span class="ar"></span><b>${MN[n-1]} ${y}</b><small></small><span class="wpc" style="background:${c}">${i.pct==null?'—':i.pct+'%'}</span></div><div class="wch"><span>🧱 ${i.z}</span><span>✅ ${cs.c}</span><span>⬜ ${cs.a}</span></div></summary><div class="wb">${moDetail(m,i,data)}</div></details>`}).join('');
+  return `<details class="wr" data-k="${key}" ${OP[key]?'open':''} ontoggle="OP[this.dataset.k]=this.open"><summary class="ws" style="border-right:5px solid ${c};${m===cm?'background:'+c+'22;':''}"><div class="wsr"><span class="ar"></span><b>${MN[n-1]} ${y}</b><small></small><span class="wpc" style="background:${c}">${i.pct==null?'—':i.pct+'%'}</span></div></summary><div class="wb">${moDetail(m,i,data)}</div></details>`}).join('');
  $('moBody').innerHTML=`<h3 style="margin:16px 0 4px">📅 الشهور</h3>${rows}`;
 }
 function yrRender(){
