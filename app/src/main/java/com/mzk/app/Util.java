@@ -19,9 +19,15 @@ public class Util {
     }
 
     public static void silence(Context c) {
+        silence(c, 0);
+    }
+
+    // sec = 0: هدوء لحد ما المستخدم يخرج من الشاشة. sec > 0: هدوء المدة دي ثم يرن تاني لو مفيش نشاط
+    public static void silence(Context c, int sec) {
         try {
             Intent i = new Intent(c, AlarmService.class);
             i.setAction("SILENCE");
+            i.putExtra("sec", sec);
             c.startService(i);
         } catch (Exception e) {
         }

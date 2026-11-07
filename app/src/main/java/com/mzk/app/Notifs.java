@@ -9,6 +9,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Icon;
 import android.os.Build;
+import android.view.View;
+import android.widget.RemoteViews;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -16,6 +18,8 @@ import org.json.JSONObject;
 public class Notifs {
     static final String CH = "tasks";
     static final int FLAGS = PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE;
+    static final int RED = 0xFFEF5350;
+    static final int BLUE = 0xFF42A5F5;
 
     static void ensure(Context c) {
         if (Build.VERSION.SDK_INT >= 26) {
@@ -34,6 +38,15 @@ public class Notifs {
         }
         nm.cancel(900);
         p.edit().putString("nids", "").putString("lastjson", "").apply();
+    }
+
+    static void fill(RemoteViews rv, int col, String tag, String title, String body) {
+        rv.setInt(R.id.bar, "setBackgroundColor", col);
+        rv.setTextViewText(R.id.tag, tag);
+        rv.setTextColor(R.id.tag, col);
+        rv.setTextViewText(R.id.title, title);
+        rv.setTextViewText(R.id.parts, body);
+        rv.setViewVisibility(R.id.parts, body.isEmpty() ? View.GONE : View.VISIBLE);
     }
 
     static void show(Context c, String json) {
@@ -55,18 +68,31 @@ public class Notifs {
                 int nid = 1000 + i;
                 String id = t.getString("id");
                 String title = t.getString("t");
-                StringBuilder text = new StringBuilder();
-                if ("exam".equals(t.optString("ty"))) {
-                    text.append("امتحان — باقي ").append(t.optInt("n")).append(" أيام");
-                }
+                boolean ex = "exam".equals(t.optString("ty"));
+                int col = ex ? RED : BLUE;
+                int n = t.optInt("n");
+                String left = n <= 0 ? "النهاردة" : (n == 1 ? "بكرة" : "باقي " + n + " أيام");
+                String tag = ex ? "📝 امتحان · " + left : "📘 واجب";
+
+                StringBuilder all = new StringBuilder();
+                String first = "";
                 JSONArray parts = t.optJSONArray("parts");
                 if (parts != null) {
                     for (int j = 0; j < parts.length(); j++) {
-                        if (text.length() > 0) text.append("\n");
-                        text.append("• ").append(parts.getString(j));
+                        if (all.length() > 0) all.append("\n");
+                        all.append("• ").append(parts.getString(j));
+                        if (j == 0) first = "• " + parts.getString(j);
                     }
                 }
-                if (text.length() == 0) text.append("مهمة النهاردة");
+                if (all.length() == 0) {
+                    all.append("مهمة النهاردة");
+                    first = "مهمة النهاردة";
+                }
+
+                RemoteViews small = new RemoteViews(c.getPackageName(), R.layout.notif_task);
+                fill(small, col, tag, title, first);
+                RemoteViews big = new RemoteViews(c.getPackageName(), R.layout.notif_task);
+                fill(big, col, tag, title, all.toString());
 
                 Intent done = new Intent(c, ActionActivity.class);
                 done.setAction("done" + id);
@@ -80,13 +106,17 @@ public class Notifs {
                 Notification.Action aDone = new Notification.Action.Builder(
                         Icon.createWithResource(c, android.R.drawable.checkbox_on_background), "تمت", pd).build();
                 Notification.Action aLater = new Notification.Action.Builder(
-                        Icon.createWithResource(c, android.R.drawable.ic_menu_recent_history), "تراكم", pl).build();
+                        Icon.createWithResource(c, android.R.drawable.ic_menu_recent_history), "راكمت", pl).build();
 
                 Notification.Builder b = new Notification.Builder(c, CH)
-                        .setSmallIcon(android.R.drawable.ic_menu_agenda)
+                        .setSmallIcon(R.drawable.ic_stat)
+                        .setColor(col)
+                        .setSubText("My Studying Session")
                         .setContentTitle(title)
-                        .setContentText(text.toString().split("\n")[0])
-                        .setStyle(new Notification.BigTextStyle().bigText(text.toString()))
+                        .setContentText(first)
+                        .setStyle(new Notification.DecoratedCustomViewStyle())
+                        .setCustomContentView(small)
+                        .setCustomBigContentView(big)
                         .setOngoing(true)
                         .setOnlyAlertOnce(true)
                         .setVisibility(Notification.VISIBILITY_PUBLIC)
@@ -98,8 +128,10 @@ public class Notifs {
                 ids.append(nid).append(",");
             }
             Notification.Builder s = new Notification.Builder(c, CH)
-                    .setSmallIcon(android.R.drawable.ic_menu_agenda)
+                    .setSmallIcon(R.drawable.ic_stat)
+                    .setColor(BLUE)
                     .setContentTitle("مهام النهاردة (" + a.length() + ")")
+                    .setSubText("My Studying Session")
                     .setGroup("mzk")
                     .setGroupSummary(true)
                     .setOngoing(true)

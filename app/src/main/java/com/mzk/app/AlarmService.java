@@ -9,6 +9,7 @@ import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -16,15 +17,33 @@ import android.os.Looper;
 public class AlarmService extends Service {
     static volatile boolean running = false;
     MediaPlayer mp;
+    long quietUntil = 0;
     final Handler h = new Handler(Looper.getMainLooper());
+
+    // كل ثانيتين: لو الشاشة اتقفلت ترجّعها ويرن الصوت، ولو فترة الهدوء خلصت يرن تاني
     final Runnable loop = new Runnable() {
         @Override
         public void run() {
             if (!running) return;
             if (!AlarmActivity.visible) {
                 Util.openAlarm(AlarmService.this, "#alarm");
+                if (mp == null) startSound();
+            } else if (quietUntil > 0 && quietUntil != Long.MAX_VALUE
+                    && System.currentTimeMillis() >= quietUntil && mp == null) {
+                quietUntil = 0;
+                startSound();
             }
             h.postDelayed(this, 2000);
+        }
+    };
+
+    // كل 800 ملي: يرفع الصوت لأقصى درجة لو حد نزّله
+    final Runnable vol = new Runnable() {
+        @Override
+        public void run() {
+            if (!running) return;
+            if (mp != null) forceVolume();
+            h.postDelayed(this, 800);
         }
     };
 
@@ -37,6 +56,12 @@ public class AlarmService extends Service {
     public int onStartCommand(Intent i, int flags, int startId) {
         String a = (i == null) ? null : i.getAction();
         if ("SILENCE".equals(a)) {
+            if (!running) {
+                stopSelf();
+                return START_NOT_STICKY;
+            }
+            int sec = i.getIntExtra("sec", 0);
+            quietUntil = sec > 0 ? System.currentTimeMillis() + sec * 1000L : Long.MAX_VALUE;
             stopSound();
             return START_NOT_STICKY;
         }
@@ -47,7 +72,7 @@ public class AlarmService extends Service {
         PendingIntent pi = PendingIntent.getActivity(this, 77, ai,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         Notification n = new Notification.Builder(this, "alarm")
-                .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
+                .setSmallIcon(R.drawable.ic_stat)
                 .setContentTitle("وقت المذاكرة")
                 .setContentText("افتح وابدأ")
                 .setCategory(Notification.CATEGORY_ALARM)
@@ -57,28 +82,66 @@ public class AlarmService extends Service {
                 .build();
         startForeground(55, n);
         running = true;
+        quietUntil = 0;
         startSound();
         h.removeCallbacks(loop);
+        h.removeCallbacks(vol);
         h.post(loop);
+        h.post(vol);
         return START_NOT_STICKY;
     }
 
-    void startSound() {
-        stopSound();
+    void forceVolume() {
         try {
             AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-            am.setStreamVolume(AudioManager.STREAM_ALARM,
-                    am.getStreamMaxVolume(AudioManager.STREAM_ALARM), 0);
+            try {
+                am.adjustStreamVolume(AudioManager.STREAM_ALARM, AudioManager.ADJUST_UNMUTE, 0);
+            } catch (Exception e) {
+            }
+            int max = am.getStreamMaxVolume(AudioManager.STREAM_ALARM);
+            if (am.getStreamVolume(AudioManager.STREAM_ALARM) < max) {
+                am.setStreamVolume(AudioManager.STREAM_ALARM, max, 0);
+            }
+        } catch (Exception e) {
+        }
+    }
+
+    boolean play(Uri uri) {
+        if (uri == null) return false;
+        try {
             mp = new MediaPlayer();
             mp.setAudioAttributes(new AudioAttributes.Builder()
                     .setUsage(AudioAttributes.USAGE_ALARM)
                     .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
                     .build());
-            mp.setDataSource(this, RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM));
+            mp.setDataSource(this, uri);
             mp.setLooping(true);
+            mp.setVolume(1f, 1f);
             mp.prepare();
             mp.start();
+            return true;
         } catch (Exception e) {
+            try {
+                if (mp != null) mp.release();
+            } catch (Exception x) {
+            }
+            mp = null;
+            return false;
+        }
+    }
+
+    void startSound() {
+        stopSound();
+        forceVolume();
+        String saved = getSharedPreferences("mzk", Context.MODE_PRIVATE).getString("tone", "");
+        Uri[] cands = new Uri[]{
+                saved.isEmpty() ? null : Uri.parse(saved),
+                RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM),
+                RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE),
+                RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+        };
+        for (Uri u : cands) {
+            if (play(u)) return;
         }
     }
 
@@ -97,6 +160,7 @@ public class AlarmService extends Service {
     public void onDestroy() {
         running = false;
         h.removeCallbacks(loop);
+        h.removeCallbacks(vol);
         stopSound();
         stopForeground(true);
         super.onDestroy();

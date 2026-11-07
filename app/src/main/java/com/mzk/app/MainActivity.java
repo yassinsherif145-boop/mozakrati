@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -61,6 +62,27 @@ public class MainActivity extends Activity {
         }
     }
 
+    void pickTone() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Intent i = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
+                    i.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALARM);
+                    i.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true);
+                    i.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false);
+                    i.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "اختار نغمة المنبه");
+                    String s = getSharedPreferences("mzk", MODE_PRIVATE).getString("tone", "");
+                    if (!s.isEmpty()) {
+                        i.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, Uri.parse(s));
+                    }
+                    startActivityForResult(i, 8);
+                } catch (Exception e) {
+                }
+            }
+        });
+    }
+
     @Override
     protected void onActivityResult(int req, int res, Intent data) {
         super.onActivityResult(req, res, data);
@@ -71,6 +93,17 @@ public class MainActivity extends Activity {
             }
             chooser.onReceiveValue(r);
             chooser = null;
+        }
+        if (req == 8 && res == RESULT_OK && data != null) {
+            Uri u = data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
+            getSharedPreferences("mzk", MODE_PRIVATE).edit()
+                    .putString("tone", u == null ? "" : u.toString()).apply();
+            wv.post(new Runnable() {
+                @Override
+                public void run() {
+                    wv.evaluateJavascript("try{toneSet()}catch(e){}", null);
+                }
+            });
         }
     }
 

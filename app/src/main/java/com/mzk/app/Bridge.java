@@ -1,6 +1,9 @@
 package com.mzk.app;
 
 import android.content.Context;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.webkit.JavascriptInterface;
 
 import java.io.File;
@@ -23,7 +26,9 @@ public class Bridge {
             Sched.snooze(c, v);
             Util.closeAlarmUi(c);
         } else if ("reason".equals(ev)) {
-            Util.silence(c);
+            Util.silence(c, 0);
+        } else if ("silence".equals(ev)) {
+            Util.silence(c, v);
         } else if ("closeui".equals(ev)) {
             Util.closeAlarmUi(c);
         }
@@ -43,6 +48,25 @@ public class Bridge {
     @JavascriptInterface
     public void testRing(int min) {
         Sched.snooze(c, min);
+    }
+
+    @JavascriptInterface
+    public void pickTone() {
+        if (c instanceof MainActivity) {
+            ((MainActivity) c).pickTone();
+        }
+    }
+
+    @JavascriptInterface
+    public String toneName() {
+        try {
+            String s = c.getSharedPreferences("mzk", Context.MODE_PRIVATE).getString("tone", "");
+            if (s.isEmpty()) return "الافتراضية";
+            Ringtone r = RingtoneManager.getRingtone(c, Uri.parse(s));
+            if (r != null) return r.getTitle(c);
+        } catch (Exception e) {
+        }
+        return "مخصصة";
     }
 
     @JavascriptInterface
