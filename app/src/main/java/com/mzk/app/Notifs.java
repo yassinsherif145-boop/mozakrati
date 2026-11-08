@@ -55,8 +55,21 @@ public class Notifs {
             if (json.equals(p.getString("lastjson", ""))) return;
             ensure(c);
             clear(c);
-            JSONArray a = new JSONArray(json);
-            if (a.length() == 0) {
+            JSONArray a;
+            JSONArray all = null;
+            int dn = 0;
+            String jt = json.trim();
+            if (jt.startsWith("{")) {
+                JSONObject root = new JSONObject(jt);
+                a = root.optJSONArray("tasks");
+                all = root.optJSONArray("all");
+                dn = root.optInt("dn");
+            } else {
+                a = new JSONArray(jt);
+            }
+            if (a == null) a = new JSONArray();
+            if (all == null) all = new JSONArray();
+            if (a.length() == 0 && all.length() == 0) {
                 p.edit().putString("lastjson", json).apply();
                 return;
             }
@@ -74,25 +87,25 @@ public class Notifs {
                 String left = n <= 0 ? "النهاردة" : (n == 1 ? "بكرة" : "باقي " + n + " أيام");
                 String tag = (ex ? "📝 امتحان · " : "📘 واجب · ") + left;
 
-                StringBuilder all = new StringBuilder();
+                StringBuilder allp = new StringBuilder();
                 String first = "";
                 JSONArray parts = t.optJSONArray("parts");
                 if (parts != null) {
                     for (int j = 0; j < parts.length(); j++) {
-                        if (all.length() > 0) all.append("\n");
-                        all.append("• ").append(parts.getString(j));
+                        if (allp.length() > 0) allp.append("\n");
+                        allp.append("• ").append(parts.getString(j));
                         if (j == 0) first = "• " + parts.getString(j);
                     }
                 }
-                if (all.length() == 0) {
-                    all.append("مهمة النهاردة");
+                if (allp.length() == 0) {
+                    allp.append("مهمة النهاردة");
                     first = "مهمة النهاردة";
                 }
 
                 RemoteViews small = new RemoteViews(c.getPackageName(), R.layout.notif_task);
                 fill(small, col, tag, title, first);
                 RemoteViews big = new RemoteViews(c.getPackageName(), R.layout.notif_task);
-                fill(big, col, tag, title, all.toString());
+                fill(big, col, tag, title, allp.toString());
 
                 Intent done = new Intent(c, ActionActivity.class);
                 done.setAction("done" + id);
@@ -111,7 +124,6 @@ public class Notifs {
                 Notification.Builder b = new Notification.Builder(c, CH)
                         .setSmallIcon(R.drawable.ic_stat)
                         .setColor(col)
-                        .setSubText("My Studying Session")
                         .setContentTitle(title)
                         .setContentText(first)
                         .setStyle(new Notification.DecoratedCustomViewStyle())
@@ -120,23 +132,34 @@ public class Notifs {
                         .setOngoing(true)
                         .setOnlyAlertOnce(true)
                         .setVisibility(Notification.VISIBILITY_PUBLIC)
-                        .setGroup("mzk")
-                        .setSortKey(String.format("%03d", i))
+                        .setSortKey(String.format("%03d", i + 1))
                         .setContentIntent(open)
                         .addAction(aDone)
                         .addAction(aLater);
                 nm.notify(nid, b.build());
                 ids.append(nid).append(",");
             }
+
+            // إشعار الملخص: بيفضل ظاهر حتى لو خلصت مهام النهاردة، ويعرض كل المهام الجاية وأيامها
+            Notification.InboxStyle ib = new Notification.InboxStyle();
+            int shown = Math.min(all.length(), 6);
+            for (int k = 0; k < shown; k++) {
+                JSONObject o = all.getJSONObject(k);
+                ib.addLine("• " + o.getString("t") + " — " + o.getString("w"));
+            }
+            if (all.length() > shown) ib.setSummaryText("+" + (all.length() - shown));
+            String title = a.length() > 0 ? "مهام النهاردة (" + a.length() + ")" : "✅ خلصت مهام النهاردة";
+            String text = "قدامك " + all.length() + " مهمة" + (dn > 0 ? " · خلصت النهاردة " + dn : "");
             Notification.Builder s = new Notification.Builder(c, CH)
                     .setSmallIcon(R.drawable.ic_stat)
                     .setColor(BLUE)
-                    .setContentTitle("مهام النهاردة (" + a.length() + ")")
-                    .setSubText("My Studying Session")
-                    .setGroup("mzk")
-                    .setGroupSummary(true)
+                    .setContentTitle(title)
+                    .setContentText(text)
+                    .setStyle(ib)
                     .setOngoing(true)
+                    .setOnlyAlertOnce(true)
                     .setVisibility(Notification.VISIBILITY_PUBLIC)
+                    .setSortKey("000")
                     .setContentIntent(open);
             nm.notify(900, s.build());
             p.edit().putString("nids", ids.toString()).putString("lastjson", json).apply();

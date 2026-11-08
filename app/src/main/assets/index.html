@@ -350,10 +350,11 @@ function delSubj(id){S.subjects=S.subjects.filter(x=>x.id!==id);Object.keys(S.tt
 
 const planned=(it,i)=>{const p=addD(prs(it.start||it.show),i),m=addD(prs(it.due),-1);return p>m?m:p};
 const acc=it=>{const T=mid(NOW());return it.subs.filter((s,i)=>!s.d&&s.t&&isLate(it,i,T)).length};
-const sr=(it,s,i,tg,nodel)=>`<div class="sb ${s.d?'d':''}"><input type="checkbox" ${s.d?'checked':''} onchange="togSub('${it.id}',${i})" aria-label="خلصت"><span>${esc(s.t)}</span>${tg||''}${nodel?'':`<button class="del" onclick="togK('${it.id}',${i})" aria-label="قسّم">＋</button><button class="del" onclick="delSub('${it.id}',${i})" aria-label="احذف">×</button>`}</div>${nodel?'':kidsHtml(it,s,i)}`;
+const sr=(it,s,i,tg,nodel)=>`<div class="sb ${s.d?'d':''}"><input type="checkbox" ${s.d?'checked':''} onchange="togSub('${it.id}',${i})" aria-label="خلصت"><span class="stx" onclick="editSub('${it.id}',${i})">${esc(s.t)}</span>${tg||''}${nodel?'':`<button class="del" onclick="togK('${it.id}',${i})" aria-label="قسّم">＋</button><button class="del" onclick="delSub('${it.id}',${i})" aria-label="احذف">×</button>`}</div>${nodel?'':kidsHtml(it,s,i)}`;
 
 const pin=(it,i,ph)=>`<div class="sb"><input type="checkbox" onchange="partDone('${it.id}',${i},this)" aria-label="خلصت"><input type="text" data-dr="${it.id}:${i}" placeholder="${ph}" oninput="partIn('${it.id}',${i},this)" onkeydown="if(event.key==='Enter')setSub('${it.id}',${i},this)"></div>`;
 function bigSubs(it){return it.subs.map((s,i)=>{const dy=DN[addD(prs(it.created),i).getDay()];return s.t&&s.d?sr(it,s,i,`<span class="tg">${dy}</span>`,true):s.t?sr(it,s,i,`<span class="tg">${dy}</span>`,true):pin(it,i,`جزء ${i+1} (${dy})`)}).join('')}
+function adderHtml(it){return `<div class="sb"><input type="text" data-i="${it.id}" data-dr="a${it.id}" placeholder="+ جزء إضافي" oninput="drIn(this)" onkeydown="if(event.key==='Enter')addSub('${it.id}',this)"><button class="del" onclick="addSub('${it.id}',this.previousElementSibling)" aria-label="أضف">＋</button></div>`}
 function card(it,far){
  const T=mid(NOW()),n=diff(prs(it.due),T),l=lbl(n),ex=it.type==='exam',st=it.big?' ++':'';
  const l2=(ex&&n===1)?['<span style="font-size:13px">آخر يوم</span>','النهاردة']:l;
@@ -364,14 +365,14 @@ function card(it,far){
  let vis=0;if(ex)it.subs.forEach((s,i)=>{const pp=planned(it,i),dy=`<span class="tg">${DN[pp.getDay()]}</span>`;if(!s.t){if(n<2||pp<T)return;vis++;subs+=pin(it,i,`جزء ${vis} (${DN[pp.getDay()]})`);return}const late=!s.d&&isLate(it,i,T);subs+=sr(it,s,i,dy+(late?'<span class="tg" style="color:var(--rd)">متراكم</span>':''))});
  else if(it.big)subs=bigSubs(it);
  else it.subs.forEach((s,i)=>subs+=sr(it,s,i));
- const adder=(ex||!it.big)?`<div class="sb"><input type="text" data-i="${it.id}" data-dr="a${it.id}" placeholder="+ جزء جديد" oninput="drIn(this)" onkeydown="if(event.key==='Enter')addSub('${it.id}',this)"><button class="del" onclick="addSub('${it.id}',this.previousElementSibling)" aria-label="أضف">＋</button></div>`:'';
+ const adder=adderHtml(it);
  const key='t'+it.id;if(OP[key]===undefined)OP[key]=vis>0||(it.big&&it.subs.some(s=>!s.t));
  const tot=it.subs.filter(s=>s.t).length,dn=it.subs.filter(s=>s.t&&s.d).length;
- return `<details class="tk${ex?' x c'+lv:''}${it.done?' dn':''}" data-k="${key}" ${OP[key]?'open':''} ontoggle="OP[this.dataset.k]=this.open"><summary><div class="nn"><b>${l2[0]}</b><span>${l2[1]}</span></div><div class="bd"><div class="t">${esc(it.title)}${st}</div><div class="tg">${tag}</div></div><span class="pg">${tot?dn+'/'+tot:'＋'}</span><input type="checkbox" ${it.done?'checked':''} onchange="toggle('${it.id}')" aria-label="خلصت المهمة"><button class="del" onclick="delItem('${it.id}')" aria-label="احذف">×</button></summary><div class="tkb"><div class="subs">${subs}${adder}</div></div></details>`;
+ return `<details class="tk${ex?' x c'+lv:''}${it.done?' dn':''}" data-k="${key}" ${OP[key]?'open':''} ontoggle="OP[this.dataset.k]=this.open"><summary><div class="nn"><b>${l2[0]}</b><span>${l2[1]}</span></div><div class="bd"><div class="t">${esc(it.title)}${st}</div><div class="tg">${tag}</div></div><span class="pg">${tot?dn+'/'+tot:'＋'}</span><input type="checkbox" ${it.done?'checked':''} onchange="toggle('${it.id}')" aria-label="خلصت المهمة"><button class="del" onclick="editItem('${it.id}')" aria-label="تعديل">✎</button></summary><div class="tkb"><div class="subs">${subs}${adder}</div></div></details>`;
 }
 function extra(it){const key='e'+it.id,n=diff(prs(it.due),mid(NOW())),l=lbl(n);if(OP[key]===undefined)OP[key]=it.subs.some(s=>!s.t);
  const dn=it.subs.filter(s=>s.t&&s.d).length;
- return `<details class="tk${it.done?' dn':''}" data-k="${key}" ${OP[key]?'open':''} ontoggle="OP[this.dataset.k]=this.open"><summary><div class="nn"><b>${l[0]}</b><span>${l[1]}</span></div><div class="bd"><div class="t">${esc(it.title)} ++</div><div class="tg">واجب (compito)</div></div><span class="pg">${dn}/${it.subs.length}</span><input type="checkbox" ${it.done?'checked':''} onchange="toggle('${it.id}')" aria-label="خلصت المهمة"><button class="del" onclick="delItem('${it.id}')" aria-label="احذف">×</button></summary><div class="tkb"><div class="subs">${bigSubs(it)}</div></div></details>`}
+ return `<details class="tk${it.done?' dn':''}" data-k="${key}" ${OP[key]?'open':''} ontoggle="OP[this.dataset.k]=this.open"><summary><div class="nn"><b>${l[0]}</b><span>${l[1]}</span></div><div class="bd"><div class="t">${esc(it.title)} ++</div><div class="tg">واجب (compito)</div></div><span class="pg">${dn}/${it.subs.length}</span><input type="checkbox" ${it.done?'checked':''} onchange="toggle('${it.id}')" aria-label="خلصت المهمة"><button class="del" onclick="editItem('${it.id}')" aria-label="تعديل">✎</button></summary><div class="tkb"><div class="subs">${bigSubs(it)}${adderHtml(it)}</div></div></details>`}
 function refresh(){
  const T=mid(NOW());let ch=false;
  S.items.forEach(it=>{if(!it.big||it.done||it.dropped)return;
@@ -437,12 +438,12 @@ function mInfo(m,ks,data){
 function ring(p,col,sz,lab){const C=2*Math.PI*46;
  return `<svg width="${sz}" height="${sz}" viewBox="0 0 112 112" role="img" aria-label="${lab||''}"><circle cx="56" cy="56" r="46" fill="none" stroke="var(--ln)" stroke-width="12"/><circle cx="56" cy="56" r="46" fill="none" stroke="${col}" stroke-width="12" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-(p||0)/100)}" transform="rotate(-90 56 56)"/><text x="56" y="${lab?60:66}" text-anchor="middle" font-size="24" font-weight="800" fill="var(--tx)">${p==null?'—':p+'%'}</text>${lab?`<text x="56" y="78" text-anchor="middle" font-size="9" fill="var(--mu)">${lab}</text>`:''}</svg>`}
 function lab2(l,x,y0){return String(l).split('\n').map((t,j)=>`<text x="${x}" y="${y0+j*11}" text-anchor="middle" font-size="9" fill="var(--mu)">${t}</text>`).join('')}
-function bars(vals,labels,max,colf,suf){
+function bars(vals,labels,max,colf,suf,cb){
  const W=340,two=labels.some(l=>String(l).includes('\n')),pad=two?32:22,H=two?160:150,bw=(W-20)/vals.length,vf=vals.length>8?9:12;
  let o=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;direction:ltr" role="img"><line x1="10" y1="${H-pad}" x2="${W-10}" y2="${H-pad}" stroke="var(--ln)" stroke-width="2"/>`;
  vals.forEach((v,i)=>{const x=10+i*bw+bw*.15,w=bw*.7;
   if(v!=null){const bh=Math.max(3,(H-pad-20)*v/max);o+=`<rect x="${x}" y="${H-pad-bh}" width="${w}" height="${bh}" rx="6" fill="${colf(v)}"/><text x="${x+w/2}" y="${H-pad-bh-4}" text-anchor="middle" font-size="${vf}" font-weight="800" fill="var(--tx)">${v}${suf||''}</text>`}
-  o+=lab2(labels[i],x+w/2,H-pad+13)});
+  o+=lab2(labels[i],x+w/2,H-pad+13);if(cb)o+=`<rect x="${10+i*bw}" y="0" width="${bw}" height="${H-pad+20}" fill="transparent" onclick="${cb}(${i})" style="cursor:pointer"/>`});
  return o+'</svg>';
 }
 function line(pts){
@@ -518,17 +519,15 @@ function moDetail(m,si,data){
  return `<div class="wcm">✅ ${cs.c} · ⬜ ${cs.a} · 🧱 ${si.z}</div>
  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center"><div style="flex:1;text-align:center;min-width:130px">${ring(cr,cr==null?'#94a3b8':scCol(cr/10),130,'الالتزام')}</div><div style="flex:2;min-width:220px">${pts.length?line(pts):''}</div></div>${wl}`;
 }
-function moRender(){
- const{ks,data}=weeksAll(),cm=ymk(NOW()),keys=new Set([cm]),A=activeSet();Object.keys(S.log).forEach(d=>keys.add(d.slice(0,7)));
- const rows=[...keys].sort().reverse().map(m=>{const i=mInfo(m,ks,data),[y,n]=m.split('-').map(Number),c=i.pct==null?'#94a3b8':scCol(i.pct/10),key='m'+m,cs=commitStats(ymd(new Date(y,n-1,1)),ymd(new Date(y,n,0)),A);
-  return `<details class="wr" data-k="${key}" ${OP[key]?'open':''} ontoggle="OP[this.dataset.k]=this.open"><summary class="ws" style="border-right:5px solid ${c};${m===cm?'background:'+c+'22;':''}"><div class="wsr"><span class="ar"></span><b>${MN[n-1]} ${y}</b><small></small><span class="wpc" style="background:${c}">${i.pct==null?'—':i.pct+'%'}</span></div></summary><div class="wb">${moDetail(m,i,data)}</div></details>`}).join('');
- $('moBody').innerHTML=`<h3 style="margin:16px 0 4px">📅 الشهور</h3>${rows}`;
-}
+function moRender(){}
+let yrSel=null;
+function yrPick(i){yrSel=yrSel===i?null:i;yrRender()}
 function yrRender(){
  const yr=NOW().getFullYear(),pv=[],zv=[];
  for(let m=1;m<=12;m++){const i=mInfo(yr+'-'+String(m).padStart(2,'0'),[],{});pv.push(i.pct);zv.push(i.ds.length?i.z:null)}
  const zm=Math.max(3,...zv.map(v=>v||0)),cs=commitStats(yr+'-01-01',yr+'-12-31',activeSet());
- $('yrBody').innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><b>${yr}</b><div class="row" style="margin:0"><button class="ch ${yMode==='m'?'on':''}" onclick="yMode='m';draw()">التقييم</button><button class="ch ${yMode==='z'?'on':''}" onclick="yMode='z';draw()">راكمت كم مرة</button></div></div>`+(yMode==='m'?bars(pv,MS,100,v=>scCol(v/10),'%'):bars(zv,MS,zm,cls))+`<div class="wcm">السنة: ✅ ملتزم ${cs.c} يوم · ⬜ غايب ${cs.a} يوم</div>`;
+ let det='';if(yrSel!=null){const m=yr+'-'+String(yrSel+1).padStart(2,'0'),W=weeksAll(),si=mInfo(m,W.ks,W.data);det=`<div style="margin-top:10px;border:1px solid var(--ln);border-radius:12px;padding:10px"><b>${MN[yrSel]} ${yr}</b>${moDetail(m,si,W.data)}</div>`}
+ $('yrBody').innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><b>${yr}</b><div class="row" style="margin:0"><button class="ch ${yMode==='m'?'on':''}" onclick="yMode='m';draw()">التقييم</button><button class="ch ${yMode==='z'?'on':''}" onclick="yMode='z';draw()">راكمت كم مرة</button></div></div>`+(yMode==='m'?bars(pv,MS,100,v=>scCol(v/10),'%','yrPick'):bars(zv,MS,zm,cls,'','yrPick'))+det+`<div class="wcm">السنة: ✅ ملتزم ${cs.c} يوم · ⬜ غايب ${cs.a} يوم</div>`;
 }
 function goWeek(k){const th=NOW().getDay()===4;dV=null;wk=k;OP['w'+k]=true;if(!th)$('wkBot').open=true;draw();setTimeout(()=>{const e=document.querySelector('[data-k="w'+k+'"]')||$('wkBot');e.scrollIntoView({behavior:'smooth',block:'start'})},80)}
 function commitStats(a,b,A){const t=mid(NOW()),st=prs([S.start||ymd(t)].concat([...A]).sort()[0]),e=prs(b);let c=0,x=0;for(let d=prs(a);d<=e&&d<=t;d=addD(d,1)){if(d<st)continue;if(A.has(ymd(d)))c++;else if(d<t)x++}return{c,a:x}}
@@ -815,6 +814,14 @@ let piT={};
 function partIn(id,i,el){DR[el.dataset.dr]=el.value;clearTimeout(drT);drT=setTimeout(()=>{S.dr=DR;save()},600);clearTimeout(piT[id+i]);piT[id+i]=setTimeout(()=>{const v=el.value.trim(),it=find(id);if(it&&it.subs[i]&&v&&!it.subs[i].d){it.subs[i].t=v;save();nativeSync()}},800)}
 function partDone(id,i,cb){const it=find(id),el=cb.parentNode.querySelector('input[type=text]'),v=el?el.value.trim():'';if(!v){cb.checked=false;toast('اكتب الجزء الأول');return}const s=it.subs[i];s.t=v;delete DR[el.dataset.dr];if(!s.d)togSub(id,i);else draw()}
 function ttMig(){if(S.ttv===2||!S.tt||!S.tt.c)return;const id=n=>{const s=S.subjects.find(x=>x.name&&x.name.toLowerCase()===n);return s&&s.id},si=id('sistemi'),st=id('storia');if(si&&st){const c=S.tt.c;if(c['3-5']===st)c['3-5']=si;if(c['6-2']===si)c['6-2']=st;try{syncDays()}catch(e){}}S.ttv=2}
+function notifPayload(){const T=mid(NOW()),ty=ymd(T);const w=n=>n<=0?'النهاردة':n===1?'بكرة':n===2?'بعد يومين':'بعد '+n+' أيام';
+ const all=S.items.filter(i=>!i.m&&!i.done).map(i=>({n:diff(prs(i.due),T),t:i.title+(i.sid&&sname(i.sid)?' ('+sname(i.sid)+')':''),d:DN[prs(i.due).getDay()],ty:i.type})).sort((a,b)=>a.n-b.n).map(x=>({t:x.t,w:w(x.n)+' · '+x.d,ty:x.ty}));
+ return{tasks:todayTasks(),all,dn:S.items.filter(i=>i.done===ty).length}}
+function editDlg(t,val,ok,del){const o=document.createElement('div');o.id='edOv';o.className='ov';o.style.cssText='align-items:center;z-index:99';
+ o.innerHTML=`<div class="sheet" style="border-radius:16px;max-width:460px;margin:16px"><div style="font-size:16px;margin-bottom:8px">${esc(t)}</div><input type="text" id="edIn" style="width:100%;font-size:16px" value="${esc(val)}"><div class="row" style="margin-top:10px"><button class="go" id="edOk">حفظ</button>${del?'<button class="ch" id="edDel" style="color:var(--rd)">مسح</button>':''}<button class="ch" onclick="document.getElementById('edOv').remove()">إلغاء</button></div></div>`;
+ document.body.appendChild(o);$('edOk').onclick=()=>{const v=$('edIn').value.trim();if(!v)return;o.remove();ok(v)};if(del)$('edDel').onclick=()=>{o.remove();del()}}
+function editSub(id,i){const it=find(id),s=it&&it.subs[i];if(!s)return;editDlg('تعديل الجزء',s.t,v=>{s.t=v;save();draw()},()=>delSub(id,i))}
+function editItem(id){const it=find(id);if(!it)return;editDlg('تعديل المهمة',it.title,v=>{it.title=v;save();draw()},()=>delItem(id))}
 function alDraw(){const o=$('alOv');if(!o)return;const ts=alarmTasks();
  let h='<div style="font-size:26px;font-weight:800">⏰ وقت المذاكرة</div>';
  h+=`<div style="width:100%;max-width:520px">${ts.length?ts.map(t=>`<div style="background:rgba(255,255,255,.1);border-radius:10px;padding:8px 12px;margin:6px 0"><b>${esc(t.t)}</b>${t.ty==='exam'?` <small>(امتحان · باقي ${t.n} أيام)</small>`:''}${t.parts.length?`<div style="font-size:14px;opacity:.9">${t.parts.map(esc).join('، ')}</div>`:''}</div>`).join(''):'<div>مفيش مهام عليك</div>'}</div>`;
@@ -841,7 +848,7 @@ function scheduleList(){const out={rings:[],cuts:[]},now=Date.now(),T=mid(NOW())
   if(S.al.skip!==ymd(day)){const r=day.getTime()+dm*60000;if(r>now)out.rings.push(r)}
   const c=day.getTime()+(S.al.cut||20)*3600000;if(c>now)out.cuts.push(c)}
  return out}
-function nativeSync(){try{if(window.Android&&!TM){if(Android.setTasks)Android.setTasks(JSON.stringify(todayTasks()));if(Android.setSchedule)Android.setSchedule(JSON.stringify(scheduleList()))}}catch(e){}}
+function nativeSync(){try{if(window.Android&&!TM){if(Android.setTasks)Android.setTasks(JSON.stringify(notifPayload()));if(Android.setSchedule)Android.setSchedule(JSON.stringify(scheduleList()))}}catch(e){}}
 function draw(){
  const T=mid(NOW()),ty=ymd(T);sweep(T);
  $('dt').textContent=DN[T.getDay()]+' '+fd(ty);
