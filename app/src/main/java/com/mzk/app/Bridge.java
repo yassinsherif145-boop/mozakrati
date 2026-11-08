@@ -31,6 +31,8 @@ public class Bridge {
             Util.silence(c, v);
         } else if ("closeui".equals(ev)) {
             Util.closeAlarmUi(c);
+        } else if ("openmain".equals(ev)) {
+            Util.openMain(c);
         }
     }
 
@@ -48,6 +50,23 @@ public class Bridge {
     @JavascriptInterface
     public void testRing(int min) {
         Sched.snooze(c, min);
+    }
+
+    @JavascriptInterface
+    public void saveState(String json) {
+        try {
+            c.getSharedPreferences("mzk", Context.MODE_PRIVATE).edit().putString("state", json).apply();
+        } catch (Exception e) {
+        }
+    }
+
+    @JavascriptInterface
+    public String loadState() {
+        try {
+            return c.getSharedPreferences("mzk", Context.MODE_PRIVATE).getString("state", "");
+        } catch (Exception e) {
+            return "";
+        }
     }
 
     @JavascriptInterface

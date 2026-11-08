@@ -33,6 +33,17 @@ public class Util {
         }
     }
 
+    public static void openMain(Context c) {
+        try {
+            Intent i = new Intent(c, MainActivity.class);
+            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                    | Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            c.startActivity(i);
+        } catch (Exception e) {
+        }
+    }
+
     public static void openAlarm(Context c, String route) {
         try {
             Intent i = new Intent(c, AlarmActivity.class);

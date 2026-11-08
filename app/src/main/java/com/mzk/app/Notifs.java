@@ -72,7 +72,7 @@ public class Notifs {
                 int col = ex ? RED : BLUE;
                 int n = t.optInt("n");
                 String left = n <= 0 ? "النهاردة" : (n == 1 ? "بكرة" : "باقي " + n + " أيام");
-                String tag = ex ? "📝 امتحان · " + left : "📘 واجب";
+                String tag = (ex ? "📝 امتحان · " : "📘 واجب · ") + left;
 
                 StringBuilder all = new StringBuilder();
                 String first = "";
@@ -121,6 +121,7 @@ public class Notifs {
                         .setOnlyAlertOnce(true)
                         .setVisibility(Notification.VISIBILITY_PUBLIC)
                         .setGroup("mzk")
+                        .setSortKey(String.format("%03d", i))
                         .setContentIntent(open)
                         .addAction(aDone)
                         .addAction(aLater);
