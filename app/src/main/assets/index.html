@@ -352,9 +352,9 @@ const planned=(it,i)=>{const p=addD(prs(it.start||it.show),i),m=addD(prs(it.due)
 const acc=it=>{const T=mid(NOW());return it.subs.filter((s,i)=>!s.d&&s.t&&isLate(it,i,T)).length};
 const sr=(it,s,i,tg,nodel)=>`<div class="sb ${s.d?'d':''}"><input type="checkbox" ${s.d?'checked':''} onchange="togSub('${it.id}',${i})" aria-label="خلصت"><span class="stx" onclick="editSub('${it.id}',${i})">${esc(s.t)}</span>${tg||''}${nodel?'':`<button class="del" onclick="togK('${it.id}',${i})" aria-label="قسّم">＋</button><button class="del" onclick="delSub('${it.id}',${i})" aria-label="احذف">×</button>`}</div>${nodel?'':kidsHtml(it,s,i)}`;
 
-const pin=(it,i,ph)=>`<div class="sb"><input type="checkbox" onchange="partDone('${it.id}',${i},this)" aria-label="خلصت"><input type="text" data-dr="${it.id}:${i}" placeholder="${ph}" oninput="partIn('${it.id}',${i},this)" onkeydown="if(event.key==='Enter')setSub('${it.id}',${i},this)"></div>`;
-function bigSubs(it){return it.subs.map((s,i)=>{const dy=DN[addD(prs(it.created),i).getDay()];return s.t&&s.d?sr(it,s,i,`<span class="tg">${dy}</span>`,true):s.t?sr(it,s,i,`<span class="tg">${dy}</span>`,true):pin(it,i,`جزء ${i+1} (${dy})`)}).join('')}
-function adderHtml(it){return `<div class="sb"><input type="text" data-i="${it.id}" data-dr="a${it.id}" placeholder="+ جزء إضافي" oninput="drIn(this)" onkeydown="if(event.key==='Enter')addSub('${it.id}',this)"><button class="del" onclick="addSub('${it.id}',this.previousElementSibling)" aria-label="أضف">＋</button></div>`}
+const pin=(it,i,ph)=>`<div class="sb"><input type="checkbox" onchange="partDone('${it.id}',${i},this)" aria-label="خلصت"><input type="text" data-dr="${it.id}:${i}" placeholder="${ph}" oninput="partIn('${it.id}',${i},this)" onblur="partBlur(event,'${it.id}',${i},this)" onkeydown="if(event.key==='Enter')setSub('${it.id}',${i},this)"></div>`;
+function bigSubs(it){return it.subs.map((s,i)=>{const dy=DN[addD(prs(it.created),i).getDay()];return s.t&&s.d?sr(it,s,i,`<span class="tg">${dy}</span>`):s.t?sr(it,s,i,`<span class="tg">${dy}</span>`):pin(it,i,`جزء ${i+1} (${dy})`)}).join('')}
+function adderHtml(it){return `<div class="sb"><input type="text" data-i="${it.id}" data-dr="a${it.id}" placeholder="+ جزء إضافي" oninput="drIn(this)" onblur="adderBlur(event,'${it.id}',this)" onkeydown="if(event.key==='Enter')addSub('${it.id}',this)"><button class="del" onclick="addSub('${it.id}',this.previousElementSibling)" aria-label="أضف">＋</button></div>`}
 function card(it,far){
  const T=mid(NOW()),n=diff(prs(it.due),T),l=lbl(n),ex=it.type==='exam',st=it.big?' ++':'';
  const l2=(ex&&n===1)?['<span style="font-size:13px">آخر يوم</span>','النهاردة']:l;
@@ -368,11 +368,11 @@ function card(it,far){
  const adder=adderHtml(it);
  const key='t'+it.id;if(OP[key]===undefined)OP[key]=vis>0||(it.big&&it.subs.some(s=>!s.t));
  const tot=it.subs.filter(s=>s.t).length,dn=it.subs.filter(s=>s.t&&s.d).length;
- return `<details class="tk${ex?' x c'+lv:''}${it.done?' dn':''}" data-k="${key}" ${OP[key]?'open':''} ontoggle="OP[this.dataset.k]=this.open"><summary><div class="nn"><b>${l2[0]}</b><span>${l2[1]}</span></div><div class="bd"><div class="t">${esc(it.title)}${st}</div><div class="tg">${tag}</div></div><span class="pg">${tot?dn+'/'+tot:'＋'}</span><input type="checkbox" ${it.done?'checked':''} onchange="toggle('${it.id}')" aria-label="خلصت المهمة"><button class="del" onclick="editItem('${it.id}')" aria-label="تعديل">✎</button></summary><div class="tkb"><div class="subs">${subs}${adder}</div></div></details>`;
+ return `<details class="tk${ex?' x c'+lv:''}${it.done?' dn':''}" data-k="${key}" ${OP[key]?'open':''} ontoggle="OP[this.dataset.k]=this.open"><summary><div class="nn"><b>${l2[0]}</b><span>${l2[1]}</span></div><div class="bd"><div class="t" onclick="event.preventDefault();event.stopPropagation();editItem('${it.id}')">${esc(it.title)}${st}</div><div class="tg">${tag}</div></div><span class="pg">${tot?dn+'/'+tot:'＋'}</span><input type="checkbox" ${it.done?'checked':''} onchange="toggle('${it.id}')" aria-label="خلصت المهمة"><button class="del" onclick="delItem('${it.id}')" aria-label="احذف">×</button></summary><div class="tkb"><div class="subs">${subs}${adder}</div></div></details>`;
 }
 function extra(it){const key='e'+it.id,n=diff(prs(it.due),mid(NOW())),l=lbl(n);if(OP[key]===undefined)OP[key]=it.subs.some(s=>!s.t);
  const dn=it.subs.filter(s=>s.t&&s.d).length;
- return `<details class="tk${it.done?' dn':''}" data-k="${key}" ${OP[key]?'open':''} ontoggle="OP[this.dataset.k]=this.open"><summary><div class="nn"><b>${l[0]}</b><span>${l[1]}</span></div><div class="bd"><div class="t">${esc(it.title)} ++</div><div class="tg">واجب (compito)</div></div><span class="pg">${dn}/${it.subs.length}</span><input type="checkbox" ${it.done?'checked':''} onchange="toggle('${it.id}')" aria-label="خلصت المهمة"><button class="del" onclick="editItem('${it.id}')" aria-label="تعديل">✎</button></summary><div class="tkb"><div class="subs">${bigSubs(it)}${adderHtml(it)}</div></div></details>`}
+ return `<details class="tk${it.done?' dn':''}" data-k="${key}" ${OP[key]?'open':''} ontoggle="OP[this.dataset.k]=this.open"><summary><div class="nn"><b>${l[0]}</b><span>${l[1]}</span></div><div class="bd"><div class="t" onclick="event.preventDefault();event.stopPropagation();editItem('${it.id}')">${esc(it.title)} ++</div><div class="tg">واجب (compito)</div></div><span class="pg">${dn}/${it.subs.length}</span><input type="checkbox" ${it.done?'checked':''} onchange="toggle('${it.id}')" aria-label="خلصت المهمة"><button class="del" onclick="delItem('${it.id}')" aria-label="احذف">×</button></summary><div class="tkb"><div class="subs">${bigSubs(it)}${adderHtml(it)}</div></div></details>`}
 function refresh(){
  const T=mid(NOW());let ch=false;
  S.items.forEach(it=>{if(!it.big||it.done||it.dropped)return;
@@ -556,9 +556,7 @@ function calRender(){
  const w0=ymd(wkStart(t)),ws=commitStats(w0,ymd(addD(prs(w0),6)),A),ms=commitStats(ymd(new Date(calY,calM,1)),ymd(new Date(calY,calM+1,0)),A);
  let cells='';for(let i=0;i<off;i++)cells+='<span></span>';
  for(let d=1;d<=dim;d++){const dd=new Date(calY,calM,d),k=ymd(dd);cells+=`<span class="cd${A.has(k)?' on':''}${dd>t?' fu':''}${k===ymd(t)?' td':''}">${AR(d)}</span>`}
- $('calBlock').innerHTML=`<div class="row" style="align-items:center"><b>الأسبوع ده:</b><span class="cnt" style="--c:#22c55e">${AR(ws.c)}</span><span>ملتزم</span><span class="cnt" style="background:var(--ln);color:var(--mu)">${AR(ws.a)}</span><span style="color:var(--mu)">غايب</span></div>
-  <div style="display:flex;justify-content:space-between;align-items:center;max-width:600px;margin:10px 0"><button class="ch" onclick="calNav(-1)">›</button><b style="font-size:20px">${MN[calM]} ${AR(calY)}</b><button class="ch" onclick="calNav(1)">‹</button></div>
- <div class="row" style="align-items:center;margin:0 0 8px"><span style="color:var(--mu)">${MN[calM]}:</span><span class="cnt" style="--c:#22c55e">${AR(ms.c)}</span><span>ملتزم</span><span class="cnt" style="background:var(--ln);color:var(--mu)">${AR(ms.a)}</span><span style="color:var(--mu)">غايب</span></div>
+ $('calBlock').innerHTML=`  <div style="display:flex;justify-content:space-between;align-items:center;max-width:600px;margin:10px 0"><button class="ch" onclick="calNav(-1)">›</button><b style="font-size:20px">${MN[calM]} ${AR(calY)}</b><button class="ch" onclick="calNav(1)">‹</button></div>
  <div class="cg">${['سبت','أحد','إثنين','ثلاثاء','أربعاء','خميس','جمعة'].map(n=>`<small class="cw">${n}</small>`).join('')}${cells}</div>`;
 }
 const IT=['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'],ORD=[1,2,3,4,5,6,0];
@@ -833,7 +831,7 @@ function editDlg(t,val,ok,del){const o=document.createElement('div');o.id='edOv'
  document.body.appendChild(o);$('edOk').onclick=()=>{const v=$('edIn').value.trim();if(!v)return;o.remove();ok(v)};if(del)$('edDel').onclick=()=>{o.remove();del()}}
 function editSub(id,i){const it=find(id),s=it&&it.subs[i];if(!s)return;editDlg('تعديل الجزء',s.t,v=>{s.t=v;save();draw()},()=>delSub(id,i))}
 function editItem(id){const it=find(id);if(!it)return;editDlg('تعديل المهمة',it.title,v=>{it.title=v;save();draw()},()=>delItem(id))}
-const APP_VER=1;
+const APP_VER=2;
 function updApply(html){const m=/APP_VER\s*=\s*(\d+)/.exec(html),v=m?+m[1]:0,sm=/<script>([\s\S]*)<\/script>/.exec(html);
  try{if(!sm||!v)throw 0;new Function(sm[1])}catch(e){toast('الملف ده مش تحديث صالح');return 0}
  return v}
@@ -843,6 +841,10 @@ async function updCheck(manual){try{if(!(window.Android&&Android.saveUpdate)||!S
 function updBack(){try{if(Android.rollbackUpdate()){toast('رجعت للنسخة السابقة');setTimeout(()=>Android.reloadPage(),700)}else toast('مفيش نسخة سابقة')}catch(e){}}
 function updReset(){try{Android.resetUpdate();toast('رجعت للنسخة الأصلية');setTimeout(()=>Android.reloadPage(),700)}catch(e){}}
 setTimeout(()=>{try{if(!location.hash&&S.al&&S.al.updAuto!==false)updCheck(false)}catch(e){}},5000);
+function partBlur(ev,id,i,el){const v=el.value.trim();if(!v)return;const it=find(id);if(!it||!it.subs[i])return;const nx=ev.relatedTarget&&ev.relatedTarget.dataset?ev.relatedTarget.dataset.dr:null;it.subs[i].t=v;delete DR[el.dataset.dr];save();nativeSync();setTimeout(()=>{draw();if(nx){const e=document.querySelector('input[data-dr="'+nx+'"]');if(e)e.focus()}},120)}
+function adderBlur(ev,id,el){const v=el.value.trim();if(!v||el.dataset.busy)return;const nx=ev.relatedTarget&&ev.relatedTarget.dataset?ev.relatedTarget.dataset.dr:null;addSub(id,el,true);setTimeout(()=>{draw();if(nx){const e=document.querySelector('input[data-dr="'+nx+'"]');if(e)e.focus()}},120)}
+document.addEventListener('touchstart',e=>{const a=document.activeElement;if(a&&a.tagName==='INPUT'&&a.type==='text'&&!(e.target.closest&&e.target.closest('input,textarea,select,label,button')))a.blur()},{passive:true});
+let vhMax=innerHeight;window.addEventListener('resize',()=>{vhMax=Math.max(vhMax,innerHeight);if(innerHeight>=vhMax-60){const a=document.activeElement;if(a&&a.tagName==='INPUT'&&a.dataset&&a.dataset.dr)a.blur()}});
 function alDraw(){const o=$('alOv');if(!o)return;const ts=alarmTasks();
  let h='<div style="font-size:26px;font-weight:800">⏰ وقت المذاكرة</div>';
  h+=`<div style="width:100%;max-width:520px">${ts.length?ts.map(t=>`<div style="background:rgba(255,255,255,.1);border-radius:10px;padding:8px 12px;margin:6px 0"><b>${esc(t.t)}</b>${t.ty==='exam'?` <small>(امتحان · باقي ${t.n} أيام)</small>`:''}${t.parts.length?`<div style="font-size:14px;opacity:.9">${t.parts.map(esc).join('، ')}</div>`:''}</div>`).join(''):'<div>مفيش مهام عليك</div>'}</div>`;
