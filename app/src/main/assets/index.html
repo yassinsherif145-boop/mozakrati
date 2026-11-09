@@ -266,7 +266,7 @@ let K='study_v1',TM=false,FAKE=null,FH=null,fsSt='off',fsT=null;let S={subjects:
 const PAL=['#3b82f6','#ef4444','#16a34a','#f59e0b','#8b5cf6','#ec4899','#0d9488','#f97316'];
 function load(k){try{const r=localStorage.getItem(k);return r?JSON.parse(r):null}catch(e){return null}}
 S=load(K)||S;try{if(window.Android&&Android.loadState){const ns=Android.loadState();if(ns){const o=JSON.parse(ns);if(o&&(o.ts||0)>(S.ts||0))S=o}}}catch(e){}
-function norm(){S.subjects=S.subjects||[];S.items=S.items||[];S.log=S.log||{};S.notes=S.notes||{};S.act=S.act||{};S.miss=S.miss||[];S.pp=S.pp||[];S.al=Object.assign({on:true,after:2,hol:'06:00',gap:10,max:4,nq:3,types:['m'],lvl:1,scope:'all',pick:[],cut:20,warn:true,skip:null,hwd:1,exd:4,wn:3,qo:true,late:true},S.al||{});if(!Array.isArray(S.al.types)||!S.al.types.length)S.al.types=['m'];if(!Array.isArray(S.al.pick))S.al.pick=[];S.al.on=true;if(S.al.types.length>S.al.nq)S.al.types=S.al.types.slice(0,Math.max(1,S.al.nq));S.seen=S.seen||{};S.qpool=S.qpool||[];ttMig();S.items.forEach(i=>{delete i.np;delete i.nd});
+function norm(){S.subjects=S.subjects||[];S.items=S.items||[];S.log=S.log||{};S.notes=S.notes||{};S.act=S.act||{};S.miss=S.miss||[];S.pp=S.pp||[];S.al=Object.assign({on:true,after:2,hol:'06:00',gap:10,max:4,nq:3,types:['m'],lvl:1,scope:'all',pick:[],cut:20,warn:true,skip:null,hwd:1,exd:4,wn:3,qo:true,late:true},S.al||{});if(!Array.isArray(S.al.types)||!S.al.types.length)S.al.types=['m'];if(!Array.isArray(S.al.pick))S.al.pick=[];S.al.on=true;if(S.al.types.length>S.al.nq)S.al.types=S.al.types.slice(0,Math.max(1,S.al.nq));S.seen=S.seen||{};S.qpool=S.qpool||[];S.updUrl=S.updUrl||'https://raw.githubusercontent.com/yassinsherif145-boop/mozakrati/main/app/src/main/assets/index.html';ttMig();S.items.forEach(i=>{delete i.np;delete i.nd});
  if(!S.tt){S.tt={n:6,c:{}};S.subjects.forEach(s=>{(s.days||[]).forEach(d=>{for(let p=0;p<10;p++){if(!S.tt.c[d+'-'+p]){S.tt.c[d+'-'+p]=s.id;break}}})})}
  const T0=S.tt;T0.n=T0.n||6;T0.times=T0.times||[];T0.title=T0.title||'';T0.hours=T0.hours||'';
  if(!T0.days){const u=[...new Set(Object.keys(T0.c).map(k=>+k.split('-')[0]))];T0.days=u.length?u:[1,2,3,4,6]}
@@ -720,7 +720,7 @@ const tgl=(k,on)=>`<input type="checkbox" ${on?'checked':''} onchange="setAl('${
 function toneSet(){stDraw()}
 function stTabSet(k){stTab=k;stDraw()}
 function stDraw(){const p=$('stPanel');if(!p)return;const a=S.al,T=ymd(mid(NOW())),off=a.skip===T,tom=addD(mid(NOW()),1);
- const tabs=[['t','⏰ التوقيت'],['c','🧩 التحدي'],['n','🔔 الصوت والإشعارات'],['d','💾 البيانات']];
+ const tabs=[['t','⏰ التوقيت'],['c','🧩 التحدي'],['n','🔔 الصوت والإشعارات'],['u','🔄 التحديثات'],['d','💾 البيانات']];
  let b='';
  if(stTab==='t'){
   b+='<div class="sd" style="margin-bottom:4px">المنبه بيرن مرة واحدة في اليوم، والشاشة بتعرض كل مهام النهاردة اللي ينطبق عليها نطاق المنبه.</div>';
@@ -747,6 +747,17 @@ function stDraw(){const p=$('stPanel');if(!p)return;const a=S.al,T=ymd(mid(NOW()
   b+=sRow('الإشعارات تختفي والمهام تتأجل الساعة','بعد الساعة دي أي جزء ما اتعملش بيتحسب متأخر.',selH('cut',[[19,'7 م'],[20,'8 م'],[21,'9 م'],[22,'10 م']],a.cut));
   if(window.Android&&Android.pickTone){let tn='';try{tn=Android.toneName()}catch(e){}b+=sRow('نغمة المنبه','الصوت بيتعلى لأقصى درجة لوحده حتى لو نزّلته أو كان مقفول.',`<button class="ch" onclick="Android.pickTone()">${esc(tn||'الافتراضية')} ✎</button>`)}
   b+='<div class="row" style="margin-top:10px"><button class="ch" onclick="setClose();showAlarm(true)">معاينة المنبه</button><button class="ch" onclick="setClose();showWarn()">معاينة تحذير الامتحانات</button></div>';
+ }else if(stTab==='u'){
+  const A=window.Android&&Android.saveUpdate;
+  b+=sRow('نسخة الواجهة الحالية','رقم نسخة واجهة التطبيق (مش نسخة الـAPK).','<b>'+APP_VER+'</b>');
+  if(!A)b+='<div class="sd">التحديث من جوه التطبيق شغال على الموبايل بس.</div>';
+  else{
+   b+=sRow('تحديث من ملف','اختار ملف index.html اللي بعتهولك Claude، وهيتطبّق فورًا من غير APK ومن غير GitHub.','<label class="ch">اختار الملف<input type="file" accept=".html,text/html" hidden onchange="updFile(this.files[0])"></label>');
+   b+=`<div class="sr"><div>رابط التحديث (GitHub)</div><input type="text" style="width:100%;direction:ltr" value="${esc(S.updUrl||'')}" onchange="S.updUrl=this.value.trim();save()"><div class="sd">رابط ملف index.html الخام. التطبيق بيفحصه لوحده ويتحدّث. محتاج المستودع يكون Public.</div><div class="row" style="margin-top:6px"><button class="ch" onclick="updCheck(true)">افحص دلوقتي</button></div></div>`;
+   b+=sRow('فحص تلقائي','بيفحص كل ما تفتح التطبيق (لو فيه نت ورابط).',tgl('updAuto',a.updAuto!==false));
+   b+=sRow('رجوع للنسخة السابقة','لو التحديث عمل مشكلة.','<button class="ch" onclick="updBack()">رجوع</button>');
+   b+=sRow('رجوع للنسخة الأصلية','بيمسح التحديثات ويرجع للنسخة اللي جوه الـAPK.','<button class="ch" onclick="updReset()">رجوع</button>');
+  }
  }else{
   b+=sRow('شرح الرموز','❌ ما اتعملش · 🧱 راكمت كم مرة (أجزاء مذاكرة امتحان اتأخرت عن ميعادها وتراكمت عليك) · ✅ أيام ملتزم · ⬜ أيام غايب','');
   b+=sRow('نسخة احتياطية','بتحفظ كل بياناتك في ملف على الموبايل.','<button class="ch" onclick="expo()">تحميل</button>');
@@ -822,6 +833,16 @@ function editDlg(t,val,ok,del){const o=document.createElement('div');o.id='edOv'
  document.body.appendChild(o);$('edOk').onclick=()=>{const v=$('edIn').value.trim();if(!v)return;o.remove();ok(v)};if(del)$('edDel').onclick=()=>{o.remove();del()}}
 function editSub(id,i){const it=find(id),s=it&&it.subs[i];if(!s)return;editDlg('تعديل الجزء',s.t,v=>{s.t=v;save();draw()},()=>delSub(id,i))}
 function editItem(id){const it=find(id);if(!it)return;editDlg('تعديل المهمة',it.title,v=>{it.title=v;save();draw()},()=>delItem(id))}
+const APP_VER=1;
+function updApply(html){const m=/APP_VER\s*=\s*(\d+)/.exec(html),v=m?+m[1]:0,sm=/<script>([\s\S]*)<\/script>/.exec(html);
+ try{if(!sm||!v)throw 0;new Function(sm[1])}catch(e){toast('الملف ده مش تحديث صالح');return 0}
+ return v}
+function updInstall(html,v){try{save();if(Android.saveUpdate(html,v)){toast('اتحدّث لنسخة '+v+' · بيعيد التشغيل');setTimeout(()=>Android.reloadPage(),700);return true}}catch(e){}toast('فشل التحديث');return false}
+function updFile(f){if(!f)return;const r=new FileReader();r.onload=()=>{const v=updApply(r.result);if(v)updInstall(r.result,v)};r.readAsText(f,'UTF-8')}
+async function updCheck(manual){try{if(!(window.Android&&Android.saveUpdate)||!S.updUrl||TM)return;const c=new AbortController(),tm=setTimeout(()=>c.abort(),10000);const r=await fetch(S.updUrl+(S.updUrl.includes('?')?'&':'?')+'t='+Date.now(),{signal:c.signal});clearTimeout(tm);if(!r.ok)throw 0;const h=await r.text(),v=updApply(h);if(!v){if(manual)toast('الرابط مش بيرجّع ملف صالح');return}if(v>APP_VER)updInstall(h,v);else if(manual)toast('أنت على آخر نسخة ('+APP_VER+')')}catch(e){if(manual)toast('ما قدرتش أوصل للرابط. اتأكد من النت والرابط')}}
+function updBack(){try{if(Android.rollbackUpdate()){toast('رجعت للنسخة السابقة');setTimeout(()=>Android.reloadPage(),700)}else toast('مفيش نسخة سابقة')}catch(e){}}
+function updReset(){try{Android.resetUpdate();toast('رجعت للنسخة الأصلية');setTimeout(()=>Android.reloadPage(),700)}catch(e){}}
+setTimeout(()=>{try{if(!location.hash&&S.al&&S.al.updAuto!==false)updCheck(false)}catch(e){}},5000);
 function alDraw(){const o=$('alOv');if(!o)return;const ts=alarmTasks();
  let h='<div style="font-size:26px;font-weight:800">⏰ وقت المذاكرة</div>';
  h+=`<div style="width:100%;max-width:520px">${ts.length?ts.map(t=>`<div style="background:rgba(255,255,255,.1);border-radius:10px;padding:8px 12px;margin:6px 0"><b>${esc(t.t)}</b>${t.ty==='exam'?` <small>(امتحان · باقي ${t.n} أيام)</small>`:''}${t.parts.length?`<div style="font-size:14px;opacity:.9">${t.parts.map(esc).join('، ')}</div>`:''}</div>`).join(''):'<div>مفيش مهام عليك</div>'}</div>`;
@@ -874,5 +895,6 @@ function draw(){
 norm();
 draw();
 route();
+try{if(window.Android&&Android.pageOk)Android.pageOk()}catch(e){}
 let lastDay=ymd(NOW());setInterval(()=>{const d=ymd(NOW());if(d!==lastDay){lastDay=d;draw()}},30000);
 </script></body></html>

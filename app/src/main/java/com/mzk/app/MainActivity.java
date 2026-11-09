@@ -8,6 +8,8 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.PowerManager;
 import android.provider.Settings;
 import android.webkit.ValueCallback;
@@ -27,6 +29,7 @@ public class MainActivity extends Activity {
         WebSettings s = wv.getSettings();
         s.setJavaScriptEnabled(true);
         s.setDomStorageEnabled(true);
+        s.setAllowFileAccess(true);
         wv.addJavascriptInterface(new Bridge(this), "Android");
         wv.setWebChromeClient(new WebChromeClient() {
             @Override
@@ -41,8 +44,37 @@ public class MainActivity extends Activity {
             }
         });
         setContentView(wv);
-        wv.loadUrl("file:///android_asset/index.html");
+        load();
         askPermissions();
+    }
+
+    // بيحمّل الصفحة. لو التحديث المحمّل بوظ ومفتحش في 8 ثواني، بيرجع للنسخة الأصلية لوحده
+    void load() {
+        final String url = Util.pageUrl(this);
+        final SharedPreferences p = getSharedPreferences("mzk", MODE_PRIVATE);
+        if (!url.equals(Util.ASSET)) {
+            p.edit().putBoolean("pending", true).apply();
+            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (p.getBoolean("pending", false)) {
+                        p.edit().putBoolean("pending", false).apply();
+                        Util.resetOverride(MainActivity.this);
+                        wv.loadUrl(Util.ASSET);
+                    }
+                }
+            }, 8000);
+        }
+        wv.loadUrl(url);
+    }
+
+    void reload() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                load();
+            }
+        });
     }
 
     void askPermissions() {

@@ -53,6 +53,33 @@ public class Bridge {
     }
 
     @JavascriptInterface
+    public boolean saveUpdate(String html, int ver) {
+        return Util.saveOverride(c, html);
+    }
+
+    @JavascriptInterface
+    public boolean rollbackUpdate() {
+        return Util.rollbackOverride(c);
+    }
+
+    @JavascriptInterface
+    public void resetUpdate() {
+        Util.resetOverride(c);
+    }
+
+    @JavascriptInterface
+    public void pageOk() {
+        c.getSharedPreferences("mzk", Context.MODE_PRIVATE).edit().putBoolean("pending", false).apply();
+    }
+
+    @JavascriptInterface
+    public void reloadPage() {
+        if (c instanceof MainActivity) {
+            ((MainActivity) c).reload();
+        }
+    }
+
+    @JavascriptInterface
     public void saveState(String json) {
         try {
             c.getSharedPreferences("mzk", Context.MODE_PRIVATE).edit().putString("state", json).apply();

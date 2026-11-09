@@ -2,6 +2,11 @@ package com.mzk.app;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 
 public class Util {
 
@@ -29,6 +34,85 @@ public class Util {
             i.setAction("SILENCE");
             i.putExtra("sec", sec);
             c.startService(i);
+        } catch (Exception e) {
+        }
+    }
+
+    static final String ASSET = "file:///android_asset/index.html";
+
+    static File ovFile(Context c) {
+        return new File(c.getFilesDir(), "index_override.html");
+    }
+
+    static File prevFile(Context c) {
+        return new File(c.getFilesDir(), "index_prev.html");
+    }
+
+    static int vcode(Context c) {
+        try {
+            return c.getPackageManager().getPackageInfo(c.getPackageName(), 0).versionCode;
+        } catch (Exception e) {
+            return -1;
+        }
+    }
+
+    static void copy(File a, File b) throws Exception {
+        FileInputStream in = new FileInputStream(a);
+        FileOutputStream out = new FileOutputStream(b);
+        byte[] buf = new byte[8192];
+        int n;
+        while ((n = in.read(buf)) > 0) out.write(buf, 0, n);
+        in.close();
+        out.close();
+    }
+
+    // لو فيه تحديث محمّل للصفحة بيستخدمه، غير كده النسخة اللي جوه الـAPK
+    public static String pageUrl(Context c) {
+        try {
+            File f = ovFile(c);
+            if (f.exists()) {
+                SharedPreferences p = c.getSharedPreferences("mzk", Context.MODE_PRIVATE);
+                if (p.getInt("updVc", -1) != vcode(c)) {
+                    f.delete();
+                } else {
+                    return "file://" + f.getAbsolutePath();
+                }
+            }
+        } catch (Exception e) {
+        }
+        return ASSET;
+    }
+
+    public static boolean saveOverride(Context c, String html) {
+        try {
+            File f = ovFile(c);
+            if (f.exists()) copy(f, prevFile(c));
+            FileOutputStream o = new FileOutputStream(f);
+            o.write(html.getBytes("UTF-8"));
+            o.close();
+            c.getSharedPreferences("mzk", Context.MODE_PRIVATE).edit().putInt("updVc", vcode(c)).apply();
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public static boolean rollbackOverride(Context c) {
+        try {
+            File p = prevFile(c);
+            if (!p.exists()) return false;
+            copy(p, ovFile(c));
+            p.delete();
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public static void resetOverride(Context c) {
+        try {
+            ovFile(c).delete();
+            prevFile(c).delete();
         } catch (Exception e) {
         }
     }

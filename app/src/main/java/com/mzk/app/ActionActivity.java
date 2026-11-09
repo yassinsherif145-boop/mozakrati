@@ -17,6 +17,7 @@ public class ActionActivity extends Activity {
         WebSettings s = wv.getSettings();
         s.setJavaScriptEnabled(true);
         s.setDomStorageEnabled(true);
+        s.setAllowFileAccess(true);
         wv.addJavascriptInterface(new Bridge(this), "Android");
         wv.setWebViewClient(new WebViewClient() {
             @Override
@@ -25,7 +26,7 @@ public class ActionActivity extends Activity {
             }
         });
         setContentView(wv);
-        wv.loadUrl("file:///android_asset/index.html");
+        wv.loadUrl(Util.pageUrl(this));
         new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
             @Override
             public void run() {

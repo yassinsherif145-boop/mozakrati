@@ -33,6 +33,7 @@ public class AlarmActivity extends Activity {
         WebSettings s = wv.getSettings();
         s.setJavaScriptEnabled(true);
         s.setDomStorageEnabled(true);
+        s.setAllowFileAccess(true);
         wv.setWebChromeClient(new WebChromeClient());
         wv.addJavascriptInterface(new Bridge(this), "Android");
         setContentView(wv);
@@ -51,7 +52,7 @@ public class AlarmActivity extends Activity {
         if (r == null) r = "#alarm";
         if (!loaded) {
             loaded = true;
-            wv.loadUrl("file:///android_asset/index.html" + r);
+            wv.loadUrl(Util.pageUrl(this) + r);
         } else {
             wv.evaluateJavascript("try{MZK.show('" + r + "')}catch(e){}", null);
         }
