@@ -18,8 +18,8 @@ import org.json.JSONObject;
 public class Notifs {
     static final String CH = "tasks";
     static final int FLAGS = PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE;
-    static final int RED = 0xFFEF5350;
-    static final int BLUE = 0xFF42A5F5;
+    static final int RED = 0xFFD32F2F;
+    static final int BLUE = 0xFF1976D2;
 
     static void ensure(Context c) {
         if (Build.VERSION.SDK_INT >= 26) {
@@ -43,7 +43,8 @@ public class Notifs {
     static void fill(RemoteViews rv, int col, String tag, String title, String body) {
         rv.setInt(R.id.bar, "setBackgroundColor", col);
         rv.setTextViewText(R.id.tag, tag);
-        rv.setTextColor(R.id.tag, col);
+        rv.setInt(R.id.tag, "setBackgroundColor", col);
+        rv.setTextColor(R.id.tag, 0xFFFFFFFF);
         rv.setTextViewText(R.id.title, title);
         rv.setTextViewText(R.id.parts, body);
         rv.setViewVisibility(R.id.parts, body.isEmpty() ? View.GONE : View.VISIBLE);
@@ -56,20 +57,15 @@ public class Notifs {
             ensure(c);
             clear(c);
             JSONArray a;
-            JSONArray all = null;
-            int dn = 0;
             String jt = json.trim();
             if (jt.startsWith("{")) {
                 JSONObject root = new JSONObject(jt);
                 a = root.optJSONArray("tasks");
-                all = root.optJSONArray("all");
-                dn = root.optInt("dn");
             } else {
                 a = new JSONArray(jt);
             }
             if (a == null) a = new JSONArray();
-            if (all == null) all = new JSONArray();
-            if (a.length() == 0 && all.length() == 0) {
+            if (a.length() == 0) {
                 p.edit().putString("lastjson", json).apply();
                 return;
             }
@@ -85,7 +81,7 @@ public class Notifs {
                 int col = ex ? RED : BLUE;
                 int n = t.optInt("n");
                 String left = n <= 0 ? "النهاردة" : (n == 1 ? "بكرة" : "باقي " + n + " أيام");
-                String tag = (ex ? "📝 امتحان · " : "📘 واجب · ") + left;
+                String tag = (ex ? "امتحان · " : "واجب · ") + left;
 
                 StringBuilder allp = new StringBuilder();
                 String first = "";
@@ -122,7 +118,7 @@ public class Notifs {
                         Icon.createWithResource(c, android.R.drawable.ic_menu_recent_history), "راكمت", pl).build();
 
                 Notification.Builder b = new Notification.Builder(c, CH)
-                        .setSmallIcon(R.drawable.ic_stat)
+                        .setSmallIcon(ex ? R.drawable.ic_stat_exam : R.drawable.ic_stat_hw)
                         .setColor(col)
                         .setContentTitle(title)
                         .setContentText(first)
@@ -140,28 +136,6 @@ public class Notifs {
                 ids.append(nid).append(",");
             }
 
-            // إشعار الملخص: بيفضل ظاهر حتى لو خلصت مهام النهاردة، ويعرض كل المهام الجاية وأيامها
-            Notification.InboxStyle ib = new Notification.InboxStyle();
-            int shown = Math.min(all.length(), 6);
-            for (int k = 0; k < shown; k++) {
-                JSONObject o = all.getJSONObject(k);
-                ib.addLine("• " + o.getString("t") + " — " + o.getString("w"));
-            }
-            if (all.length() > shown) ib.setSummaryText("+" + (all.length() - shown));
-            String title = a.length() > 0 ? "مهام النهاردة (" + a.length() + ")" : "✅ خلصت مهام النهاردة";
-            String text = "قدامك " + all.length() + " مهمة" + (dn > 0 ? " · خلصت النهاردة " + dn : "");
-            Notification.Builder s = new Notification.Builder(c, CH)
-                    .setSmallIcon(R.drawable.ic_stat)
-                    .setColor(BLUE)
-                    .setContentTitle(title)
-                    .setContentText(text)
-                    .setStyle(ib)
-                    .setOngoing(true)
-                    .setOnlyAlertOnce(true)
-                    .setVisibility(Notification.VISIBILITY_PUBLIC)
-                    .setSortKey("000")
-                    .setContentIntent(open);
-            nm.notify(900, s.build());
             p.edit().putString("nids", ids.toString()).putString("lastjson", json).apply();
         } catch (Exception e) {
         }

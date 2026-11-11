@@ -7,7 +7,7 @@
 
     <FrameLayout
         android:id="@+id/bar"
-        android:layout_width="5dp"
+        android:layout_width="8dp"
         android:layout_height="match_parent"
         android:layout_marginTop="2dp"
         android:layout_marginBottom="2dp" />
@@ -22,8 +22,13 @@
 
         <TextView
             android:id="@+id/tag"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:paddingStart="8dp"
+            android:paddingTop="2dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="2dp"
+            android:layout_marginBottom="3dp"
             android:textAlignment="viewStart"
             android:textDirection="rtl"
             android:textSize="12sp"

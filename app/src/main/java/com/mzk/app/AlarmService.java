@@ -18,6 +18,8 @@ public class AlarmService extends Service {
     static volatile boolean running = false;
     MediaPlayer mp;
     long quietUntil = 0;
+    long grace = 0;
+    String route = "#alarm";
     final Handler h = new Handler(Looper.getMainLooper());
 
     // كل ثانيتين: لو الشاشة اتقفلت ترجّعها ويرن الصوت، ولو فترة الهدوء خلصت يرن تاني
@@ -26,8 +28,8 @@ public class AlarmService extends Service {
         public void run() {
             if (!running) return;
             if (!AlarmActivity.visible) {
-                Util.openAlarm(AlarmService.this, "#alarm");
-                if (mp == null) startSound();
+                Util.openAlarm(AlarmService.this, route);
+                if (mp == null && System.currentTimeMillis() > grace) startSound();
             } else if (quietUntil > 0 && quietUntil != Long.MAX_VALUE
                     && System.currentTimeMillis() >= quietUntil && mp == null) {
                 quietUntil = 0;
@@ -66,15 +68,17 @@ public class AlarmService extends Service {
             return START_NOT_STICKY;
         }
         Notifs.ensure(this);
+        boolean reason = i != null && "reason".equals(i.getStringExtra("mode"));
+        route = reason ? "#pend" : "#alarm";
         Intent ai = new Intent(this, AlarmActivity.class);
-        ai.putExtra("route", "#alarm");
+        ai.putExtra("route", route);
         ai.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         PendingIntent pi = PendingIntent.getActivity(this, 77, ai,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         Notification n = new Notification.Builder(this, "alarm")
                 .setSmallIcon(R.drawable.ic_stat)
-                .setContentTitle("وقت المذاكرة")
-                .setContentText("افتح وابدأ")
+                .setContentTitle(reason ? "اكتب سبب تراكم امبارح" : "وقت المذاكرة")
+                .setContentText(reason ? "افتح واكتب السبب" : "افتح وابدأ")
                 .setCategory(Notification.CATEGORY_ALARM)
                 .setOngoing(true)
                 .setFullScreenIntent(pi, true)
@@ -83,7 +87,14 @@ public class AlarmService extends Service {
         startForeground(55, n);
         running = true;
         quietUntil = 0;
-        startSound();
+        grace = 0;
+        if (reason) {
+            // هادي في الأول عشان لو مفيش حاجة تتكتب، وبيرن لو سبت الشاشة
+            grace = System.currentTimeMillis() + 8000;
+            quietUntil = System.currentTimeMillis() + 25000;
+        } else {
+            startSound();
+        }
         h.removeCallbacks(loop);
         h.removeCallbacks(vol);
         h.post(loop);

@@ -42,6 +42,18 @@ public class Sched {
         return best;
     }
 
+    static void exact(AlarmManager am, long t, PendingIntent pi) {
+        try {
+            if (Build.VERSION.SDK_INT >= 23) {
+                am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, t, pi);
+            } else {
+                am.setExact(AlarmManager.RTC_WAKEUP, t, pi);
+            }
+        } catch (Exception e) {
+            am.set(AlarmManager.RTC_WAKEUP, t, pi);
+        }
+    }
+
     static void arm(Context c) {
         try {
             JSONObject o = new JSONObject(prefs(c).getString("sched", "{}"));
@@ -49,23 +61,21 @@ public class Sched {
             AlarmManager am = (AlarmManager) c.getSystemService(Context.ALARM_SERVICE);
             long r = next(o.optJSONArray("rings"), now);
             long k = next(o.optJSONArray("cuts"), now);
+            long q = next(o.optJSONArray("rsn"), now);
             if (r > 0) {
                 am.setAlarmClock(new AlarmManager.AlarmClockInfo(r, showPi(c)), firePi(c, 1, "RING"));
             } else {
                 am.cancel(firePi(c, 1, "RING"));
             }
             if (k > 0) {
-                try {
-                    if (Build.VERSION.SDK_INT >= 23) {
-                        am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, k, firePi(c, 3, "CUT"));
-                    } else {
-                        am.setExact(AlarmManager.RTC_WAKEUP, k, firePi(c, 3, "CUT"));
-                    }
-                } catch (Exception e) {
-                    am.set(AlarmManager.RTC_WAKEUP, k, firePi(c, 3, "CUT"));
-                }
+                exact(am, k, firePi(c, 3, "CUT"));
             } else {
                 am.cancel(firePi(c, 3, "CUT"));
+            }
+            if (q > 0) {
+                exact(am, q, firePi(c, 4, "RSN"));
+            } else {
+                am.cancel(firePi(c, 4, "RSN"));
             }
         } catch (Exception e) {
         }
