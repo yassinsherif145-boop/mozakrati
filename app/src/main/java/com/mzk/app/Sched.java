@@ -62,6 +62,7 @@ public class Sched {
             long r = next(o.optJSONArray("rings"), now);
             long k = next(o.optJSONArray("cuts"), now);
             long q = next(o.optJSONArray("rsn"), now);
+            long w = next(o.optJSONArray("wk"), now);
             if (r > 0) {
                 am.setAlarmClock(new AlarmManager.AlarmClockInfo(r, showPi(c)), firePi(c, 1, "RING"));
             } else {
@@ -76,6 +77,11 @@ public class Sched {
                 exact(am, q, firePi(c, 4, "RSN"));
             } else {
                 am.cancel(firePi(c, 4, "RSN"));
+            }
+            if (w > 0) {
+                exact(am, w, firePi(c, 5, "WKL"));
+            } else {
+                am.cancel(firePi(c, 5, "WKL"));
             }
         } catch (Exception e) {
         }

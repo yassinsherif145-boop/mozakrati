@@ -68,8 +68,10 @@ public class AlarmService extends Service {
             return START_NOT_STICKY;
         }
         Notifs.ensure(this);
-        boolean reason = i != null && "reason".equals(i.getStringExtra("mode"));
-        route = reason ? "#pend" : "#alarm";
+        String mode = (i == null) ? null : i.getStringExtra("mode");
+        boolean weekly = "weekly".equals(mode);
+        boolean reason = "reason".equals(mode) || weekly;
+        route = weekly ? "#wk" : (reason ? "#pend" : "#alarm");
         Intent ai = new Intent(this, AlarmActivity.class);
         ai.putExtra("route", route);
         ai.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -77,8 +79,8 @@ public class AlarmService extends Service {
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         Notification n = new Notification.Builder(this, "alarm")
                 .setSmallIcon(R.drawable.ic_stat)
-                .setContentTitle(reason ? "اكتب سبب تراكم امبارح" : "وقت المذاكرة")
-                .setContentText(reason ? "افتح واكتب السبب" : "افتح وابدأ")
+                .setContentTitle(weekly ? "السجل الأسبوعي" : (reason ? "اكتب سبب تراكم امبارح" : "وقت المذاكرة"))
+                .setContentText(weekly ? "افتح واكتب السجل الأسبوعي" : (reason ? "افتح واكتب السبب" : "افتح وابدأ"))
                 .setCategory(Notification.CATEGORY_ALARM)
                 .setOngoing(true)
                 .setFullScreenIntent(pi, true)

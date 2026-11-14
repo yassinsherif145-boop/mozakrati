@@ -15,6 +15,9 @@ public class AlarmReceiver extends BroadcastReceiver {
         } else if ("RSN".equals(a)) {
             start(c, "reason");
             Sched.arm(c);
+        } else if ("WKL".equals(a)) {
+            start(c, "weekly");
+            Sched.arm(c);
         } else if ("CUT".equals(a)) {
             Notifs.clear(c);
             Util.openAlarm(c, "#warn");
