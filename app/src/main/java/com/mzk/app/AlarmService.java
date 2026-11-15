@@ -79,8 +79,8 @@ public class AlarmService extends Service {
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         Notification n = new Notification.Builder(this, "alarm")
                 .setSmallIcon(R.drawable.ic_stat)
-                .setContentTitle(weekly ? "السجل الأسبوعي" : (reason ? "اكتب سبب تراكم امبارح" : "وقت المذاكرة"))
-                .setContentText(weekly ? "افتح واكتب السجل الأسبوعي" : (reason ? "افتح واكتب السبب" : "افتح وابدأ"))
+                .setContentTitle(weekly ? "السجل الأسبوعي" : (reason ? "اكتب الأسباب" : "وقت المذاكرة"))
+                .setContentText(weekly ? "افتح واكتب السجل الأسبوعي" : (reason ? "افتح واكتب الأسباب" : "افتح وابدأ"))
                 .setCategory(Notification.CATEGORY_ALARM)
                 .setOngoing(true)
                 .setFullScreenIntent(pi, true)

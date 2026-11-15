@@ -13,7 +13,6 @@ public class ActionActivity extends Activity {
     protected void onCreate(Bundle b) {
         super.onCreate(b);
         final String id = getIntent().getStringExtra("id");
-        final String js = getIntent().getStringExtra("js");
         WebView wv = new WebView(this);
         WebSettings s = wv.getSettings();
         s.setJavaScriptEnabled(true);
@@ -23,8 +22,7 @@ public class ActionActivity extends Activity {
         wv.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageFinished(WebView v, String url) {
-                String code = (js != null && !js.isEmpty()) ? js : "MZK.done('" + id + "')";
-                v.evaluateJavascript("setTimeout(function(){try{" + code + "}catch(e){}},300)", null);
+                v.evaluateJavascript("setTimeout(function(){try{MZK.done('" + id + "')}catch(e){}},300)", null);
             }
         });
         setContentView(wv);
