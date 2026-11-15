@@ -7,6 +7,13 @@ import android.content.Intent;
 public class BootReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context c, Intent i) {
-        Sched.arm(c);
+        try {
+            Sched.arm(c);
+        } catch (Exception e) {
+        }
+        try {
+            AppWatch.ensure(c);
+        } catch (Exception e) {
+        }
     }
 }

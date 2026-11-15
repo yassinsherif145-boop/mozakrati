@@ -58,6 +58,47 @@ public class Notifs {
         clear(c);
     }
 
+    static void timer(Context c, String json) {
+        try {
+            NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
+            if (json == null || json.isEmpty()) {
+                nm.cancel(1001);
+                return;
+            }
+            ensure(c);
+            JSONObject o = new JSONObject(json);
+            String k = o.optString("k");
+            String l = o.optString("l");
+            long s = o.optLong("s", System.currentTimeMillis());
+            Notification.Builder b = new Notification.Builder(c, CH)
+                    .setSmallIcon(R.drawable.ic_stat)
+                    .setContentTitle(l.isEmpty() ? "عداد" : l)
+                    .setContentText("break".equals(k) ? "استراحة" : "مذاكرة")
+                    .setOngoing(true)
+                    .setOnlyAlertOnce(true)
+                    .setShowWhen(true)
+                    .setUsesChronometer(true)
+                    .setWhen(s)
+                    .setVisibility(Notification.VISIBILITY_PUBLIC)
+                    .setContentIntent(PendingIntent.getActivity(c, 1, new Intent(c, MainActivity.class), FLAGS));
+            if ("break".equals(k)) {
+                Intent in = new Intent(c, ActionActivity.class);
+                in.setAction("resumeT");
+                in.putExtra("js", "MZK.resumeT()");
+                b.addAction(new Notification.Action.Builder(Icon.createWithResource(c, android.R.drawable.ic_media_play),
+                        "استكمال", PendingIntent.getActivity(c, 1101, in, FLAGS)).build());
+            } else if ("task".equals(k)) {
+                Intent in = new Intent(c, AlarmActivity.class);
+                in.putExtra("route", "#pz");
+                in.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                b.addAction(new Notification.Action.Builder(Icon.createWithResource(c, android.R.drawable.ic_media_pause),
+                        "إيقاف مؤقت", PendingIntent.getActivity(c, 1102, in, FLAGS)).build());
+            }
+            nm.notify(1001, b.build());
+        } catch (Exception e) {
+        }
+    }
+
     static void showOld(Context c, String json) {
         try {
             SharedPreferences p = c.getSharedPreferences("mzk", Context.MODE_PRIVATE);

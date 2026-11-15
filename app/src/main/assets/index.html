@@ -276,6 +276,12 @@ details.wr{border:1px solid var(--ln);border-radius:12px;margin:8px 0;background
 .tmr{align-items:center;margin:8px 0 0}
 .rr{padding:6px 10px}
 .rr input[type=text]{width:100%;margin-top:4px}
+
+.tmp{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:4px 0 6px;padding:6px 8px;border:1px dashed var(--ln);border-radius:10px}
+.tmp input.hm{flex:none;width:52px;text-align:center;direction:ltr;padding:6px 4px}
+.brk{display:flex;align-items:center;gap:10px;background:var(--sf);border:1px solid var(--ln);border-radius:12px;padding:8px 12px;margin:8px 0}
+.brk span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.brk b{font-variant-numeric:tabular-nums}
 </style></head><body><main>
 <h1>My Studying Session</h1>
 <div style="display:flex;justify-content:space-between;align-items:center"><p class="sub" id="dt"></p><div class="row" style="margin:0"><button class="ch" onclick="setOpen()">⚙</button><button class="ch" onclick="ttOpen()">الجدول</button></div></div>
@@ -294,7 +300,6 @@ details.wr{border:1px solid var(--ln);border-radius:12px;margin:8px 0;background
  <div class="row"><input type="text" id="title" placeholder="المهمة" oninput="szUpdate()" onkeydown="if(event.key==='Enter')addItem()"></div>
  <div class="row" id="kwr" hidden></div>
  <div class="row"><button class="pk" id="sqb" onclick="subjSheet()">اختار المادة</button><button class="pk" id="dtb" onclick="dateSheet()" hidden>اختار تاريخ الامتحان</button></div><div id="sz"></div>
- <div class="row pat"><span class="tg">الوقت المتوقع (إجباري)</span><input type="text" id="estIn" placeholder="90" style="flex:none;width:90px;direction:ltr;text-align:center"></div>
  <div class="row"><button class="go" style="flex:1" onclick="addItem()">سجّل</button></div>
  <div class="msg" id="msg"></div>
 </div></details>
@@ -314,7 +319,7 @@ let K='study_v1',TM=false,FAKE=null,FH=null,fsSt='off',fsT=null;let S={subjects:
 const PAL=['#3b82f6','#ef4444','#16a34a','#f59e0b','#8b5cf6','#ec4899','#0d9488','#f97316'];
 function load(k){try{const r=localStorage.getItem(k);return r?JSON.parse(r):null}catch(e){return null}}
 S=load(K)||S;try{if(window.Android&&Android.loadState){const ns=Android.loadState();if(ns){const o=JSON.parse(ns);if(o&&(o.ts||0)>(S.ts||0))S=o}}}catch(e){}
-function norm(){S.subjects=S.subjects||[];S.items=S.items||[];S.log=S.log||{};S.notes=S.notes||{};S.act=S.act||{};S.miss=S.miss||[];S.pp=S.pp||[];S.al=Object.assign({on:true,after:2,hol:'06:00',gap:10,max:4,nq:3,types:['m'],lvl:1,scope:'all',pick:[],cut:20,warn:true,skip:null,hwd:1,exd:4,wn:3,qo:true,late:true,rsn:'06:10',rsnS:'06:30',rsnE:'07:10',rsnI:10,rsnOn:true,wkf:true,learn:true,rest:4},S.al||{});if(!Array.isArray(S.al.types)||!S.al.types.length)S.al.types=['m'];if(!Array.isArray(S.al.pick))S.al.pick=[];S.al.on=true;if(S.al.types.length>S.al.nq)S.al.types=S.al.types.slice(0,Math.max(1,S.al.nq));S.seen=S.seen||{};S.accu=S.accu||[];S.rsd=S.rsd||{};if(!S.kw)S.kw=[{w:'presentazione',d:7,on:true}];S.exLead=S.exLead||{};S.qpool=S.qpool||[];S.pat=S.pat||{};S.wrs=S.wrs||{};S.tms=S.tms||{};S.wkd=S.wkd||{};wkMig();S.updUrl=S.updUrl||'https://raw.githubusercontent.com/yassinsherif145-boop/mozakrati/main/app/src/main/assets/index.html';ttMig();S.items.forEach(i=>{delete i.np;delete i.nd});
+function norm(){S.subjects=S.subjects||[];S.items=S.items||[];S.log=S.log||{};S.notes=S.notes||{};S.act=S.act||{};S.miss=S.miss||[];S.pp=S.pp||[];S.al=Object.assign({on:true,after:2,hol:'06:00',gap:10,max:4,nq:3,types:['m'],lvl:1,scope:'all',pick:[],cut:20,warn:true,skip:null,hwd:1,exd:4,wn:3,qo:true,late:true,rsn:'06:10',rsnS:'06:30',rsnE:'07:10',rsnI:10,rsnOn:true,wkf:true,learn:true,rest:4},S.al||{});if(!Array.isArray(S.al.types)||!S.al.types.length)S.al.types=['m'];if(!Array.isArray(S.al.pick))S.al.pick=[];S.al.on=true;if(S.al.types.length>S.al.nq)S.al.types=S.al.types.slice(0,Math.max(1,S.al.nq));S.seen=S.seen||{};S.accu=S.accu||[];S.rsd=S.rsd||{};if(!S.kw)S.kw=[{w:'presentazione',d:7,on:true}];S.exLead=S.exLead||{};S.qpool=S.qpool||[];S.pat=S.pat||{};S.tlog=S.tlog||[];S.brl=S.brl||[];S.watch=S.watch||{apps:[],wait:30,on:true};S.run=S.run||null;S.brk=S.brk||null;S.pz=S.pz||null;S.wrs=S.wrs||{};S.tms=S.tms||{};S.wkd=S.wkd||{};wkMig();S.updUrl=S.updUrl||'https://raw.githubusercontent.com/yassinsherif145-boop/mozakrati/main/app/src/main/assets/index.html';ttMig();S.items.forEach(i=>{delete i.np;delete i.nd});
  if(!S.tt){S.tt={n:6,c:{}};S.subjects.forEach(s=>{(s.days||[]).forEach(d=>{for(let p=0;p<10;p++){if(!S.tt.c[d+'-'+p]){S.tt.c[d+'-'+p]=s.id;break}}})})}
  const T0=S.tt;T0.n=T0.n||6;T0.times=T0.times||[];T0.title=T0.title||'';T0.hours=T0.hours||'';
  if(!T0.days){const u=[...new Set(Object.keys(T0.c).map(k=>+k.split('-')[0]))];T0.days=u.length?u:[1,2,3,4,6]}
@@ -365,14 +370,14 @@ function delItem(id){S.items=S.items.filter(x=>x.id!==id);save();draw()}
 function addSub(id,el,soft){const v=el.value.trim();if(!v||el.dataset.busy)return;el.dataset.busy=1;find(id).subs.push({t:v,d:false,on:null});delete DR[el.dataset.dr];actMark();save();if(soft){nativeSync();setTimeout(softDraw,250);return}draw();setTimeout(()=>{const e=document.querySelector('[data-i="'+id+'"]');if(e)e.focus()},0)}
 function setSub(id,i,el,soft){const v=el.value.trim();if(!v||el.dataset.busy)return;el.dataset.busy=1;find(id).subs[i].t=v;delete DR[el.dataset.dr];actMark();save();if(soft){nativeSync();setTimeout(softDraw,250)}else draw()}
 function chkDone(it){const nm=it.subs.filter(x=>x.t),T0=mid(NOW()),n0=diff(prs(it.due),T0),ok=it.big?(it.subs.length&&it.subs.every(x=>x.t&&x.d)):it.type==='exam'?(nm.length&&nm.every(x=>x.d)&&!it.subs.some((q,k)=>!q.t&&n0>=2&&planned(it,k)>=T0)):(nm.length&&nm.every(x=>x.d));if(ok){it.done=ymd(NOW());tmFin(it)}}
-function togSub(id,i){const it=find(id),s=it.subs[i];s.d=!s.d;s.on=s.d?ymd(NOW()):null;if(s.c&&s.c.length)s.c.forEach(q=>{q.d=s.d;q.on=s.on});chkDone(it);actMark();save();draw()}
+function togSub(id,i){const it=find(id),s=it.subs[i];s.d=!s.d;s.on=s.d?ymd(NOW()):null;if(s.c&&s.c.length)s.c.forEach(q=>{q.d=s.d;q.on=s.on});if(s.d){tmStopFor(id,i,null);(s.c||[]).forEach((q,j)=>tmStopFor(id,i,j))}chkDone(it);actMark();save();draw()}
 function kidSync(it,s){const all=s.c.length>0&&s.c.every(x=>x.d);if(all!==!!s.d){s.d=all;s.on=all?ymd(NOW()):null;chkDone(it)}}
 function togK(id,i){const k='k'+id+':'+i;OP[k]=!OP[k];draw()}
 function addKid(id,i,el){const v=el.value.trim();if(!v)return;const it=find(id),s=it.subs[i];s.c=s.c||[];s.c.push({t:v,d:false,on:null});if(s.d){s.d=false;s.on=null}OP['k'+id+':'+i]=true;save();draw();setTimeout(()=>{const e=document.querySelector('[data-k="'+id+':'+i+'"]');if(e)e.focus()},0)}
-function togKid(id,i,j){const it=find(id),s=it.subs[i],q=s.c[j];q.d=!q.d;q.on=q.d?ymd(NOW()):null;kidSync(it,s);save();draw()}
+function togKid(id,i,j){const it=find(id),s=it.subs[i],q=s.c[j];q.d=!q.d;q.on=q.d?ymd(NOW()):null;if(q.d)tmStopFor(id,i,j);kidSync(it,s);save();draw()}
 function delKid(id,i,j){const it=find(id),s=it.subs[i];s.c.splice(j,1);if(s.c.length)kidSync(it,s);save();draw()}
 function kidsHtml(it,s,i){const k='k'+it.id+':'+i,open=OP[k]||(s.c&&s.c.length);if(!open)return'';
- return `<div class="kids">${(s.c||[]).map((q,j)=>`<div class="sb ${q.d?'d':''}"><input type="checkbox" ${q.d?'checked':''} onchange="togKid('${it.id}',${i},${j})" aria-label="خلصت"><span>${esc(q.t)}</span><button class="del" onclick="delKid('${it.id}',${i},${j})" aria-label="احذف">×</button></div>`).join('')}<div class="sb"><input type="text" data-k="${it.id}:${i}" placeholder="+ مهمة صغيرة" onkeydown="if(event.key==='Enter')addKid('${it.id}',${i},this)"></div></div>`}
+ return `<div class="kids">${(s.c||[]).map((q,j)=>`<div class="sb ${q.d?'d':''}"><input type="checkbox" ${q.d?'checked':''} onchange="togKid('${it.id}',${i},${j})" aria-label="خلصت"><span>${esc(q.t)}</span><button class="del" onclick="tmTogP('${it.id}',${i},${j})" aria-label="الوقت">⏱</button><button class="del" onclick="delKid('${it.id}',${i},${j})" aria-label="احذف">×</button></div>${tmPanel(it,q,i,j)}`).join('')}<div class="sb"><input type="text" data-k="${it.id}:${i}" placeholder="+ مهمة صغيرة" onkeydown="if(event.key==='Enter')addKid('${it.id}',${i},this)"></div></div>`}
 function delSub(id,i){const s=find(id).subs[i];if(s.a){s.t='';s.d=false;s.on=null;s.c=[]}else find(id).subs.splice(i,1);save();draw()}
 function addSubj(){const n=$('sn').value.trim();if(!n)return;S.subjects.push({id:uid(),name:n,code:$('sc').value.trim()||n[0],days:nd.slice()});nd=[];$('sn').value='';$('sc').value='';save();draw()}
 function setType(k){type=k;pd=null;pdT=false;pdE=false;sizeT=false;if(k==='exam'){size='s'}else{exDate='';kwSel=null;kwOff=false}draw()}
@@ -383,7 +388,7 @@ function delSubj(id){S.subjects=S.subjects.filter(x=>x.id!==id);Object.keys(S.tt
 
 const planned=(it,i)=>{const p=addD(prs(it.type==='hw'&&it.big?it.created:(it.start||it.show)),i),m=addD(prs(it.due),-1);return p>m?m:p};
 const acc=it=>{const T=mid(NOW()),cut=(S.al&&S.al.cut)||20;if(it.done||it.m)return 0;if(it.subs.some(s=>s.t))return it.subs.filter((s,i)=>!s.d&&s.t&&isLate(it,i,T)).length;return vis(it,T)&&(prs(it.show)<T||(prs(it.due)>T&&hr()>=cut))?1:0};
-const sr=(it,s,i,tg,nodel)=>`<div class="sb ${s.d?'d':''}"><input type="checkbox" ${s.d?'checked':''} onchange="togSub('${it.id}',${i})" aria-label="خلصت"><span class="stx" onclick="editSub('${it.id}',${i})">${esc(s.t)}</span>${tg||''}${nodel?'':`<button class="del" onclick="togK('${it.id}',${i})" aria-label="قسّم">＋</button><button class="del" onclick="delSub('${it.id}',${i})" aria-label="احذف">×</button>`}</div>${nodel?'':kidsHtml(it,s,i)}`;
+const sr=(it,s,i,tg,nodel)=>`<div class="sb ${s.d?'d':''}"><input type="checkbox" ${s.d?'checked':''} onchange="togSub('${it.id}',${i})" aria-label="خلصت"><span class="stx" onclick="editSub('${it.id}',${i})">${esc(s.t)}</span>${tg||''}${nodel?'':`<button class="del" onclick="tmTogP('${it.id}',${i},null)" aria-label="الوقت">⏱</button><button class="del" onclick="togK('${it.id}',${i})" aria-label="قسّم">＋</button><button class="del" onclick="delSub('${it.id}',${i})" aria-label="احذف">×</button>`}</div>${nodel?'':tmPanel(it,s,i,null)+kidsHtml(it,s,i)}`;
 
 const pin=(it,i,ph)=>`<div class="sb"><input type="checkbox" onchange="partDone('${it.id}',${i},this)" aria-label="خلصت"><input type="text" data-dr="${it.id}:${i}" placeholder="${ph}" oninput="partIn('${it.id}',${i},this)" onblur="partBlur(event,'${it.id}',${i},this)" onkeydown="if(event.key==='Enter')setSub('${it.id}',${i},this)"></div>`;
 function bigSubs(it){return it.subs.map((s,i)=>{const dy=DN[addD(prs(it.created),i).getDay()];return s.t&&s.d?sr(it,s,i,`<span class="tg">${dy}</span>`):s.t?sr(it,s,i,`<span class="tg">${dy}</span>`):pin(it,i,`جزء ${i+1} (${dy})`)}).join('')}
@@ -395,7 +400,7 @@ function urg(it){
  const T=mid(NOW()),n=diff(prs(it.due),T);
  let R=it.subs.filter(s=>!s.d&&(s.t||s.a)).length;if(!R)R=1;
  const cap=Math.max(0,n),slack=cap-R,a=acc(it);
- const started=it.subs.some(s=>s.d||(s.c||[]).some(q=>q.d))||(it.ac||0)>0||!!it.ts;
+ const started=it.subs.some(s=>s.d||(s.c||[]).some(q=>q.d))||(it.ac||0)>0||!!it.ts||it.subs.some(s=>(s.ac||0)>0||!!s.ts);
  let lv=0;
  if((n<=1&&!started)||slack<0)lv=2;
  else if((!started&&slack<=1)||(a>0&&slack<=2))lv=1;
@@ -769,7 +774,7 @@ const tgl=(k,on)=>`<input type="checkbox" ${on?'checked':''} onchange="setAl('${
 function toneSet(){stDraw()}
 function stTabSet(k){stTab=k;stDraw()}
 function stDraw(){const p=$('stPanel');if(!p)return;const a=S.al,T=ymd(mid(NOW())),off=a.skip===T,tom=addD(mid(NOW()),1);
- const tabs=[['t','⏰ التوقيت'],['c','🧩 التحدي'],['n','🔔 الصوت والإشعارات'],['s','📚 المذاكرة والكلمات'],['p','🧠 الأنماط'],['u','🔄 التحديثات'],['d','💾 البيانات']];
+ const tabs=[['t','⏰ التوقيت'],['c','🧩 التحدي'],['n','🔔 الصوت والإشعارات'],['s','📚 المذاكرة والكلمات'],['p','🧠 الأنماط'],['w','📱 التطبيقات'],['u','🔄 التحديثات'],['d','💾 البيانات']];
  let b='';
  if(stTab==='t'){
   b+='<div class="sd" style="margin-bottom:4px">المنبه بيرن مرة واحدة في اليوم، والشاشة بتعرض كل مهام النهاردة اللي ينطبق عليها نطاق المنبه.</div>';
@@ -796,7 +801,7 @@ function stDraw(){const p=$('stPanel');if(!p)return;const a=S.al,T=ymd(mid(NOW()
   b+=sRow('الإشعارات تختفي والمهام تتأجل الساعة','بعد الساعة دي أي جزء ما اتعملش بيتحسب متأخر.',selH('cut',[[19,'7 م'],[20,'8 م'],[21,'9 م'],[22,'10 م']],a.cut));
   if(window.Android&&Android.pickTone){let tn='';try{tn=Android.toneName()}catch(e){}b+=sRow('نغمة المنبه','الصوت بيتعلى لأقصى درجة لوحده حتى لو نزّلته أو كان مقفول.',`<button class="ch" onclick="Android.pickTone()">${esc(tn||'الافتراضية')} ✎</button>`)}
   b+='<div class="row" style="margin-top:10px"><button class="ch" onclick="setClose();showAlarm(true)">معاينة المنبه</button><button class="ch" onclick="setClose();showWarn()">معاينة تحذير الامتحانات</button></div>';
- }else if(stTab==='p'){b+=stPat(a)}else if(stTab==='s'){
+ }else if(stTab==='p'){b+=stPat(a)}else if(stTab==='w'){b+=stWatch(a)}else if(stTab==='s'){
   b+=`<h4 style="margin:14px 0 0">كلمات خاصة (زي presentazione)</h4><div class="sd">لو بدأت اسم الامتحان بالكلمة دي بتظهرلك كاختيار في verifica، وبتتحسب قبل ميعادها بالمدة اللي تحددها. تقدر تقفلها أو تغيّرها أو تضيف كلمات.</div>`;
   (S.kw||[]).forEach((k,i)=>{b+=`<div class="sr"><div class="srt"><input type="text" value="${esc(k.w)}" style="flex:1;min-width:0;direction:ltr" onchange="kwSet(${i},'w',this.value)"><select class="ch" onchange="kwSet(${i},'d',+this.value)">${[2,3,4,5,6,7,8,9,10,12,14].map(n=>`<option value="${n}" ${k.d===n?'selected':''}>${n} أيام</option>`).join('')}</select><input type="checkbox" ${k.on?'checked':''} onchange="kwSet(${i},'on',this.checked)"><button class="del" onclick="kwDel(${i})" aria-label="احذف">×</button></div></div>`});
   b+=`<div class="row" style="margin-top:8px"><input type="text" id="kwNew" placeholder="كلمة جديدة" style="flex:1;min-width:0;direction:ltr"><button class="ch" onclick="kwAdd()">＋ إضافة</button></div>`;
@@ -818,14 +823,14 @@ function stDraw(){const p=$('stPanel');if(!p)return;const a=S.al,T=ymd(mid(NOW()
   b+=sRow('وضع التجربة','بتجرب التطبيق بتاريخ وهمي من غير ما يمس بياناتك.','<button class="ch" onclick="setClose();enterTest()">🧪 تجربة</button>');
  }
  p.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:20px">⚙ الإعدادات</b><button class="go" onclick="setClose()">تم</button></div><div class="stabs">${tabs.map(([k,l])=>`<button class="ch ${stTab===k?'on':''}" onclick="stTabSet('${k}')">${l}</button>`).join('')}</div>${b}`}
-function route(){const h=(location.hash||'').replace('#','');if(h==='alarm')showAlarm();else if(h==='reason')reasonScreen([]);else if(h==='warn')showWarn();else if(h==='pend')pendScreen();else if(h==='wk')weeklyScreen()}
+function route(){const h=(location.hash||'').replace('#','');if(h==='alarm')showAlarm();else if(h==='reason')reasonScreen([]);else if(h==='warn')showWarn();else if(h==='pend')pendScreen();else if(h==='wk')weeklyScreen();else if(h==='pz')pzRoute()}
 window.addEventListener('hashchange',route);
-window.MZK={today:todayTasks,
+window.MZK={resumeT:()=>tmResume(),today:todayTasks,
  notif:()=>{const ts=todayTasks();return{title:'مهام النهاردة ('+ts.length+')',lines:ts.map(t=>'• '+t.t+(t.ty==='exam'?' — باقي '+t.n+' أيام':'')+(t.parts.length?' ← '+t.parts.join('، '):''))}},
  ring:()=>fmt12(alarmMin(ymd(mid(NOW())))),settings:()=>S.al,
- done:id=>{const it=find(id);if(it&&!it.done){it.done=ymd(NOW());save();draw()}},
+ done:id=>{const it=find(id);if(it&&!it.done){it.done=ymd(NOW());tmFin(it);save();draw()}},
  later:id=>{reasonScreen(todayTasks().filter(x=>!id||x.id===id))},
- alarm:showAlarm,warn:showWarn,show:h=>{if(h==='#alarm')showAlarm();else if(h==='#reason')reasonScreen([]);else if(h==='#warn')showWarn();else if(h==='#pend')pendScreen();else if(h==='#wk')weeklyScreen()}};
+ alarm:showAlarm,warn:showWarn,show:h=>{if(h==='#alarm')showAlarm();else if(h==='#reason')reasonScreen([]);else if(h==='#warn')showWarn();else if(h==='#pend')pendScreen();else if(h==='#wk')weeklyScreen();else if(h==='#pz')pzRoute()}};
 function alarmTasks(){const ts=todayTasks(),sc=S.al.scope||'all';
  return ts.filter(t=>sc==='all'||(sc==='exam'&&t.ty==='exam')||(sc==='hw'&&t.ty==='hw')||(sc==='pick'&&(S.al.pick||[]).includes(t.id)))}
 function togType(k){const a=S.al.types.slice(),i=a.indexOf(k);if(i>=0){if(a.length>1)a.splice(i,1)}else{if(a.length>=(S.al.nq||3)){toast('عدد الأنواع مينفعش يزيد عن عدد التحديات ('+S.al.nq+'). زوّد عدد التحديات الأول.');stDraw();return}a.push(k)}S.al.types=a;save();stDraw()}
@@ -886,7 +891,7 @@ function editDlg(t,val,ok,del){const o=document.createElement('div');o.id='edOv'
  document.body.appendChild(o);$('edOk').onclick=()=>{const v=$('edIn').value.trim();if(!v)return;o.remove();ok(v)};if(del)$('edDel').onclick=()=>{o.remove();del()}}
 function editSub(id,i){const it=find(id),s=it&&it.subs[i];if(!s)return;editDlg('تعديل الجزء',s.t,v=>{s.t=v;save();draw()},()=>delSub(id,i))}
 function editItem(id){const it=find(id);if(!it)return;editDlg('تعديل المهمة',it.title,v=>{it.title=v;save();draw()},()=>delItem(id))}
-const APP_VER=7;
+const APP_VER=8;
 function updApply(html){const m=/APP_VER\s*=\s*(\d+)/.exec(html),v=m?+m[1]:0,sm=/<script>([\s\S]*)<\/script>/.exec(html);
  try{if(!sm||!v)throw 0;new Function(sm[1])}catch(e){toast('الملف ده مش تحديث صالح');return 0}
  return v}
@@ -958,7 +963,7 @@ function scheduleList(){const out={rings:[],cuts:[],rsn:[],wk:[]},now=Date.now()
   if(day.getDay()===1){if(S.al.wkf!==false&&!(d===0&&!wkNeed()))wins(day).forEach(t=>{if(t>now)out.wk.push(t)})}
   else if(S.al.rsnOn!==false&&!(d===0&&!pendList().length))wins(day).forEach(t=>{if(t>now)out.rsn.push(t)})}
  return out}
-function nativeSync(){try{if(window.Android&&!TM){if(Android.setTasks)Android.setTasks(JSON.stringify(notifPayload()));if(Android.setSchedule)Android.setSchedule(JSON.stringify(scheduleList()))}}catch(e){}}
+function nativeSync(){try{if(window.Android&&!TM){if(Android.setTasks)Android.setTasks(JSON.stringify(notifPayload()));if(Android.setSchedule)Android.setSchedule(JSON.stringify(scheduleList()));tmSync();wtSync()}}catch(e){}}
 function draw(){
  const T=mid(NOW()),ty=ymd(T);sweep(T);
  $('dt').textContent=DN[T.getDay()]+' '+fd(ty);
@@ -975,11 +980,11 @@ function draw(){
  $('up').innerHTML=far.map(i=>card(i,true)).join('')||'<div class="tg">فاضي</div>';
  $('upl').textContent='القادم ('+far.length+')';
  $('types').innerHTML=[['hw','واجب (compito)'],['exam','امتحان (verifica)']].map(([k,v])=>`<button class="ch ${type===k?'on':''}" onclick="setType('${k}')">${v}</button>`).join('');
- $('bk').innerHTML='';
+ $('bk').innerHTML=runBanner()+brkBanner();
  $('tm').innerHTML=TM?`<div style="background:#7c3aed;color:#fff;border-radius:10px;padding:8px 12px;margin:8px 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b>🧪 وضع التجربة</b><span>التاريخ:</span><input type="date" value="${FAKE}" onchange="fakeSet(this.value)" style="flex:none"><button class="ch" style="background:#fff;color:#4c1d95" onclick="fakeNext()">+ يوم</button><button class="ch" style="background:#fff;color:#4c1d95" onclick="exitTest()">خروج</button></div>`:'';
  $('sqb').hidden=!(type==='hw'||(type==='exam'&&Object.keys(S.exLead||{}).length>0));$('dtb').hidden=type!=='exam';dateBtn();subjBtn();
  if(!TM&&S.al.on&&S.al.warn!==false&&hr()>=S.al.cut&&S.wd!==ty&&examsWeek().some(i=>acc(i)>0)){S.wd=ty;save();showWarn()}
- szUpdate();calRender();place();wkRender();moRender();yrRender();alInfo();lsPop();nativeSync();drRestore();pendCheck();wkCheck();
+ szUpdate();calRender();place();wkRender();moRender();yrRender();alInfo();lsPop();nativeSync();drRestore();pendCheck();wkCheck();pzCheck();
 }
 const RD=()=>(S.al&&S.al.rest!=null)?S.al.rest:4;
 /* ===================== helpers ===================== */
@@ -1023,7 +1028,6 @@ function szUpdate(){kwUpdate();const el=$('sz');if(!el)return;
 function pdAdj(d){pdT=true;pd=Math.min(curMax,Math.max(curMin,curD+d));szUpdate()}
 function addItem(){
  const{sb,t}=pick();if(!t)return msg('اكتب اسم المهمة');
- const est=parseEst(($('estIn')||{}).value);if(est<1)return msg('اكتب الوقت المتوقع (مثال 45 أو 1:30)');
  szUpdate();
  const hwd=S.al.hwd||1;let exd=curD||S.al.exd||4;
  let due;
@@ -1034,20 +1038,12 @@ function addItem(){
  const v=ex?exd:(big?k:0),kwW=(type==='exam'&&kwSel)?kwSel.w:null,sid=sb?sb.id:null,ty0=type;
  const go=(learn)=>{
   if(learn&&S.al.learn!==false)patLearn(ty0,t,sid,kwW,v);
-  S.items.push({id:uid(),type:ty0,kw:kwW,sid,title:t,est,due:ymd(due),show:ymd(addD(due,ex?-exd:-hwd)),start:st,created:ymd(NOW()),big,dropped:false,done:null,
+  S.items.push({id:uid(),type:ty0,kw:kwW,sid,title:t,due:ymd(due),show:ymd(addD(due,ex?-exd:-hwd)),start:st,created:ymd(NOW()),big,dropped:false,done:null,
    subs:Array.from({length:k},()=>({t:'',d:false,on:null,a:1}))});
-  size='s';pd=null;pdT=false;pdE=false;sizeT=false;actMark();save();{const at=$('addTab');if(at)at.open=false}$('title').value='';{const e=$('estIn');if(e)e.value=''}exDate='';dateBtn();subj=null;subjBtn();kwSel=null;kwOff=false;msg('');draw()};
+  size='s';pd=null;pdT=false;pdE=false;sizeT=false;actMark();save();{const at=$('addTab');if(at)at.open=false}$('title').value='';exDate='';dateBtn();subj=null;subjBtn();kwSel=null;kwOff=false;msg('');draw()};
  const f=S.al.learn===false?null:patFor(ty0,t,sid,kwW);
  if(f&&f.p.stable&&f.p.days!==v){ask2('غيّرت عدد الأيام (كان '+patLbl(ty0,f.p.days)+' ودلوقتي '+patLbl(ty0,v)+'). تثبّت النمط الجديد؟','ثبّت',()=>{patLearn(ty0,t,sid,kwW,v);patFix(f.key,v);go(false)},'المرة دي بس',()=>go(false));return}
  go(true)}
-/* ===================== estimate + timer ===================== */
-const mmFmt=ms=>Math.floor(ms/60000)+' د';
-function tmMs(o){return (o.ac||0)+(o.ts?Date.now()-o.ts:0)}
-function tmTog(id){const o=find(id);if(!o)return;if(o.ts){o.ac=(o.ac||0)+Date.now()-o.ts;o.ts=null}else{S.items.forEach(x=>{if(x.ts){x.ac=(x.ac||0)+Date.now()-x.ts;x.ts=null}});o.ts=Date.now()}save();draw()}
-function tmSet(id,v){const o=find(id);if(!o)return;const m=parseEst(v);if(m>0){o.est=Math.min(m,1439);save()}}
-function tmFin(o){if(o.ts){o.ac=(o.ac||0)+Date.now()-o.ts;o.ts=null}const m=Math.round((o.ac||0)/60000);if(m>0){o.am=m;const k=String(o.title).trim().toLowerCase();S.tms=S.tms||{};(S.tms[k]=S.tms[k]||[]).push({d:ymd(NOW()),m,e:o.est||0});if(S.tms[k].length>30)S.tms[k].shift()}o.ac=0}
-function tmHtml(o){const run=!!o.ts,ms=tmMs(o);return `<div class="row tmr"><span class="tg">المتوقع</span><input type="text" style="flex:none;width:72px;direction:ltr;text-align:center" value="${estVal(o.est)}" placeholder="45 أو 1:30" oninput="tmSet('${o.id}',this.value)"><button class="ch" onclick="tmTog('${o.id}')">${run?'⏸ إيقاف':'▶ ابدأ'}</button>${ms>0||run?`<span class="tg" data-tm="${o.id}">${mmFmt(ms)}</span>`:''}</div>`}
-setInterval(()=>{document.querySelectorAll('[data-tm]').forEach(e=>{const o=find(e.dataset.tm);if(o)e.textContent=mmFmt(tmMs(o))})},1000);
 /* ===================== reasons: two separate places ===================== */
 function rsDays(){const T=mid(NOW()),w=T.getDay();if(w===1)return[];const o=[addD(T,-1)];if(w===2)o.unshift(addD(T,-2));return o}
 function pendList(){const L=[];rsDays().forEach(D=>{pendFor(D).forEach(x=>L.push(Object.assign({yd:ymd(D)},x)))});return L}
@@ -1077,8 +1073,6 @@ function wkFin(k){S.wkd[k]=true;save();closeWkS();nat('reasoned');draw()}
 function wkLater(){S.wkl=ymd(NOW());save();closeWkS();nat('reasoned')}
 function wkCheck(){if(TM||location.hash||$('wkOv')||$('rsOv')||S.al.wkf===false||S.wkl===ymd(NOW()))return;if(nowMin()>=parseClock(S.al.rsnS||'06:30')&&wkNeed())weeklyScreen()}
 function tmAvg(a,b){const out=[];Object.keys(S.tms||{}).forEach(k=>{const r=S.tms[k].filter(x=>x.d>=a&&x.d<=b);if(!r.length)return;const avg=Math.round(r.reduce((s,x)=>s+x.m,0)/r.length),es=r.map(x=>x.e).filter(Boolean);out.push({k,avg,n:r.length,e:es.length?es[es.length-1]:0})});return out}
-function wkExtra(k,wend){const av=tmAvg(k,wend);
- return av.length?dt('av'+k,'⏳ متوسط وقت المهام',av.map(a=>`<div class="li"><div class="lt">${esc(a.k)}</div><div class="ls">المتوسط ${a.avg} د · ${a.n} مرة${a.e?' · المتوقع '+a.e+' د':''}</div></div>`).join(''),'wc'):''}
 function moStab(m){let any=false;const rows=[];Object.keys(S.tms||{}).forEach(k=>{const r=S.tms[k].filter(x=>x.d.slice(0,7)===m).map(x=>x.m);if(!r.length)return;any=true;if(r.length<3)return;const mean=r.reduce((a,b)=>a+b,0)/r.length,sd=Math.sqrt(r.reduce((a,b)=>a+(b-mean)*(b-mean),0)/r.length);rows.push({k,mean:Math.round(mean),st:sd/mean<0.25,n:r.length})});
  if(!any)return'';return '<h4 style="margin:12px 0 4px">ثبات وقتك</h4>'+(rows.length?rows.map(r=>`<div class="li"><div class="lt">${esc(r.k)}</div><div class="ls">${r.st?'ثابت':'متذبذب'} · المتوسط ${r.mean} د · ${r.n} مرة</div></div>`).join(''):'<div class="tg">غير كافٍ لسه (محتاج 3 مرات)</div>')}
 /* السبب بيتكتب جوه كل صف مباشرة */
@@ -1102,6 +1096,108 @@ function stRsn(a){let b='';
  b+=sRow('كل قد إيه','',selH('rsnI',[[5,'5 دقايق'],[10,'10 دقايق'],[15,'15 دقيقة'],[20,'20 دقيقة']],a.rsnI||10));
  b+=sRow('يوم الراحة','بيطلع من النظام (من غير منبه ولا تراكم).',selH('rest',[[4,'الخميس'],[5,'الجمعة'],[6,'السبت'],[0,'الأحد'],[-1,'مفيش']],a.rest!=null?a.rest:4));
  return b}
+
+/* ===================== estimate + timers per part ===================== */
+const hm=m=>{m=Math.round(m||0);const h=Math.floor(m/60),r=m%60;return h?(h+'س'+(r?' '+r+'د':'')):(r+'د')};
+const fmtMS=ms=>{const s=Math.max(0,Math.floor(ms/1000)),h=Math.floor(s/3600),m=Math.floor(s%3600/60),r=s%60;return (h?h+':'+String(m).padStart(2,'0'):m)+':'+String(r).padStart(2,'0')};
+const hr12=h=>{const x=h%12===0?12:h%12;return x+(h<12?' ص':' م')};
+const clk=ms=>{const d=new window.Date(ms),h=d.getHours(),m=d.getMinutes();return (h%12===0?12:h%12)+':'+String(m).padStart(2,'0')+(h<12?' ص':' م')};
+const kpath=(id,i,j)=>id+'|'+(i==null?'':i)+'|'+(j==null?'':j);
+function tmGet(id,i,j){const it=find(id);if(!it)return null;if(i==null)return it;const s=it.subs[i];if(!s)return null;if(j==null)return s;return (s.c||[])[j]||null}
+function tmElapsed(o){return (o.ac||0)+(o.ts?Date.now()-o.ts:0)}
+function tmPartMs(s){let t=tmElapsed(s);(s.c||[]).forEach(q=>{t+=tmElapsed(q)});return t}
+function tmPartEst(s){return s.est||(s.c||[]).reduce((a,q)=>a+(q.est||0),0)}
+function tmTaskMs(it){let t=tmElapsed(it);it.subs.forEach(s=>{t+=tmPartMs(s)});return t}
+const isRun=(id,i,j)=>!!S.run&&S.run.id===id&&S.run.i===(i==null?null:i)&&S.run.j===(j==null?null:j);
+function tmTogP(id,i,j){const k='t'+kpath(id,i,j);OP[k]=!OP[k];draw()}
+function tmEst(id,i,j,box){const o=tmGet(id,i,j);if(!o)return;const q=box.querySelectorAll('input.hm');o.est=Math.min(1439,(Math.max(0,+q[0].value||0))*60+Math.max(0,+q[1].value||0));save()}
+function tmPanel(it,o,i,j,force){const p=kpath(it.id,i,j),run=isRun(it.id,i,j);if(!force&&!OP['t'+p]&&!run)return'';
+ const h=Math.floor((o.est||0)/60),m=(o.est||0)%60,a=`'${it.id}',${i==null?'null':i},${j==null?'null':j}`;
+ return `<div class="tmp"><span class="tg">المتوقع</span><input type="number" min="0" max="23" inputmode="numeric" class="hm" value="${h||''}" placeholder="0" oninput="tmEst(${a},this.parentNode)"><span class="tg">س</span><input type="number" min="0" max="59" inputmode="numeric" class="hm" value="${m||''}" placeholder="0" oninput="tmEst(${a},this.parentNode)"><span class="tg">د</span>${run?`<button class="ch" onclick="tmPause()">⏸ إيقاف</button>`:`<button class="ch" onclick="tmStart(${a})">▶ ابدأ</button>`}<span class="tg" data-tm="${esc(p)}">${fmtMS(tmElapsed(o))}</span></div>`}
+function tmHtml(it){if(!it.subs.length)return tmPanel(it,it,null,null,true);
+ const h=Math.floor((it.est||0)/60),m=(it.est||0)%60,t=tmTaskMs(it),a=`'${it.id}',null,null`;
+ return `<div class="tmp"><span class="tg">وقت المهمة كلها (اختياري)</span><input type="number" min="0" max="23" inputmode="numeric" class="hm" value="${h||''}" placeholder="0" oninput="tmEst(${a},this.parentNode)"><span class="tg">س</span><input type="number" min="0" max="59" inputmode="numeric" class="hm" value="${m||''}" placeholder="0" oninput="tmEst(${a},this.parentNode)"><span class="tg">د</span>${t>0?`<span class="tg">فعلي ${hm(t/60000)}</span>`:''}</div>`}
+function tmStart(id,i,j){const o=tmGet(id,i,j);if(!o)return;
+ if(!(o.est>0)){toast('اكتب الوقت المتوقع الأول');OP['t'+kpath(id,i,j)]=true;draw();return}
+ if(S.pz){pzShow();return}
+ if(S.brk)tmEndBreak();
+ if(S.run)tmPauseSilent();
+ o.ts=Date.now();S.run={id,i:i==null?null:i,j:j==null?null:j};save();tmSync();draw()}
+function tmPauseSilent(){const r=S.run;if(!r)return;const o=tmGet(r.id,r.i,r.j);if(o&&o.ts){o.ac=(o.ac||0)+Date.now()-o.ts;o.ts=null}S.run=null}
+function tmPause(){const r=S.run;if(!r)return;tmPauseSilent();S.pz={id:r.id,i:r.i,j:r.j};save();tmSync();pzShow();draw()}
+function tmEndBreak(){const b=S.brk;if(!b)return;const it=find(b.id),o=tmGet(b.id,b.i,b.j);
+ S.brl=S.brl||[];S.brl.push({d:ymd(NOW()),what:b.what,ms:Math.max(0,Date.now()-b.t0),task:it?it.title:'',part:(o&&o!==it&&o.t)?o.t:''});if(S.brl.length>400)S.brl.shift();S.brk=null}
+function tmResume(){const b=S.brk;if(!b)return;const id=b.id,i=b.i,j=b.j;tmEndBreak();tmStart(id,i,j)}
+function tmStopFor(id,i,j){const o=tmGet(id,i,j);if(o&&o.ts){o.ac=(o.ac||0)+Date.now()-o.ts;o.ts=null}
+ if(S.run&&S.run.id===id&&S.run.i===(i==null?null:i)&&S.run.j===(j==null?null:j))S.run=null;
+ if(S.pz&&S.pz.id===id&&S.pz.i===(i==null?null:i)&&S.pz.j===(j==null?null:j)){S.pz=null;const e=$('pzOv');if(e)e.remove()}
+ if(S.brk&&S.brk.id===id&&S.brk.i===(i==null?null:i)&&S.brk.j===(j==null?null:j))tmEndBreak()}
+function tmFin(it){tmStopFor(it.id,null,null);it.subs.forEach((s,i)=>{tmStopFor(it.id,i,null);(s.c||[]).forEach((q,j)=>tmStopFor(it.id,i,j))});
+ const est=it.est||it.subs.reduce((a,s)=>a+tmPartEst(s),0),act=Math.round(tmTaskMs(it)/60000);
+ S.tms=S.tms||{};
+ if(act>0||est>0){S.tlog=(S.tlog||[]).filter(x=>x.id!==it.id);S.tlog.push({id:it.id,d:ymd(NOW()),title:it.title,sub:(it.sid&&sname(it.sid))?sname(it.sid):'',est,act,parts:it.subs.filter(s=>s.t).map(s=>({t:s.t,est:tmPartEst(s),act:Math.round(tmPartMs(s)/60000),kids:(s.c||[]).map(q=>({t:q.t,est:q.est||0,act:Math.round(tmElapsed(q)/60000)}))}))});if(S.tlog.length>200)S.tlog.shift()}
+ it.subs.forEach(s=>{const m=Math.round(tmPartMs(s)/60000);if(s.t&&m>0){const k=String(s.t).trim().toLowerCase();(S.tms[k]=S.tms[k]||[]).push({d:ymd(NOW()),m,e:tmPartEst(s)});if(S.tms[k].length>30)S.tms[k].shift()}});
+ if(!it.subs.length){const m=Math.round(tmElapsed(it)/60000);if(m>0){const k=String(it.title).trim().toLowerCase();(S.tms[k]=S.tms[k]||[]).push({d:ymd(NOW()),m,e:it.est||0})}}}
+/* الشاشة الإجبارية بعد الإيقاف المؤقت */
+let pzI=null;
+function pzShow(){if($('pzOv'))return;const o=document.createElement('div');o.id='pzOv';o.style.cssText='position:fixed;inset:0;z-index:98;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:16px';
+ o.innerHTML=`<div style="background:var(--sf);color:var(--tx);border-radius:16px;padding:18px;max-width:420px;width:100%"><div style="font-size:22px;font-weight:800;margin-bottom:10px">هتعمل إيه؟</div><textarea id="pzIn" rows="3" placeholder="اكتب هتعمل إيه" style="width:100%;font-size:18px;padding:10px;border-radius:10px" oninput="pzChk()"></textarea><button id="pzBtn" class="go" style="width:100%;margin-top:10px;font-size:18px;padding:12px" onclick="pzOk()" disabled>تم</button></div>`;
+ document.body.appendChild(o);try{Android.speak('هتعمل إيه')}catch(e){}clearInterval(pzI);pzI=setInterval(()=>{if(!$('pzOv')){clearInterval(pzI);return}try{Android.speak('هتعمل إيه')}catch(e){}},25000)}
+function pzChk(){const b=$('pzBtn');if(b)b.disabled=($('pzIn').value||'').trim().length<2}
+function pzOk(){const v=($('pzIn').value||'').trim();if(v.length<2||!S.pz)return;S.brk={id:S.pz.id,i:S.pz.i,j:S.pz.j,what:v,t0:Date.now()};S.pz=null;save();const o=$('pzOv');if(o)o.remove();clearInterval(pzI);tmSync();if(location.hash==='#pz')nat('closeui');draw()}
+function pzCheck(){if(TM)return;if(S.pz&&!$('pzOv'))pzShow()}
+function pzRoute(){if(S.run)tmPause();else pzCheck()}
+function tmSync(){try{if(!window.Android||!Android.setTimer)return;
+ if(S.run){const o=tmGet(S.run.id,S.run.i,S.run.j),it=find(S.run.id);Android.setTimer(JSON.stringify({k:'task',l:(it?it.title:'')+((o&&o!==it&&o.t)?' — '+o.t:''),s:o?(Date.now()-tmElapsed(o)):Date.now()}))}
+ else if(S.brk)Android.setTimer(JSON.stringify({k:'break',l:S.brk.what,s:S.brk.t0}));
+ else Android.setTimer('')}catch(e){}}
+function runBanner(){const r=S.run;if(!r)return'';const o=tmGet(r.id,r.i,r.j),it=find(r.id);if(!o||!it)return'';return `<div class="brk"><span>شغال: ${esc(it.title)}${o!==it&&o.t?' — '+esc(o.t):''}</span><b id="rnT">${fmtMS(tmElapsed(o))}</b><button class="ch" onclick="tmPause()">⏸ إيقاف</button></div>`}
+function brkBanner(){const b=S.brk;if(!b)return'';return `<div class="brk"><span>استراحة: ${esc(b.what)}</span><b id="bkT">${fmtMS(Date.now()-b.t0)}</b><button class="ch" onclick="tmResume()">استكمال</button></div>`}
+setInterval(()=>{document.querySelectorAll('[data-tm]').forEach(e=>{const p=e.dataset.tm.split('|'),o=tmGet(p[0],p[1]===''?null:+p[1],p[2]===''?null:+p[2]);if(o)e.textContent=fmtMS(tmElapsed(o))});
+ const b=S.brk,e=$('bkT');if(b&&e)e.textContent=fmtMS(Date.now()-b.t0);const r=S.run,e2=$('rnT');if(r&&e2){const o=tmGet(r.id,r.i,r.j);if(o)e2.textContent=fmtMS(tmElapsed(o))}},1000);
+/* ===================== weekly: times, breaks, apps ===================== */
+function wkTime(k,wend){let h='';const L=(S.tlog||[]).filter(x=>x.d>=k&&x.d<=wend);
+ if(L.length)h+=dt('tl'+k,'⏳ وقت المهام (متوقع / فعلي)',L.map(x=>`<div class="li"><div class="lt">${esc(x.title)}${x.sub?' ('+esc(x.sub)+')':''}</div><div class="ls">متوقع ${x.est?hm(x.est):'—'} · فعلي ${hm(x.act)}${x.est&&x.act>x.est?' · زاد '+hm(x.act-x.est):''}</div>${x.parts.map(p=>`<div class="rn">${esc(p.t)}: متوقع ${p.est?hm(p.est):'—'} · فعلي ${hm(p.act)}</div>`+(p.kids||[]).map(q=>`<div class="rn" style="margin-inline-start:14px">↳ ${esc(q.t)}: متوقع ${q.est?hm(q.est):'—'} · فعلي ${hm(q.act)}</div>`).join('')).join('')}</div>`).join(''),'wc');
+ const B=(S.brl||[]).filter(x=>x.d>=k&&x.d<=wend);
+ if(B.length){const g={};let tot=0;B.forEach(x=>{const n=String(x.what).trim();(g[n]=g[n]||{n:0,ms:0});g[n].n++;g[n].ms+=x.ms;tot+=x.ms});
+  const ks=Object.keys(g).sort((a,b)=>g[b].ms-g[a].ms);
+  h+=dt('bl'+k,'☕ لما وقفت المذاكرة',`<div class="wcm">المجموع ${hm(tot/60000)} · ${B.length} مرة</div>`+ks.map(n=>`<div class="li"><div class="lt">${esc(n)}</div><div class="ls">${hm(g[n].ms/60000)} · ${g[n].n} مرة</div></div>`).join(''),'wc')}
+ return h}
+let UD=null,UDt=0;
+function usageData(){if(!window.Android||!Android.usageData)return null;if(UD&&Date.now()-UDt<4000)return UD;try{UD=JSON.parse(Android.usageData()||'{}');UDt=Date.now()}catch(e){UD=null}return UD}
+function wkApps(k,wend){const d=usageData();if(!d||(!d.u&&!d.c))return'';
+ const days=[];for(let i=0;i<7;i++)days.push(ymd(addD(prs(k),i)));
+ const sel=OP['au'+k]||'',use=sel?[sel]:days,nm=p=>(d.n||{})[p]||p,tot={};
+ use.forEach(dy=>{const o=(d.u||{})[dy]||{};Object.keys(o).forEach(p=>{tot[p]=(tot[p]||0)+o[p]})});
+ const ps=Object.keys(tot).sort((a,b)=>tot[b]-tot[a]),sum=ps.reduce((s,p)=>s+tot[p],0),hrs=new Array(24).fill(0);
+ use.forEach(dy=>{((d.h||{})[dy]||[]).forEach((v,i)=>{hrs[i]+=v})});let pk=0;hrs.forEach((v,i)=>{if(v>hrs[pk])pk=i});
+ const tabs=`<div class="row" style="flex-wrap:wrap"><button class="ch ${!sel?'on':''}" onclick="OP['au${k}']='';draw()">الأسبوع</button>${days.map((dy,i)=>`<button class="ch ${sel===dy?'on':''}" onclick="OP['au${k}']='${dy}';draw()">${FD[i]}</button>`).join('')}</div>`;
+ const rows=ps.length?ps.map(p=>`<div class="li"><div class="lt">${esc(nm(p))}</div><div class="ls">${hm(tot[p]/60000)} · ${Math.round(tot[p]/sum*100)}%</div></div>`).join(''):'<div class="tg">مفيش استخدام متسجل</div>';
+ const peak=hrs[pk]>0?`<div class="wcm">أكتر وقت: <b>${hr12(pk)}</b> · ${hm(hrs[pk]/60000)}</div>`:'';
+ const cs=(d.c||[]).filter(c=>use.indexOf(ymd(new window.Date(c.id)))>=0),over=cs.reduce((s,c)=>s+(c.over||0),0);
+ const crow=cs.map(c=>`<div class="li"><div class="lt">${esc(c.w)}</div><div class="ls">${esc(c.n)} · وقفت الساعة ${clk(c.u)} · قعدت ${hm((c.use||0)/60000)}${(c.over||0)>60000?' · زودت '+hm(c.over/60000):' · التزمت'}</div></div>`).join('');
+ return dt('ap'+k,'📱 التطبيقات',tabs+peak+rows+(cs.length?`<h4 style="margin:10px 0 4px">إجاباتي والتزامي${over>60000?' · زودت '+hm(over/60000):''}</h4>`+crow:''),'wc')}
+function wkExtra(k,wend){const av=tmAvg(k,wend);
+ return wkTime(k,wend)+wkApps(k,wend)+(av.length?dt('av'+k,'⌛ متوسط وقت الأجزاء',av.map(a=>`<div class="li"><div class="lt">${esc(a.k)}</div><div class="ls">المتوسط ${a.avg} د · ${a.n} مرة${a.e?' · المتوقع '+a.e+' د':''}</div></div>`).join(''),'wc'):'')}
+/* ===================== settings: apps tracking ===================== */
+let APPS=null,appQ='';
+function appsLoad(){if(APPS||!window.Android||!Android.appsList)return;try{APPS=JSON.parse(Android.appsList()||'[]')}catch(e){APPS=[]}}
+function wtSync(){try{if(!window.Android||!Android.setTracked)return;const w=S.watch||{};Android.setTracked(JSON.stringify({a:w.on===false?[]:(w.apps||[]),w:w.wait||30}))}catch(e){}}
+function wSet(k,v){S.watch=S.watch||{apps:[],wait:30,on:true};S.watch[k]=v;save();wtSync();stDraw()}
+function wApp(p,on){const w=S.watch=S.watch||{apps:[],wait:30,on:true},a=w.apps||(w.apps=[]),i=a.indexOf(p);if(on&&i<0)a.push(p);if(!on&&i>=0)a.splice(i,1);save();wtSync()}
+function wList(){const e=$('wList');if(!e)return;const sel=(S.watch&&S.watch.apps)||[],q=appQ.trim().toLowerCase();
+ const L=(APPS||[]).filter(a=>!q||a.n.toLowerCase().indexOf(q)>=0).sort((x,y)=>(sel.indexOf(y.p)>=0)-(sel.indexOf(x.p)>=0)||x.n.localeCompare(y.n));
+ e.innerHTML=L.map(a=>`<label style="display:flex;gap:10px;align-items:center;padding:6px 0"><input type="checkbox" ${sel.indexOf(a.p)>=0?'checked':''} onchange="wApp('${esc(a.p)}',this.checked)"><span>${esc(a.n)}</span></label>`).join('')||'<div class="tg">لا يوجد</div>'}
+function stWatch(a){const w=S.watch=S.watch||{apps:[],wait:30,on:true};
+ if(!window.Android||!Android.watchStatus)return '<div class="sd">الميزة دي محتاجة تحديث الـ APK.</div>';
+ let st={};try{st=JSON.parse(Android.watchStatus())}catch(e){}
+ let b=sRow('تتبع التطبيقات','بيسألك بتعمل إيه أول ما تدخل أي تطبيق من اللي تختارهم.',`<input type="checkbox" ${w.on!==false?'checked':''} onchange="wSet('on',this.checked)">`);
+ b+=sRow('إذن الوصول لاستخدام التطبيقات',st.usage?'مفعّل':'لازم تفعّله',st.usage?'<span class="tg">✓</span>':'<button class="ch" onclick="Android.openUsageSettings()">تفعيل</button>');
+ b+=sRow('إذن الظهور فوق التطبيقات',st.overlay?'مفعّل':'لازم تفعّله',st.overlay?'<span class="tg">✓</span>':'<button class="ch" onclick="Android.openOverlaySettings()">تفعيل</button>');
+ b+=sRow('الانتظار قبل ما تحدد وقت جديد','بالثواني، لما تحدد جلسة تانية في نفس التطبيق.',`<select class="ch" onchange="wSet('wait',+this.value)">${[10,20,30,45,60].map(n=>`<option value="${n}" ${(w.wait||30)===n?'selected':''}>${n}</option>`).join('')}</select>`);
+ appsLoad();
+ b+=`<h4 style="margin:12px 0 4px">التطبيقات اللي بتتتبع</h4><input type="text" placeholder="بحث" style="width:100%" oninput="appQ=this.value;wList()"><div id="wList"></div>`;
+ setTimeout(wList,0);return b}
 
 norm();
 draw();

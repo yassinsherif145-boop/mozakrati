@@ -6,6 +6,18 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.webkit.JavascriptInterface;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.provider.Settings;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.io.File;
 import java.io.FileOutputStream;
 
@@ -126,6 +138,103 @@ public class Bridge {
             return f.getAbsolutePath();
         } catch (Exception e) {
             return "فشل: " + e.getMessage();
+        }
+    }
+
+    @JavascriptInterface
+    public void speak(String t) {
+        Speak.say(c, t);
+    }
+
+    @JavascriptInterface
+    public void setTimer(String json) {
+        Notifs.timer(c, json);
+    }
+
+    @JavascriptInterface
+    public String watchStatus() {
+        try {
+            return "{\"usage\":" + AppWatch.hasUsage(c) + ",\"overlay\":" + Settings.canDrawOverlays(c) + "}";
+        } catch (Exception e) {
+            return "{}";
+        }
+    }
+
+    @JavascriptInterface
+    public void openUsageSettings() {
+        try {
+            Intent i = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
+            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            c.startActivity(i);
+        } catch (Exception e) {
+        }
+    }
+
+    @JavascriptInterface
+    public void openOverlaySettings() {
+        try {
+            Intent i = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + c.getPackageName()));
+            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            c.startActivity(i);
+        } catch (Exception e) {
+        }
+    }
+
+    @JavascriptInterface
+    public String appsList() {
+        try {
+            PackageManager pm = c.getPackageManager();
+            Intent q = new Intent(Intent.ACTION_MAIN);
+            q.addCategory(Intent.CATEGORY_LAUNCHER);
+            List<ResolveInfo> l = pm.queryIntentActivities(q, 0);
+            JSONArray a = new JSONArray();
+            Set<String> seen = new HashSet<String>();
+            for (ResolveInfo r : l) {
+                String p = r.activityInfo.packageName;
+                if (p.equals(c.getPackageName()) || seen.contains(p)) continue;
+                seen.add(p);
+                JSONObject o = new JSONObject();
+                o.put("p", p);
+                o.put("n", r.loadLabel(pm).toString());
+                a.put(o);
+            }
+            return a.toString();
+        } catch (Exception e) {
+            return "[]";
+        }
+    }
+
+    @JavascriptInterface
+    public void setTracked(String json) {
+        try {
+            JSONObject o = new JSONObject(json);
+            JSONArray a = o.optJSONArray("a");
+            StringBuilder sb = new StringBuilder();
+            if (a != null) {
+                for (int k = 0; k < a.length(); k++) {
+                    if (sb.length() > 0) sb.append(",");
+                    sb.append(a.optString(k));
+                }
+            }
+            int w = o.optInt("w", 30);
+            SharedPreferences s = c.getSharedPreferences("watch", Context.MODE_PRIVATE);
+            boolean changed = !sb.toString().equals(s.getString("tracked", "")) || w != s.getInt("wait", 30);
+            s.edit().putString("tracked", sb.toString()).putInt("wait", w).apply();
+            if (changed || (!AppWatch.running && sb.length() > 0)) {
+                AppWatch.ensure(c);
+            }
+        } catch (Exception e) {
+        }
+    }
+
+    @JavascriptInterface
+    public String usageData() {
+        try {
+            SharedPreferences s = c.getSharedPreferences("watch", Context.MODE_PRIVATE);
+            return "{\"u\":" + s.getString("usage", "{}") + ",\"h\":" + s.getString("hours", "{}")
+                    + ",\"n\":" + s.getString("names", "{}") + ",\"c\":" + s.getString("commits", "[]") + "}";
+        } catch (Exception e) {
+            return "{}";
         }
     }
 }
