@@ -51,12 +51,9 @@
             android:excludeFromRecents="true"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 
-        <activity
-            android:name=".CheckActivity"
-            android:exported="false"
-            android:excludeFromRecents="true"
-            android:launchMode="singleTop"
-            android:theme="@android:style/Theme.Material.NoActionBar" />
+        <receiver
+            android:name=".TimerReceiver"
+            android:exported="false" />
 
         <service
             android:name=".AlarmService"

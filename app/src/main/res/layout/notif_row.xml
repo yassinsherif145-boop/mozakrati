@@ -2,50 +2,31 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:gravity="center_vertical"
     android:layoutDirection="rtl"
     android:orientation="horizontal"
-    android:paddingTop="3dp"
-    android:paddingBottom="3dp">
+    android:paddingTop="4dp"
+    android:paddingBottom="4dp">
 
-    <ImageView
-        android:id="@+id/ic"
-        android:layout_width="18dp"
-        android:layout_height="18dp"
-        android:layout_marginTop="2dp"
-        android:layout_marginEnd="8dp" />
-
-    <LinearLayout
+    <TextView
+        android:id="@+id/rt"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:orientation="vertical">
+        android:ellipsize="end"
+        android:maxLines="2"
+        android:textAlignment="viewStart"
+        android:textColor="#FF212121"
+        android:textDirection="rtl"
+        android:textSize="17sp"
+        android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/rt"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textAlignment="viewStart"
-            android:textColor="#FF212121"
-            android:textDirection="rtl"
-            android:textSize="14sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/rm"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textAlignment="viewStart"
-            android:textColor="#FF607D8B"
-            android:textDirection="rtl"
-            android:textSize="11sp" />
-
-        <TextView
-            android:id="@+id/rp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textAlignment="viewStart"
-            android:textColor="#FF455A64"
-            android:textDirection="rtl"
-            android:textSize="12sp" />
-    </LinearLayout>
+    <TextView
+        android:id="@+id/rm"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:textColor="#FF757575"
+        android:textDirection="rtl"
+        android:textSize="11sp" />
 </LinearLayout>

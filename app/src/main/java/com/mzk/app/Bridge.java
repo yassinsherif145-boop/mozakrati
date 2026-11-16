@@ -228,6 +228,18 @@ public class Bridge {
     }
 
     @JavascriptInterface
+    public String takePz() {
+        try {
+            SharedPreferences s = c.getSharedPreferences("mzk", Context.MODE_PRIVATE);
+            String v = s.getString("pzq", "");
+            if (!v.isEmpty()) s.edit().remove("pzq").apply();
+            return v;
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    @JavascriptInterface
     public String usageData() {
         try {
             SharedPreferences s = c.getSharedPreferences("watch", Context.MODE_PRIVATE);

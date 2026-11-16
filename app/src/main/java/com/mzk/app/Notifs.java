@@ -54,8 +54,62 @@ public class Notifs {
     }
 
     // إشعار واحد بس: أقرب مهمة. لما تخلصها بيظهر اللي بعدها، ولو خلصت الكل بيكتب «لا يوجد مهام اليوم»
+    static String ugLabel(int lv) {
+        if (lv >= 2) return "لا يوجد وقت آخر";
+        if (lv == 1) return "من الأفضل أن تبدأ دلوقتي";
+        return "على المسار";
+    }
+
+    static void fillRow(RemoteViews r, JSONObject t) {
+        r.setTextViewText(R.id.rt, t.optString("t"));
+        r.setTextViewText(R.id.rm, ugLabel(t.optInt("lv")));
+    }
+
     static void show(Context c, String json) {
-        clear(c);
+        try {
+            SharedPreferences p = c.getSharedPreferences("mzk", Context.MODE_PRIVATE);
+            NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
+            ensure(c);
+            boolean present = false;
+            try {
+                for (StatusBarNotification sbn : nm.getActiveNotifications()) {
+                    if (sbn.getId() == 1000) present = true;
+                }
+            } catch (Exception e) {
+            }
+            if (present && json.equals(p.getString("lastjson", ""))) return;
+            clear(c);
+            JSONArray a;
+            String jt = json.trim();
+            if (jt.startsWith("{")) {
+                a = new JSONObject(jt).optJSONArray("tasks");
+            } else {
+                a = new JSONArray(jt);
+            }
+            if (a == null || a.length() == 0) return;
+            RemoteViews small = new RemoteViews(c.getPackageName(), R.layout.notif_row);
+            fillRow(small, a.getJSONObject(0));
+            RemoteViews big = new RemoteViews(c.getPackageName(), R.layout.notif_big);
+            big.removeAllViews(R.id.list);
+            for (int i = 0; i < a.length() && i < 6; i++) {
+                RemoteViews row = new RemoteViews(c.getPackageName(), R.layout.notif_row);
+                fillRow(row, a.getJSONObject(i));
+                big.addView(R.id.list, row);
+            }
+            PendingIntent open = PendingIntent.getActivity(c, 1, new Intent(c, MainActivity.class), FLAGS);
+            Notification.Builder b = new Notification.Builder(c, CH)
+                    .setSmallIcon(R.drawable.ic_stat)
+                    .setStyle(new Notification.DecoratedCustomViewStyle())
+                    .setCustomContentView(small)
+                    .setCustomBigContentView(big)
+                    .setOngoing(true)
+                    .setOnlyAlertOnce(true)
+                    .setVisibility(Notification.VISIBILITY_PUBLIC)
+                    .setContentIntent(open);
+            nm.notify(1000, b.build());
+            p.edit().putString("nids", "1000,").putString("lastjson", json).apply();
+        } catch (Exception e) {
+        }
     }
 
     static void timer(Context c, String json) {
@@ -88,11 +142,10 @@ public class Notifs {
                 b.addAction(new Notification.Action.Builder(Icon.createWithResource(c, android.R.drawable.ic_media_play),
                         "استكمال", PendingIntent.getActivity(c, 1101, in, FLAGS)).build());
             } else if ("task".equals(k)) {
-                Intent in = new Intent(c, AlarmActivity.class);
-                in.putExtra("route", "#pz");
-                in.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                Intent in = new Intent(c, TimerReceiver.class);
+                in.setAction("PAUSE");
                 b.addAction(new Notification.Action.Builder(Icon.createWithResource(c, android.R.drawable.ic_media_pause),
-                        "إيقاف مؤقت", PendingIntent.getActivity(c, 1102, in, FLAGS)).build());
+                        "إيقاف مؤقت", PendingIntent.getBroadcast(c, 1102, in, FLAGS)).build());
             }
             nm.notify(1001, b.build());
         } catch (Exception e) {

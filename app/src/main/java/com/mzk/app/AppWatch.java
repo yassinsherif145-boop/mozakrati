@@ -97,11 +97,12 @@ public class AppWatch extends Service {
         try {
             NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
             if (Build.VERSION.SDK_INT >= 26) {
-                nm.createNotificationChannel(new NotificationChannel("watch", "مراقبة التطبيقات", NotificationManager.IMPORTANCE_LOW));
+                nm.createNotificationChannel(new NotificationChannel("watch2", "مراقبة التطبيقات", NotificationManager.IMPORTANCE_MIN));
             }
-            Notification n = new Notification.Builder(this, "watch")
+            Notification n = new Notification.Builder(this, "watch2")
                     .setSmallIcon(R.drawable.ic_stat)
-                    .setContentTitle("مراقبة التطبيقات شغالة")
+                    .setContentTitle("المراقبة")
+                    .setContentText("\u200F")
                     .setOngoing(true)
                     .build();
             startForeground(56, n);
@@ -234,7 +235,7 @@ public class AppWatch extends Service {
         addUse(cur, dt, now);
         long u = 0L;
         if (until.containsKey(cur)) u = until.get(cur).longValue();
-        if (now >= u && !CheckActivity.visible && now - lastPrompt > 4000L) {
+        if (now >= u && !OverlayUi.checkShown && now - lastPrompt > 4000L) {
             lastPrompt = now;
             prompt(cur, now);
         }
@@ -242,7 +243,7 @@ public class AppWatch extends Service {
     }
 
     void prune() {
-        while (usage.length() > 45) {
+        while (usage.length() > 400) {
             String oldest = null;
             Iterator<String> it = usage.keys();
             while (it.hasNext()) {
@@ -298,14 +299,9 @@ public class AppWatch extends Service {
 
     void prompt(String p, long now) {
         try {
-            Intent i = new Intent(this, CheckActivity.class);
-            i.putExtra("p", p);
-            i.putExtra("n", nameOf(p));
             JSONObject lc = lastC.get(p);
             boolean again = lc != null && dayKey(lc.optLong("id")).equals(dayKey(now));
-            i.putExtra("w", again ? wait : 0);
-            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            startActivity(i);
+            OverlayUi.showCheck(getApplicationContext(), p, nameOf(p), again ? wait : 0);
         } catch (Exception e) {
         }
     }
