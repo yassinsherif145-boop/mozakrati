@@ -287,6 +287,28 @@ details.wr{border:1px solid var(--ln);border-radius:12px;margin:8px 0;background
 .stc{margin:10px 0;padding:8px;background:var(--sf);border:1px solid var(--ln);border-radius:12px}
 .ur{padding:8px 0;border-bottom:1px solid var(--ln)}.uh{display:flex;justify-content:space-between}.ub{height:6px;background:var(--ln);border-radius:3px;margin:5px 0;overflow:hidden}.ub i{display:block;height:100%;background:var(--ac)}
 .li:has(>.del){position:relative}
+:root{--pu:#7c5ce0}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--pu:#a58bff}}
+:root[data-theme="dark"]{--pu:#a58bff}
+.sb2{border:0;background:transparent;padding:0;margin:12px 0 0}.sb2>summary{font-size:14px;font-weight:600;color:var(--tx)}
+.pl{margin:8px 0}.pl>summary{font-size:12px;color:var(--mu);cursor:pointer}.pl .lst{font-size:13px;margin-top:4px;white-space:pre-wrap}
+.tv{display:inline-flex;gap:3px;align-items:baseline;direction:rtl;unicode-bidi:isolate;white-space:nowrap}
+.tv b{direction:ltr;unicode-bidi:isolate;font-variant-numeric:tabular-nums}.tv i{font-style:normal;font-size:.85em;opacity:.75}
+.pc{direction:ltr;unicode-bidi:isolate;display:inline-block}
+.sth{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:6px 0 10px}
+.stsel{flex:1;min-width:130px;padding:9px 10px;border-radius:12px;border:1px solid var(--ln);background:var(--sf);color:var(--tx)}
+.stpill{flex:2;min-width:200px;display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--sf);border:1px solid var(--ln);border-radius:12px;padding:6px 10px}
+.stpill button{background:none;border:0;color:var(--pu);font-weight:700;padding:6px 4px}.stpill button:disabled{opacity:.3}.stpill span{font-size:13px;text-align:center}
+.sdr{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}.sdr b{min-width:24px;text-align:center}
+.stcard{background:var(--sf);border:1px solid var(--ln);border-radius:16px;padding:12px 12px 6px;margin:10px 0}
+.stsum{display:flex;justify-content:space-between;align-items:baseline;padding:10px 2px;border-top:1px solid var(--ln);margin-top:8px;font-size:16px}
+.stsum b{color:var(--pu);font-size:18px}.stsum.sm{font-size:14px;margin-top:0;border-top:0;padding:6px 2px}.stsum.sm b{font-size:15px}
+.sdr .stsel{flex:1 1 100%}
+.ulist{margin-top:6px}.ur{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--ln)}
+.ui{width:44px;height:44px;border-radius:12px;flex:none;object-fit:cover}.ud{display:flex;align-items:center;justify-content:center;background:var(--pu);color:#fff;font-weight:800;font-size:18px}
+.um{flex:1;min-width:0}.uh{display:flex;justify-content:space-between;align-items:baseline;gap:8px}.un{font-weight:700;font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ub{height:8px;background:var(--ln);border-radius:4px;margin:7px 0 4px;overflow:hidden}.ub i{display:block;height:100%;background:var(--pu);border-radius:4px}
+.up{font-size:12px;color:var(--mu);text-align:end}
 </style></head><body><main>
 <h1>My Studying Session</h1>
 <div style="display:flex;justify-content:space-between;align-items:center"><p class="sub" id="dt"></p><div class="row" style="margin:0"><button class="ch" onclick="setOpen()">⚙</button><button class="ch" onclick="ttOpen()">الجدول</button></div></div>
@@ -316,7 +338,7 @@ details.wr{border:1px solid var(--ln);border-radius:12px;margin:8px 0;background
 <details id="wkBot"><summary>السجل الأسبوعي</summary><div id="wkBotBody"></div></details>
 <details id="yrBot"><summary>السنوي والشهري</summary><div id="yrBody"></div><div id="moBody"></div></details>
 <div id="calBlock" hidden></div>
-<div id="calBtnW" style="display:flex;justify-content:flex-end;margin:24px 0 8px"><button class="ch" id="calBtn" onclick="calV=!calV;draw()">التقويم</button><button class="ch" style="margin-inline-start:8px" onclick="statsOpen()">📊 التطبيقات</button></div>
+<div id="calBtnW" style="display:flex;justify-content:flex-end;margin:24px 0 8px"><button class="ch" id="calBtn" onclick="calV=!calV;draw()">التقويم</button></div>
 </div>
 </main>
 <script>
@@ -554,16 +576,15 @@ function wkDetail(k,sw){
  const nl=sw.never.map(o=>({dt:o.dt,r:rrow(k,'n',o.id,esc(o.t),TL(o.ty)+' · '+o.n+' · '+fd(o.dt),prt.filter(p=>p.id===o.id||baseT(p.t)===baseT(o.t)),find(o.id)?`<button class="ch" style="margin-top:6px" onclick="restoreMiss('${o.id}')">استرجاع</button>`:'')})).concat(sw.nsubs.map(o=>({dt:o.dt,r:rrow(k,'s',o.p+'←'+o.t,esc(o.p)+' ← '+esc(o.t),'جزء · '+TL(o.ty)+' · '+o.n+' · '+fd(o.dt),[])}))).sort((p,q)=>p.dt<q.dt?-1:1).map(x=>x.r).join('');
  const dr=S.items.filter(i=>i.done&&i.done>=k&&i.done<=wend).sort((a,b)=>a.done<b.done?-1:1);
  const dp=OP['dn'+k]?`<div class="wc" style="margin:0 0 10px">${dr.length?dr.map(i=>li(esc(i.title)+(i.sid&&sname(i.sid)?' ('+esc(sname(i.sid))+')':''),TL(i.type)+' · '+DN[prs(i.done).getDay()]+' · '+fd(i.done),`<button class="ch" style="margin-top:4px" onclick="redoDone('${i.id}')">إعادة</button>`)).join(''):'<div class="tg">لا يوجد</div>'}</div>`:'';
- const t1=dt('nv'+k,`❌ ما اتعملش <b class="cnt">${sw.never.length}</b>`,nl||'<div class="tg">لا يوجد</div>','tb r');
+ const t1=dt('nv'+k,`❌ ما اتعملش <b class="cnt">${sw.never.length}</b>`,(nl||'<div class="tg">لا يوجد</div>')+dt('ad'+k,'الوقت والتطبيقات',wkAdd(k,wend),'sb2'),'tb r');
  const nid=new Set(sw.never.map(o=>o.id)),nta=new Set(sw.acl.map(o=>baseT(o.t))),nnt=new Set(sw.never.map(o=>baseT(o.t))),orph=prt.filter(p=>!nid.has(p.id)&&!nta.has(baseT(p.t))&&!nnt.has(baseT(p.t)));
  const t2=dt('zq'+k,`🧱 راكمت كم مرة <b class="cnt">${sw.acl.length}</b>`,(sw.acl.length||orph.length?sw.acl.map(o=>rrow(k,'a',o.t,esc(o.t),o.n+' · '+fd(o.dt),prt.filter(p=>baseT(p.t)===baseT(o.t)))).join('')+orph.map(p=>rrow(k,'a',p.t,esc(p.t),fd(p.d),[p])).join(''):'<div class="tg">لا يوجد</div>'),'tb o');
- const cur=ymd(wkStart(NOW())),pl=k===cur?prevLessons(cur):null;
- const plb=pl?dt('pl'+k,'📖 دروس الأسبوع اللي فات','<div class="lsn" style="margin:0">'+lsBody(pl)+'</div>','wc'):'';
+ const pk0=ymd(addD(prs(k),-7)),pn0=((S.notes[pk0]||{}).l||'').trim(),plb=pn0?`<details class="pl" data-k="pl${k}" ${OP['pl'+k]?'open':''} ontoggle="OP[this.dataset.k]=this.open"><summary>دروس الأسبوع السابق</summary><div class="lst">${esc(pn0)}</div></details>`:'';
  return `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b dir="ltr" style="font-size:14px">${fd(clp(k))} – ${fd(wend)}</b><button class="ch" onclick="dV='${k}';draw()">الأيام</button></div>
  <div class="wcm">✅ ملتزم ${cs.c} يوم · ⬜ غايب ${cs.a} يوم</div>
  <div class="wc" style="border-color:${col};text-align:center;margin:10px 0;cursor:pointer" onclick="OP['dn${k}']=!OP['dn${k}'];draw()">${ring(pc,col,150)}</div>
  ${dp}<div class="tbw" style="min-width:0">${t1}${t2}</div>
- ${wkExtra(k,wend)}${box('g','✨ The Good','#22c55e')}${box('b','⚠️ The Bad','#ef4444')}${box('l','💡 Lessons','#8b5cf6')}${plb}`;
+ ${box('g','✨ The Good','#22c55e')}${box('b','⚠️ The Bad','#ef4444')}${box('l','💡 Lessons','#8b5cf6')}${plb}`;
 }
 function wkRender(){
  const th=NOW().getDay()===1,{cur,ks,data}=weeksAll(),A=activeSet();
@@ -708,7 +729,7 @@ function redoDone(id){
 function prevLessons(cur){const ks=Object.keys(S.notes).filter(k=>k<cur&&S.notes[k]&&(S.notes[k].l||'').trim()).sort();if(!ks.length)return null;const k=ks[ks.length-1];return{k,tx:S.notes[k].l.trim()}}
 function lsBody(p){return `<div class="lsh">💡 دروس أسبوع ${wn(p.k)}<small>${fd(clp(p.k))} – ${fd(ymd(addD(prs(p.k),6)))}</small></div><div class="lst">${esc(p.tx)}</div>`}
 let lsTm=null;
-function lsPop(){if(TM||lsTm||location.hash||NOW().getDay()!==1)return;const cur=ymd(wkStart(NOW()));if(S.lsRead===cur||!prevLessons(cur))return;
+function lsPop(){return;if(TM||lsTm||location.hash||NOW().getDay()!==1)return;const cur=ymd(wkStart(NOW()));if(S.lsRead===cur||!prevLessons(cur))return;
  lsTm=setTimeout(()=>{lsTm=null;const c=ymd(wkStart(NOW())),p=prevLessons(c);if(NOW().getDay()!==RD()||S.lsRead===c||!p||$('lsOv'))return;
   const o=document.createElement('div');o.id='lsOv';o.style.cssText='position:fixed;inset:0;z-index:85;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:16px';
   o.innerHTML=`<div class="lsn" style="background:var(--sf);max-width:520px;width:100%;max-height:80vh;overflow:auto;margin:0;padding:18px 18px 16px">${lsBody(p)}<button class="go" style="margin-top:14px;width:100%;font-size:18px;padding:12px" onclick="lsDone()">تم القراءة</button></div>`;document.body.appendChild(o)},6000)}
@@ -1104,7 +1125,10 @@ function stRsn(a){let b='';
  return b}
 
 /* ===================== estimate + timers per part ===================== */
-const hm=m=>{m=Math.round(m||0);const h=Math.floor(m/60),r=m%60;return h?(h+'س'+(r?' '+r+'د':'')):(r+'د')};
+const tv=ms=>{const s=Math.round(ms/1000);if(s<60)return `<span class="tv"><b>${s}</b><i>ث</i></span>`;const m=Math.round(ms/60000),h=Math.floor(m/60),r=m%60;return `<span class="tv">${h?`<b>${h}</b><i>س</i>`:''}${(r||!h)?`<b>${r}</b><i>د</i>`:''}</span>`};
+const hm=m=>tv((m||0)*60000);
+const ltr=s=>'\u2066'+s+'\u2069';
+const pcT=n=>`<span class="pc">${n}%</span>`;
 const fmtMS=ms=>{const s=Math.max(0,Math.floor(ms/1000)),h=Math.floor(s/3600),m=Math.floor(s%3600/60),r=s%60;return (h?h+':'+String(m).padStart(2,'0'):m)+':'+String(r).padStart(2,'0')};
 const hr12=h=>{const x=h%12===0?12:h%12;return x+(h<12?' ص':' م')};
 const clk=ms=>{const d=new window.Date(ms),h=d.getHours(),m=d.getMinutes();return (h%12===0?12:h%12)+':'+String(m).padStart(2,'0')+(h<12?' ص':' م')};
@@ -1162,7 +1186,7 @@ function brkBanner(){const b=S.brk;if(!b)return'';return `<div class="brk"><span
 setInterval(()=>{document.querySelectorAll('[data-tm]').forEach(e=>{const p=e.dataset.tm.split('|'),o=tmGet(p[0],p[1]===''?null:+p[1],p[2]===''?null:+p[2]);if(o)e.textContent=fmtMS(tmElapsed(o))});
  const b=S.brk,e=$('bkT');if(b&&e)e.textContent=fmtMS(Date.now()-b.t0);const r=S.run,e2=$('rnT');if(r&&e2){const o=tmGet(r.id,r.i,r.j);if(o)e2.textContent=fmtMS(tmElapsed(o))}},1000);
 /* ===================== weekly: times, breaks, apps ===================== */
-const durTxt=ms=>ms<60000?Math.round(ms/1000)+' ث':hm(ms/60000);
+const durTxt=ms=>tv(ms);
 function delBrl(id){S.brl=(S.brl||[]).filter(x=>String(x.id||x.t0)!==String(id));actMark();save();draw()}
 function wkTime(k,wend){let h='';const L=(S.tlog||[]).filter(x=>x.d>=k&&x.d<=wend);
  if(L.length){const bar=(e,a)=>{const mx=Math.max(e,a,1);return `<div class="eb"><i class="e" style="width:${e/mx*100}%"></i></div><div class="eb"><i style="width:${a/mx*100}%"></i></div>`};
@@ -1173,20 +1197,9 @@ function wkTime(k,wend){let h='';const L=(S.tlog||[]).filter(x=>x.d>=k&&x.d<=wen
  return h}
 let UD=null,UDt=0;
 function usageData(){if(!window.Android||!Android.usageData)return null;if(UD&&Date.now()-UDt<4000)return UD;try{UD=JSON.parse(Android.usageData()||'{}');UDt=Date.now()}catch(e){UD=null}return UD}
-function wkApps(k,wend){const d=usageData();if(!d||(!d.u&&!d.c))return'';
- const days=[];for(let i=0;i<7;i++)days.push(ymd(addD(prs(k),i)));
- const sel=OP['au'+k]||'',use=sel?[sel]:days,nm=p=>(d.n||{})[p]||p,tot={};
- use.forEach(dy=>{const o=(d.u||{})[dy]||{};Object.keys(o).forEach(p=>{tot[p]=(tot[p]||0)+o[p]})});
- const ps=Object.keys(tot).sort((a,b)=>tot[b]-tot[a]),sum=ps.reduce((s,p)=>s+tot[p],0),hrs=new Array(24).fill(0);
- use.forEach(dy=>{((d.h||{})[dy]||[]).forEach((v,i)=>{hrs[i]+=v})});let pk=0;hrs.forEach((v,i)=>{if(v>hrs[pk])pk=i});
- const tabs=`<div class="row" style="flex-wrap:wrap"><button class="ch ${!sel?'on':''}" onclick="OP['au${k}']='';draw()">الأسبوع</button>${days.map((dy,i)=>`<button class="ch ${sel===dy?'on':''}" onclick="OP['au${k}']='${dy}';draw()">${FD[i]}</button>`).join('')}</div>`;
- const rows=ps.length?ps.map(p=>`<div class="li"><div class="lt">${esc(nm(p))}</div><div class="ls">${hm(tot[p]/60000)} · ${Math.round(tot[p]/sum*100)}%</div></div>`).join(''):'<div class="tg">مفيش استخدام متسجل</div>';
- const peak=hrs[pk]>0?`<div class="wcm">أكتر وقت: <b>${hr12(pk)}</b> · ${hm(hrs[pk]/60000)}</div>`:'';
- const cs=(d.c||[]).filter(c=>use.indexOf(ymd(new window.Date(c.id)))>=0),over=cs.reduce((s,c)=>s+(c.over||0),0);
- const crow=cs.map(c=>`<div class="li"><div class="lt">${esc(c.w)}</div><div class="ls">${esc(c.n)} · وقفت الساعة ${clk(c.u)} · قعدت ${hm((c.use||0)/60000)}${(c.over||0)>60000?' · زودت '+hm(c.over/60000):' · التزمت'}</div></div>`).join('');
- return dt('ap'+k,'📱 التطبيقات','<div class="row"><button class="ch" onclick="statsOpen()">📊 الإحصائيات</button></div>'+tabs+peak+rows+(cs.length?`<h4 style="margin:10px 0 4px">إجاباتي والتزامي${over>60000?' · زودت '+hm(over/60000):''}</h4>`+crow:''),'wc')}
-function wkExtra(k,wend){const av=tmAvg(k,wend);
- return wkTime(k,wend)+wkApps(k,wend)+(av.length?dt('av'+k,'⌛ متوسط وقت الأجزاء',av.map(a=>`<div class="li"><div class="lt">${esc(a.k)}</div><div class="ls">المتوسط ${a.avg} د · ${a.n} مرة${a.e?' · المتوقع '+a.e+' د':''}</div></div>`).join(''),'wc'):'')}
+function wkAdd(k,wend){const av=tmAvg(k,wend);
+ return wkTime(k,wend)+(av.length?dt('av'+k,'⌛ متوسط وقت الأجزاء',av.map(a=>`<div class="li"><div class="lt">${esc(a.k)}</div><div class="ls">المتوسط ${hm(a.avg)} · ${a.n} مرة${a.e?' · المتوقع '+hm(a.e):''}</div></div>`).join(''),'wc'):'')+appsInline(k)}
+function appsInline(k){const d=usageData();if(!d)return'';stSync(k);return dt('ap'+k,'📱 التطبيقات','<div id="stIn">'+stHtml()+'</div>','wc')}
 /* ===================== settings: apps tracking ===================== */
 let APPS=null,appQ='';
 function appsLoad(){if(APPS||!window.Android||!Android.appsList)return;try{APPS=JSON.parse(Android.appsList()||'[]')}catch(e){APPS=[]}}
@@ -1219,55 +1232,58 @@ function tmClean(){let ch=false;['run','brk','pz'].forEach(k=>{const x=S[k];if(!
  if(it.done||it.m){if(k==='run')tmPauseSilent();else S[k]=null;ch=true}});
  if(!S.pz){const e=$('pzOv');if(e)e.remove()}
  if(ch){save();tmSync()}}
-/* ===================== apps stats ===================== */
-let ST={m:'w',n:1,o:0,d:''};
+/* ===================== apps stats (StayFree style, inline) ===================== */
+let ST={m:'w',n:1,o:0,r:7,d:'',k:null},ICONS={};
+function stSync(k){if(ST.k!==k){const T=mid(NOW());ST={m:'w',n:1,o:Math.max(0,Math.round(diff(wkStart(T),prs(k))/7)),r:7,d:'',k}}}
 function stRange(){const T=mid(NOW());let a,b;
- if(ST.m==='w'){const e=addD(wkStart(T),-7*ST.o);a=addD(e,-7*(ST.n-1));b=addD(e,6)}
+ if(ST.m==='d'){a=b=addD(T,-ST.o)}
+ else if(ST.m==='r'){b=T;a=addD(T,-(ST.r-1))}
+ else if(ST.m==='w'){const e=addD(wkStart(T),-7*ST.o);a=addD(e,-7*(ST.n-1));b=addD(e,6)}
  else{const c0=new Date(T.getFullYear(),T.getMonth()-ST.o,1);a=new Date(c0.getFullYear(),c0.getMonth()-(ST.n-1),1);b=new Date(c0.getFullYear(),c0.getMonth()+1,0)}
  if(b>T)b=T;return[a,b]}
+function stLabel(a,b){if(ST.m==='d')return DN[a.getDay()]+' '+ltr(fd(ymd(a)));if(ST.m==='m'&&ST.n===1)return MN[a.getMonth()]+' '+ltr(String(a.getFullYear()));return ltr(fd(ymd(a)))+' – '+ltr(fd(ymd(b)))}
+function iconsFor(ps){const need=ps.filter(p=>!(p in ICONS));if(!need.length)return;try{const r=(window.Android&&Android.appIcons)?JSON.parse(Android.appIcons(JSON.stringify(need))||'{}'):{};need.forEach(p=>{ICONS[p]=r[p]||''})}catch(e){need.forEach(p=>{ICONS[p]=''})}}
+const icoH=(p,n)=>ICONS[p]?`<img class="ui" src="${ICONS[p]}" alt="">`:`<span class="ui ud">${esc((n||'?').trim().charAt(0))}</span>`;
 function stAgg(a,b){const d=usageData()||{},days=[];for(let x=a;x<=b;x=addD(x,1))days.push(ymd(x));
  const use=(ST.d&&days.indexOf(ST.d)>=0)?[ST.d]:days,tot={},byDay={},hrs=new Array(24).fill(0);
  days.forEach(dy=>{const o=(d.u||{})[dy]||{};let s=0;Object.keys(o).forEach(p=>{s+=o[p]});byDay[dy]=s});
  use.forEach(dy=>{const o=(d.u||{})[dy]||{};Object.keys(o).forEach(p=>{tot[p]=(tot[p]||0)+o[p]});((d.h||{})[dy]||[]).forEach((v,i)=>{hrs[i]+=v})});
- return{d,days,use,tot,byDay,hrs,single:use.length===1&&days.length>1}}
-function barChart(vals,labs,all){const mx=Math.max(1,...vals),W=320,H=130,n=vals.length,step=(W-20)/n,bw=Math.max(3,step-3);let g='';
- vals.forEach((v,i)=>{const h=Math.round(v/mx*(H-34)),x=10+i*step,y=H-18-h;g+=`<rect x="${x.toFixed(1)}" y="${y}" width="${bw.toFixed(1)}" height="${v>0?Math.max(h,2):0}" rx="2" fill="var(--ac)"/>`;
-  if(v>0&&(all||v>=mx*.6))g+=`<text x="${(x+bw/2).toFixed(1)}" y="${y-3}" font-size="9" text-anchor="middle" fill="var(--mu)">${Math.round(v/60000)}</text>`;
-  if(labs[i]!=='')g+=`<text x="${(x+bw/2).toFixed(1)}" y="${H-5}" font-size="9" text-anchor="middle" fill="var(--mu)">${labs[i]}</text>`});
+ return{d,days,use,tot,byDay,hrs,single:use.length===1}}
+function barChart(vals,labs,showAll){const mx=Math.max(...vals,1),unit=mx<120000?1000:(mx<36000000?60000:3600000),un=unit===1000?'ث':(unit===60000?'د':'س');
+ const W=340,H=170,L=40,B=22,T0=14,n=vals.length,step=(W-L-4)/n,bw=Math.max(3,step-4),ph=H-B-T0;let g='';
+ [0,.5,1].forEach(f=>{const y=T0+ph-f*ph;g+=`<line x1="${L}" x2="${W-2}" y1="${y}" y2="${y}" stroke="var(--ln)" stroke-width="1"/><text x="${L-5}" y="${y+3}" font-size="9" text-anchor="end" fill="var(--mu)">${Math.round(mx*f/unit*10)/10} ${un}</text>`});
+ vals.forEach((v,i)=>{const h=Math.round(v/mx*ph),x=L+2+i*step,y=T0+ph-h;g+=`<rect x="${x.toFixed(1)}" y="${y}" width="${bw.toFixed(1)}" height="${v>0?Math.max(h,2):0}" rx="3" fill="var(--pu)"/>`;
+  if(v>0&&(showAll||v>=mx*.7))g+=`<text x="${(x+bw/2).toFixed(1)}" y="${y-3}" font-size="9" text-anchor="middle" fill="var(--tx)">${Math.round(v/unit*10)/10}</text>`;
+  if(labs[i]!=='')g+=`<text x="${(x+bw/2).toFixed(1)}" y="${H-7}" font-size="9" text-anchor="middle" fill="var(--mu)">${labs[i]}</text>`});
  return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="direction:ltr;display:block">${g}</svg>`}
-function stLabel(a,b){return ST.m==='m'&&ST.n===1?MN[a.getMonth()]+' '+a.getFullYear():fd(ymd(a))+' – '+fd(ymd(b))}
 function stOpts(){const d=usageData()||{},ks=Object.keys(d.u||{}).sort(),T=mid(NOW());if(!ks.length)return'';
  const first=prs(ks[0]);let max=0;
  if(ST.m==='w')max=Math.min(60,Math.floor(diff(wkStart(T),wkStart(first))/7));else max=Math.min(36,(T.getFullYear()-first.getFullYear())*12+T.getMonth()-first.getMonth());
- let o='';for(let i=0;i<=max;i++){const sv=ST.o;ST.o=i;const[a,b]=stRange();ST.o=sv;o+=`<option value="${i}" ${ST.o===i?'selected':''}>${stLabel(a,b)}</option>`}return o}
+ let o='';for(let i=0;i<=max;i++){const sv=ST.o;ST.o=i;const[a,b]=stRange();ST.o=sv;o+=`<option value="${i}" ${ST.o===i?'selected':''}>${stLabel(a,b).replace(/<[^>]*>/g,'')}</option>`}return o}
 function stHtml(){const[a,b]=stRange(),A=stAgg(a,b),ps=Object.keys(A.tot).sort((x,y)=>A.tot[y]-A.tot[x]),sum=ps.reduce((s,p)=>s+A.tot[p],0),nm=p=>(A.d.n||{})[p]||p;
  let vals,labs,all=true;
  if(A.single){vals=A.hrs;labs=A.hrs.map((_,i)=>i%3===0?String(i):'');all=false}
  else if(A.days.length>31){const wk={};A.days.forEach(dy=>{const k=ymd(wkStart(prs(dy)));wk[k]=(wk[k]||0)+A.byDay[dy]});const ks=Object.keys(wk).sort();vals=ks.map(k=>wk[k]);labs=ks.map(k=>fd(k).slice(0,5));all=ks.length<=12}
  else{vals=A.days.map(dy=>A.byDay[dy]);labs=A.days.map(dy=>A.days.length<=7?DN[prs(dy).getDay()]:(prs(dy).getDate()%2?String(prs(dy).getDate()):''));all=A.days.length<=10}
  let pk=0;A.hrs.forEach((v,i)=>{if(v>A.hrs[pk])pk=i});
- const nd=A.use.length,avg=sum/Math.max(1,nd);
- const days7=ST.m==='w'&&ST.n===1?`<div class="row" style="flex-wrap:wrap"><button class="ch ${!ST.d?'on':''}" onclick="stDay('')">الكل</button>${A.days.map(dy=>`<button class="ch ${ST.d===dy?'on':''}" onclick="stDay('${dy}')">${DN[prs(dy).getDay()]}</button>`).join('')}</div>`:'';
- const top=ps.length?A.tot[ps[0]]:1;
- const list=ps.length?ps.map(p=>`<div class="ur"><div class="uh"><span>${esc(nm(p))}</span><b>${hm(A.tot[p]/60000)}</b></div><div class="ub"><i style="width:${A.tot[p]/top*100}%"></i></div><small>${Math.round(A.tot[p]/sum*100)}%</small></div>`).join(''):'<div class="tg" style="padding:12px 0">مفيش بيانات</div>';
+ const avg=sum/Math.max(1,A.use.length),top=ps.length?A.tot[ps[0]]:1;
+ iconsFor(ps.slice(0,25));
+ const mv=ST.m==='d'?(ST.o===0?'d0':ST.o===1?'d1':'dx'):(ST.m==='r'?'r'+ST.r:ST.m);
+ const modes=[['d0','اليوم'],['d1','الأمس'],['w','أسبوع'],['m','شهر'],['r7','آخر 7 أيام'],['r14','آخر 14 يوم'],['r28','آخر 28 يوم']];
+ if(mv==='dx')modes.push(['dx',stLabel(a,b).replace(/<[^>]*>/g,'')]);
+ const days7=ST.m==='w'&&ST.n===1?`<div class="sdr"><button class="ch ${!ST.d?'on':''}" onclick="stDay('')">الكل</button>${A.days.map(dy=>`<button class="ch ${ST.d===dy?'on':''}" onclick="stDay('${dy}')">${DN[prs(dy).getDay()]}</button>`).join('')}</div>`:'';
+ const agg=(ST.m==='w'||ST.m==='m')?`<div class="sdr"><span class="tg">${ST.m==='w'?'عدد الأسابيع':'عدد الشهور'}</span><button class="ch" onclick="stN(-1)">−</button><b>${ST.n}</b><button class="ch" onclick="stN(1)">＋</button><select class="stsel" onchange="stPick(+this.value)">${stOpts()}</select></div>`:'';
+ const list=ps.length?ps.map(p=>`<div class="ur">${icoH(p,nm(p))}<div class="um"><div class="uh"><span class="un">${esc(nm(p))}</span><b>${tv(A.tot[p])}</b></div><div class="ub"><i style="width:${Math.max(2,A.tot[p]/top*100)}%"></i></div><div class="up">${pcT(Math.round(A.tot[p]/sum*1000)/10)}</div></div></div>`).join(''):'<div class="tg" style="padding:14px 0;text-align:center">—</div>';
  const cs=(A.d.c||[]).filter(c=>A.use.indexOf(ymd(new Date(c.id)))>=0),over=cs.reduce((s,c)=>s+(c.over||0),0);
- const crow=cs.map(c=>`<div class="li"><div class="lt">${esc(c.w)}</div><div class="ls">${esc(c.n)} · ${DN[new Date(c.id).getDay()]} ${fd(ymd(new Date(c.id)))} · وقفت ${clk(c.u)} · قعدت ${hm((c.use||0)/60000)}${(c.over||0)>60000?' · زودت '+hm(c.over/60000):' · التزمت'}</div></div>`).join('');
- return `<div class="row" style="justify-content:space-between;align-items:center"><button class="ch" onclick="statsClose()">✕</button><b style="font-size:18px">إحصائيات التطبيقات</b></div>
-<div class="row"><button class="ch ${ST.m==='w'?'on':''}" onclick="stSet('w')">أسبوع</button><button class="ch ${ST.m==='m'?'on':''}" onclick="stSet('m')">شهر</button></div>
-<div class="row" style="align-items:center"><button class="ch" onclick="stNav(1)">السابق</button><select class="ch" style="flex:1" onchange="stPick(+this.value)">${stOpts()}</select><button class="ch" onclick="stNav(-1)" ${ST.o<=0?'disabled':''}>التالي</button></div>
-<div class="row pat"><span class="tg">${ST.m==='w'?'عدد الأسابيع':'عدد الشهور'}</span><button class="ch" onclick="stN(-1)">−</button><b>${ST.n}</b><button class="ch" onclick="stN(1)">＋</button></div>
-${days7}
-<div class="stt"><span>الاستخدام الكلي</span><b>${hm(sum/60000)}</b></div>
-<div class="stt"><span>${A.single?'اليوم':'المتوسط اليومي'}</span><b>${hm(avg/60000)}</b></div>
-<div class="stc">${barChart(vals,labs,all)}</div>
-${A.hrs[pk]>0?`<div class="stt"><span>أكتر وقت</span><b>${hr12(pk)} · ${hm(A.hrs[pk]/60000)}</b></div>`:''}
-<div style="margin-top:8px">${list}</div>
-${cs.length?`<h4 style="margin:14px 0 4px">إجاباتي والتزامي${over>60000?' · زودت '+hm(over/60000):''}</h4>${crow}`:''}`}
-function stRender(){const o=$('stOv');if(o)o.innerHTML=stHtml()}
-function statsOpen(){if($('stOv'))return;const o=document.createElement('div');o.id='stOv';o.style.cssText='position:fixed;inset:0;z-index:90;background:var(--bg);color:var(--tx);overflow:auto;padding:16px';document.body.appendChild(o);UD=null;stRender()}
-function statsClose(){const o=$('stOv');if(o)o.remove()}
-function stSet(m){ST.m=m;ST.n=1;ST.o=0;ST.d='';stRender()}
-function stNav(d){ST.o=Math.max(0,ST.o+d*ST.n);ST.d='';stRender()}
+ const crow=cs.map(c=>`<div class="li"><div class="lt">${esc(c.w)}</div><div class="ls">${esc(c.n)} · ${DN[new Date(c.id).getDay()]} ${ltr(fd(ymd(new Date(c.id))))} · وقفت ${ltr(clk(c.u))} · قعدت ${tv(c.use||0)}${(c.over||0)>60000?' · زودت '+tv(c.over):' · التزمت'}</div></div>`).join('');
+ return `<div class="sth"><select class="stsel" onchange="stMode(this.value)">${modes.map(m=>`<option value="${m[0]}" ${m[0]===mv?'selected':''}>${m[1]}</option>`).join('')}</select><div class="stpill"><button onclick="stNav(1)">السابق</button><span>${stLabel(a,b)}</span><button onclick="stNav(-1)" ${ST.o<=0||ST.m==='r'?'disabled':''}>التالي</button></div></div>
+${agg}${days7}
+<div class="stcard"><div class="stch">${barChart(vals,labs,all)}</div><div class="stsum"><span>الاستخدام الكلي</span><b>${tv(sum)}</b></div><div class="stsum sm"><span>${A.single?'اليوم':'المتوسط اليومي'}</span><b>${tv(avg)}</b></div>${A.hrs[pk]>0?`<div class="stsum sm"><span>أكتر وقت</span><b>${ltr(hr12(pk))} · ${tv(A.hrs[pk])}</b></div>`:''}</div>
+<div class="ulist">${list}</div>
+${cs.length?`<h4 style="margin:14px 0 4px">إجاباتي والتزامي${over>60000?' · زودت '+tv(over):''}</h4>${crow}`:''}`}
+function stRender(){const o=$('stIn');if(o)o.innerHTML=stHtml()}
+function stMode(v){if(v==='d0'||v==='d1'){ST.m='d';ST.o=+v[1]}else if(v==='dx'){}else if(v[0]==='r'){ST.m='r';ST.r=+v.slice(1);ST.o=0}else{ST.m=v;ST.o=0}ST.n=1;ST.d='';stRender()}
+function stNav(d){if(ST.m==='r')return;ST.o=Math.max(0,ST.o+d*(ST.m==='d'?1:ST.n));ST.d='';stRender()}
 function stN(d){ST.n=Math.max(1,Math.min(ST.m==='w'?26:24,ST.n+d));ST.d='';stRender()}
 function stPick(o){ST.o=o;ST.d='';stRender()}
 function stDay(d){ST.d=d;stRender()}

@@ -7,6 +7,11 @@ import android.net.Uri;
 import android.webkit.JavascriptInterface;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
+import android.util.Base64;
+import java.io.ByteArrayOutputStream;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -224,6 +229,32 @@ public class Bridge {
                 AppWatch.ensure(c);
             }
         } catch (Exception e) {
+        }
+    }
+
+    @JavascriptInterface
+    public String appIcons(String json) {
+        try {
+            JSONArray a = new JSONArray(json);
+            PackageManager pm = c.getPackageManager();
+            JSONObject out = new JSONObject();
+            for (int k = 0; k < a.length(); k++) {
+                String p = a.optString(k);
+                try {
+                    Drawable d = pm.getApplicationIcon(p);
+                    Bitmap bm = Bitmap.createBitmap(72, 72, Bitmap.Config.ARGB_8888);
+                    Canvas cv = new Canvas(bm);
+                    d.setBounds(0, 0, 72, 72);
+                    d.draw(cv);
+                    ByteArrayOutputStream bo = new ByteArrayOutputStream();
+                    bm.compress(Bitmap.CompressFormat.PNG, 100, bo);
+                    out.put(p, "data:image/png;base64," + Base64.encodeToString(bo.toByteArray(), Base64.NO_WRAP));
+                } catch (Exception e) {
+                }
+            }
+            return out.toString();
+        } catch (Exception e) {
+            return "{}";
         }
     }
 
