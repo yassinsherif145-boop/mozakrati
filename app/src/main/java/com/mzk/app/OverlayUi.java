@@ -32,6 +32,7 @@ import java.util.Calendar;
 public class OverlayUi {
     static volatile boolean checkShown = false;
     static volatile boolean pauseShown = false;
+    static volatile String checkPkg = null;
     static View checkView = null;
     static View pauseView = null;
     static final Handler H = new Handler(Looper.getMainLooper());
@@ -318,6 +319,7 @@ public class OverlayUi {
                         return;
                     }
                     try {
+                        if (!"__test".equals(pkg)) {
                         Intent s = new Intent(ctx, AppWatch.class);
                         s.setAction("COMMIT");
                         s.putExtra("p", pkg);
@@ -325,6 +327,7 @@ public class OverlayUi {
                         s.putExtra("w", w);
                         s.putExtra("u", targetOf(mins));
                         ctx.startService(s);
+                        }
                     } catch (Exception e) {
                     }
                     dismissCheck(ctx);
@@ -333,6 +336,7 @@ public class OverlayUi {
             ScrollView sv = wrap(ctx, col);
             wm.addView(sv, params());
             checkView = sv;
+            checkPkg = pkg;
             checkShown = true;
         } catch (Exception e) {
         }
@@ -345,6 +349,7 @@ public class OverlayUi {
         } catch (Exception e) {
         }
         checkView = null;
+        checkPkg = null;
         checkShown = false;
     }
 

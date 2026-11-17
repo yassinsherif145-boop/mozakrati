@@ -166,6 +166,24 @@ public class Bridge {
     }
 
     @JavascriptInterface
+    public void testPrompt() {
+        try {
+            if (!OverlayUi.can(c)) {
+                openOverlaySettings();
+                return;
+            }
+            final Context cc = c.getApplicationContext();
+            OverlayUi.H.post(new Runnable() {
+                @Override
+                public void run() {
+                    OverlayUi.showCheck(cc, "__test", "يوتيوب (تجربة)", 0);
+                }
+            });
+        } catch (Exception e) {
+        }
+    }
+
+    @JavascriptInterface
     public void openUsageSettings() {
         try {
             Intent i = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);

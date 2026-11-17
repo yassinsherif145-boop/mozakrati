@@ -86,6 +86,13 @@ public class Notifs {
             SharedPreferences p = c.getSharedPreferences("mzk", Context.MODE_PRIVATE);
             NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
             ensure(c);
+            try {
+                if (new JSONObject(json).optBoolean("rest", false)) {
+                    clear(c);
+                    return;
+                }
+            } catch (Exception e) {
+            }
             boolean present = false;
             try {
                 for (StatusBarNotification sbn : nm.getActiveNotifications()) {

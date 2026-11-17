@@ -38,6 +38,7 @@ public class AppWatch extends Service {
     long lastRefresh = 0;
     String cur = "";
     int wait = 30;
+    int away = 0;
     Set<String> tracked = new HashSet<String>();
     Map<String, Long> until = new HashMap<String, Long>();
     Map<String, Long> lastCommit = new HashMap<String, Long>();
@@ -195,6 +196,21 @@ public class AppWatch extends Service {
         }
         PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
         boolean on = pm.isInteractive();
+        // لو خرجت من التطبيق (أو قفلت الشاشة) وشاشة السؤال لسه ظاهرة: تتقفل لوحدها
+        String cp = OverlayUi.checkPkg;
+        if (OverlayUi.checkShown && cp != null && !"__test".equals(cp)) {
+            if (!on || !cp.equals(cur)) {
+                away++;
+                if (away >= 2) {
+                    away = 0;
+                    OverlayUi.dismissCheck(this);
+                }
+            } else {
+                away = 0;
+            }
+        } else {
+            away = 0;
+        }
         if (!on || !tracked.contains(cur)) return;
         long u = 0L;
         if (until.containsKey(cur)) u = until.get(cur).longValue();
