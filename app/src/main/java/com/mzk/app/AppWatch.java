@@ -21,34 +21,26 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-// بيراقب التطبيق اللي شغال دلوقتي، وبيسجل الوقت، وبيفتح شاشة السؤال لما تدخل تطبيق مختار
+// بيراقب التطبيق اللي شغال دلوقتي وبيفتح نافذة السؤال لما تدخل تطبيق مختار. حساب الوقت نفسه في UsageCalc
 public class AppWatch extends Service {
     static volatile boolean running = false;
     final Handler h = new Handler(Looper.getMainLooper());
     UsageStatsManager usm;
     long lastEv = 0;
-    long lastTick = 0;
-    long lastSave = 0;
     long lastPrompt = 0;
+    long lastRefresh = 0;
     String cur = "";
-    boolean dirty = false;
     int wait = 30;
     Set<String> tracked = new HashSet<String>();
-    JSONObject usage = new JSONObject();
-    JSONObject hours = new JSONObject();
-    JSONObject names = new JSONObject();
-    JSONArray commits = new JSONArray();
     Map<String, Long> until = new HashMap<String, Long>();
-    Map<String, JSONObject> lastC = new HashMap<String, JSONObject>();
+    Map<String, Long> lastCommit = new HashMap<String, Long>();
 
     SharedPreferences sp() {
         return getSharedPreferences("watch", Context.MODE_PRIVATE);
@@ -116,8 +108,7 @@ public class AppWatch extends Service {
         if (!running) {
             running = true;
             load();
-            lastTick = System.currentTimeMillis();
-            lastEv = lastTick - 5000;
+            lastEv = System.currentTimeMillis() - 600000L;
             h.post(tick);
         }
         String a = (i == null) ? null : i.getAction();
@@ -133,7 +124,6 @@ public class AppWatch extends Service {
     public void onDestroy() {
         running = false;
         h.removeCallbacks(tick);
-        if (dirty) save();
         super.onDestroy();
     }
 
@@ -147,50 +137,20 @@ public class AppWatch extends Service {
     }
 
     void load() {
-        try {
-            usage = new JSONObject(sp().getString("usage", "{}"));
-        } catch (Exception e) {
-            usage = new JSONObject();
-        }
-        try {
-            hours = new JSONObject(sp().getString("hours", "{}"));
-        } catch (Exception e) {
-            hours = new JSONObject();
-        }
-        try {
-            names = new JSONObject(sp().getString("names", "{}"));
-        } catch (Exception e) {
-            names = new JSONObject();
-        }
-        try {
-            commits = new JSONArray(sp().getString("commits", "[]"));
-        } catch (Exception e) {
-            commits = new JSONArray();
-        }
         until.clear();
-        lastC.clear();
-        for (int k = 0; k < commits.length(); k++) {
-            JSONObject c = commits.optJSONObject(k);
-            if (c == null) continue;
-            String p = c.optString("p");
-            until.put(p, c.optLong("u"));
-            lastC.put(p, c);
+        lastCommit.clear();
+        try {
+            JSONArray commits = new JSONArray(sp().getString("commits", "[]"));
+            for (int k = 0; k < commits.length(); k++) {
+                JSONObject c = commits.optJSONObject(k);
+                if (c == null) continue;
+                String p = c.optString("p");
+                until.put(p, Long.valueOf(c.optLong("u")));
+                lastCommit.put(p, Long.valueOf(c.optLong("id")));
+            }
+        } catch (Exception e) {
         }
         readCfg();
-    }
-
-    void save() {
-        try {
-            sp().edit()
-                    .putString("usage", usage.toString())
-                    .putString("hours", hours.toString())
-                    .putString("names", names.toString())
-                    .putString("commits", commits.toString())
-                    .apply();
-        } catch (Exception e) {
-        }
-        dirty = false;
-        lastSave = System.currentTimeMillis();
     }
 
     final Runnable tick = new Runnable() {
@@ -207,8 +167,6 @@ public class AppWatch extends Service {
 
     void step() throws Exception {
         long now = System.currentTimeMillis();
-        long dt = Math.min(now - lastTick, 5000L);
-        lastTick = now;
         if (tracked.isEmpty() || !hasUsage(this)) return;
         if (usm == null) usm = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
         UsageEvents ue = usm.queryEvents(lastEv, now);
@@ -226,72 +184,30 @@ public class AppWatch extends Service {
             }
         }
         lastEv = now;
+        if (now - lastRefresh > 1800000L) {
+            lastRefresh = now;
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    UsageCalc.refresh(AppWatch.this);
+                }
+            }).start();
+        }
         PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
         boolean on = pm.isInteractive();
-        if (!on || !tracked.contains(cur)) {
-            if (dirty && now - lastSave > 15000L) save();
-            return;
-        }
-        addUse(cur, dt, now);
+        if (!on || !tracked.contains(cur)) return;
         long u = 0L;
         if (until.containsKey(cur)) u = until.get(cur).longValue();
         if (now >= u && !OverlayUi.checkShown && now - lastPrompt > 4000L) {
             lastPrompt = now;
             prompt(cur, now);
         }
-        if (dirty && now - lastSave > 15000L) save();
-    }
-
-    void prune() {
-        while (usage.length() > 400) {
-            String oldest = null;
-            Iterator<String> it = usage.keys();
-            while (it.hasNext()) {
-                String k = it.next();
-                if (oldest == null || k.compareTo(oldest) < 0) oldest = k;
-            }
-            if (oldest == null) break;
-            usage.remove(oldest);
-            hours.remove(oldest);
-        }
-    }
-
-    void addUse(String p, long dt, long now) throws Exception {
-        String day = dayKey(now);
-        JSONObject d = usage.optJSONObject(day);
-        if (d == null) {
-            d = new JSONObject();
-            usage.put(day, d);
-            prune();
-        }
-        d.put(p, d.optLong(p) + dt);
-        JSONArray hr = hours.optJSONArray(day);
-        if (hr == null) {
-            hr = new JSONArray();
-            for (int k = 0; k < 24; k++) hr.put(0L);
-            hours.put(day, hr);
-        }
-        Calendar cal = Calendar.getInstance();
-        cal.setTimeInMillis(now);
-        int hh = cal.get(Calendar.HOUR_OF_DAY);
-        hr.put(hh, hr.optLong(hh) + dt);
-        JSONObject lc = lastC.get(p);
-        if (lc != null) {
-            if (now <= lc.optLong("u")) {
-                lc.put("use", lc.optLong("use") + dt);
-            } else {
-                lc.put("over", lc.optLong("over") + dt);
-            }
-        }
-        dirty = true;
     }
 
     String nameOf(String p) {
         try {
             PackageManager pm = getPackageManager();
-            String n = pm.getApplicationLabel(pm.getApplicationInfo(p, 0)).toString();
-            names.put(p, n);
-            return n;
+            return pm.getApplicationLabel(pm.getApplicationInfo(p, 0)).toString();
         } catch (Exception e) {
             return p;
         }
@@ -299,31 +215,34 @@ public class AppWatch extends Service {
 
     void prompt(String p, long now) {
         try {
-            JSONObject lc = lastC.get(p);
-            boolean again = lc != null && dayKey(lc.optLong("id")).equals(dayKey(now));
+            Long lc = lastCommit.get(p);
+            boolean again = lc != null && dayKey(lc.longValue()).equals(dayKey(now));
             OverlayUi.showCheck(getApplicationContext(), p, nameOf(p), again ? wait : 0);
         } catch (Exception e) {
         }
     }
 
     void addCommit(String p, String n, String w, long u) {
-        try {
-            if (p == null) return;
-            JSONObject c = new JSONObject();
-            c.put("id", System.currentTimeMillis());
-            c.put("p", p);
-            c.put("n", n == null ? p : n);
-            c.put("w", w == null ? "" : w);
-            c.put("u", u);
-            c.put("use", 0L);
-            c.put("over", 0L);
-            commits.put(c);
-            while (commits.length() > 300) commits.remove(0);
-            until.put(p, u);
-            lastC.put(p, c);
-            names.put(p, n == null ? p : n);
-            save();
-        } catch (Exception e) {
+        if (p == null) return;
+        synchronized (UsageCalc.LOCK) {
+            try {
+                JSONArray commits = new JSONArray(sp().getString("commits", "[]"));
+                JSONObject c = new JSONObject();
+                long now = System.currentTimeMillis();
+                c.put("id", now);
+                c.put("p", p);
+                c.put("n", n == null ? p : n);
+                c.put("w", w == null ? "" : w);
+                c.put("u", u);
+                c.put("use", 0L);
+                c.put("over", 0L);
+                commits.put(c);
+                while (commits.length() > 300) commits.remove(0);
+                sp().edit().putString("commits", commits.toString()).apply();
+                until.put(p, Long.valueOf(u));
+                lastCommit.put(p, Long.valueOf(now));
+            } catch (Exception e) {
+            }
         }
     }
 }

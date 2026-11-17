@@ -304,6 +304,8 @@ details.wr{border:1px solid var(--ln);border-radius:12px;margin:8px 0;background
 .stsum{display:flex;justify-content:space-between;align-items:baseline;padding:10px 2px;border-top:1px solid var(--ln);margin-top:8px;font-size:16px}
 .stsum b{color:var(--pu);font-size:18px}.stsum.sm{font-size:14px;margin-top:0;border-top:0;padding:6px 2px}.stsum.sm b{font-size:15px}
 .sdr .stsel{flex:1 1 100%}
+.rr textarea{width:100%;min-height:48px;margin:2px 0 6px;resize:vertical;border-radius:10px;padding:8px;border:1px solid var(--ln);background:var(--sf);color:var(--tx);font:inherit}
+.rr .rn{font-size:12px;color:var(--mu)}
 .ulist{margin-top:6px}.ur{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--ln)}
 .ui{width:44px;height:44px;border-radius:12px;flex:none;object-fit:cover}.ud{display:flex;align-items:center;justify-content:center;background:var(--pu);color:#fff;font-weight:800;font-size:18px}
 .um{flex:1;min-width:0}.uh{display:flex;justify-content:space-between;align-items:baseline;gap:8px}.un{font-weight:700;font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -441,7 +443,7 @@ function card(it,far){
  const T=mid(NOW()),n=diff(prs(it.due),T),l=lbl(n),ex=it.type==='exam',st=it.big?' ++':'';
  const a=ex?acc(it):0;
  const tag=(ex?(it.kw||'امتحان (verifica)'):'واجب (compito)')+(it.sid?' · '+esc(sname(it.sid)):'')+(a?` · متراكم ${a}`:'');
- if(far)return `<div class="it"><div class="bd"><div class="t">${esc(it.title)}${st}</div><div class="tg">${tag} · هيظهر يوم ${DN[shw(it).getDay()]} ${fd(ymd(shw(it)))} · الموعد ${fd(it.due)}</div></div><button class="del" onclick="delItem('${it.id}')" aria-label="احذف">×</button></div>`;
+ if(far)return `<div class="it"><div class="bd"><div class="t">${esc(it.title)}${st}</div><div class="tg">${tag}${ex?' · '+dayW(Math.max(1,it.subs.length||diff(prs(it.due),shw(it))))+' مذاكرة':''} · هيظهر يوم ${DN[shw(it).getDay()]} ${fd(ymd(shw(it)))} · الموعد ${fd(it.due)}</div></div><button class="del" onclick="delItem('${it.id}')" aria-label="احذف">×</button></div>`;
  let subs='';
  let vis=0;if(ex)it.subs.forEach((s,i)=>{const pp=planned(it,i),dy=`<span class="tg">${DN[pp.getDay()]}</span>`;if(!s.t){if(n<2||pp<T)return;vis++;subs+=pin(it,i,`جزء ${vis} (${DN[pp.getDay()]})`);return}const late=!s.d&&isLate(it,i,T);subs+=sr(it,s,i,dy+(late?'<span class="tg" style="color:var(--rd)">متراكم</span>':''))});
  else if(it.big)subs=bigSubs(it);
@@ -573,18 +575,18 @@ function wkDetail(k,sw){
  const TL=y=>y==='exam'?'امتحان':y==='hw'?'واجب':'—';
  const li=(t,s,b)=>`<div class="li"><div class="lt">${t}</div><div class="ls">${s}</div>${b||''}</div>`;
  const prt=S.pp.filter(p=>p.d>=k&&p.d<=wend);
- const nl=sw.never.map(o=>({dt:o.dt,r:rrow(k,'n',o.id,esc(o.t),TL(o.ty)+' · '+o.n+' · '+fd(o.dt),prt.filter(p=>p.id===o.id||baseT(p.t)===baseT(o.t)),find(o.id)?`<button class="ch" style="margin-top:6px" onclick="restoreMiss('${o.id}')">استرجاع</button>`:'')})).concat(sw.nsubs.map(o=>({dt:o.dt,r:rrow(k,'s',o.p+'←'+o.t,esc(o.p)+' ← '+esc(o.t),'جزء · '+TL(o.ty)+' · '+o.n+' · '+fd(o.dt),[])}))).sort((p,q)=>p.dt<q.dt?-1:1).map(x=>x.r).join('');
+ const nl=sw.never.map(o=>({dt:o.dt,r:rrow(k,'n',o.id,esc(o.t),TL(o.ty)+' · '+o.n+' · '+fd(o.dt)+spanTxt(o.id),prt.filter(p=>p.id===o.id||baseT(p.t)===baseT(o.t)),find(o.id)?`<button class="ch" style="margin-top:6px" onclick="restoreMiss('${o.id}')">استرجاع</button>`:'')})).concat(sw.nsubs.map(o=>({dt:o.dt,r:rrow(k,'s',o.p+'←'+o.t,esc(o.p)+' ← '+esc(o.t),'جزء · '+TL(o.ty)+' · '+o.n+' · '+fd(o.dt),[])}))).sort((p,q)=>p.dt<q.dt?-1:1).map(x=>x.r).join('');
  const dr=S.items.filter(i=>i.done&&i.done>=k&&i.done<=wend).sort((a,b)=>a.done<b.done?-1:1);
- const dp=OP['dn'+k]?`<div class="wc" style="margin:0 0 10px">${dr.length?dr.map(i=>li(esc(i.title)+(i.sid&&sname(i.sid)?' ('+esc(sname(i.sid))+')':''),TL(i.type)+' · '+DN[prs(i.done).getDay()]+' · '+fd(i.done),`<button class="ch" style="margin-top:4px" onclick="redoDone('${i.id}')">إعادة</button>`)).join(''):'<div class="tg">لا يوجد</div>'}</div>`:'';
- const t1=dt('nv'+k,`❌ ما اتعملش <b class="cnt">${sw.never.length}</b>`,(nl||'<div class="tg">لا يوجد</div>')+dt('ad'+k,'الوقت والتطبيقات',wkAdd(k,wend),'sb2'),'tb r');
+ const dp=`<details class="sb2" data-k="dn${k}" ${OP['dn'+k]?'open':''} ontoggle="OP[this.dataset.k]=this.open"><summary>الحاجات اللي عملتها <small class="tg">${dr.length}</small></summary>${dr.length?dr.map(i=>{const tl=(S.tlog||[]).find(x=>x.id===i.id),np=i.subs.filter(s=>s.t).length,nd=i.subs.filter(s=>s.t&&s.d).length;return li(esc(i.title)+(i.sid&&sname(i.sid)?' ('+esc(sname(i.sid))+')':''),TL(i.type)+' · '+DN[prs(i.done).getDay()]+' · '+fd(i.done)+(np?' · الأجزاء '+nd+'/'+np:'')+(tl?' · متوقع '+(tl.est?hm(tl.est):'—')+' · فعلي '+hm(tl.act):''),(tl?tlBars(tl):'')+`<button class="ch" style="margin-top:4px" onclick="redoDone('${i.id}')">إعادة</button>`)}).join(''):'<div class="tg">لا يوجد</div>'}</details>`;
+ const t1=dt('nv'+k,`❌ ما اتعملش <b class="cnt">${sw.never.length}</b>`,dp+(nl||'<div class="tg">لا يوجد</div>'),'tb r');
  const nid=new Set(sw.never.map(o=>o.id)),nta=new Set(sw.acl.map(o=>baseT(o.t))),nnt=new Set(sw.never.map(o=>baseT(o.t))),orph=prt.filter(p=>!nid.has(p.id)&&!nta.has(baseT(p.t))&&!nnt.has(baseT(p.t)));
  const t2=dt('zq'+k,`🧱 راكمت كم مرة <b class="cnt">${sw.acl.length}</b>`,(sw.acl.length||orph.length?sw.acl.map(o=>rrow(k,'a',o.t,esc(o.t),o.n+' · '+fd(o.dt),prt.filter(p=>baseT(p.t)===baseT(o.t)))).join('')+orph.map(p=>rrow(k,'a',p.t,esc(p.t),fd(p.d),[p])).join(''):'<div class="tg">لا يوجد</div>'),'tb o');
  const pk0=ymd(addD(prs(k),-7)),pn0=((S.notes[pk0]||{}).l||'').trim(),plb=pn0?`<details class="pl" data-k="pl${k}" ${OP['pl'+k]?'open':''} ontoggle="OP[this.dataset.k]=this.open"><summary>دروس الأسبوع السابق</summary><div class="lst">${esc(pn0)}</div></details>`:'';
  return `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b dir="ltr" style="font-size:14px">${fd(clp(k))} – ${fd(wend)}</b><button class="ch" onclick="dV='${k}';draw()">الأيام</button></div>
  <div class="wcm">✅ ملتزم ${cs.c} يوم · ⬜ غايب ${cs.a} يوم</div>
- <div class="wc" style="border-color:${col};text-align:center;margin:10px 0;cursor:pointer" onclick="OP['dn${k}']=!OP['dn${k}'];draw()">${ring(pc,col,150)}</div>
- ${dp}<div class="tbw" style="min-width:0">${t1}${t2}</div>
- ${box('g','✨ The Good','#22c55e')}${box('b','⚠️ The Bad','#ef4444')}${box('l','💡 Lessons','#8b5cf6')}${plb}`;
+ <div class="wc" style="border-color:${col};text-align:center;margin:10px 0">${ring(pc,col,150)}</div>
+ <div class="tbw" style="min-width:0">${t1}${t2}</div>
+ ${wkAdd(k,wend)}${box('g','✨ The Good','#22c55e')}${box('b','⚠️ The Bad','#ef4444')}${box('l','💡 Lessons','#8b5cf6')}${plb}`;
 }
 function wkRender(){
  const th=NOW().getDay()===1,{cur,ks,data}=weeksAll(),A=activeSet();
@@ -1104,9 +1106,13 @@ function moStab(m){let any=false;const rows=[];Object.keys(S.tms||{}).forEach(k=
  if(!any)return'';return '<h4 style="margin:12px 0 4px">ثبات وقتك</h4>'+(rows.length?rows.map(r=>`<div class="li"><div class="lt">${esc(r.k)}</div><div class="ls">${r.st?'ثابت':'متذبذب'} · المتوسط ${r.mean} د · ${r.n} مرة</div></div>`).join(''):'<div class="tg">غير كافٍ لسه (محتاج 3 مرات)</div>')}
 /* السبب بيتكتب جوه كل صف مباشرة */
 function wrSet(el){S.wrs=S.wrs||{};const k=el.dataset.wk,v=el.value.trim();if(v)S.wrs[k]=v;else delete S.wrs[k];actMark();save()}
+function ppEdit(ix,v){if(S.pp[ix]){S.pp[ix].r=v;actMark();save()}}
+function spanTxt(id){const it=find(id);if(!it)return'';
+ if(it.type==='exam'){const a=it.start||it.show,n=it.subs.length||Math.max(0,diff(prs(it.due),prs(a)));return n>0?` · ${dayW(n)} <bdi dir="ltr">${fd(a)} ← ${fd(ymd(addD(prs(it.due),-1)))}</bdi>`:''}
+ if(it.big&&it.subs.length)return ` · ${dayW(it.subs.length)}`;return''}
 function rrow(k,kind,id,t,s,old,extra){
  const wk_=k+'|'+kind+'|'+id,cur=(S.wrs||{})[wk_]||'';
- return `<div class="li rr"><div class="lt">${t}</div><div class="ls">${s}</div>${(old||[]).map(r=>`<div class="rn">سبب (${fd(r.d)}): ${esc(r.r)}</div>`).join('')}<input type="text" data-wk="${esc(wk_)}" value="${esc(cur)}" placeholder="اكتب السبب هنا" oninput="wrSet(this)">${extra||''}</div>`}
+ return `<div class="li rr"><div class="lt">${t}</div><div class="ls">${s}</div>${(old||[]).map(r=>`<div class="rn">سبب (${fd(r.d)})</div><textarea rows="2" oninput="ppEdit(${S.pp.indexOf(r)},this.value)">${esc(r.r)}</textarea>`).join('')}<input type="text" data-wk="${esc(wk_)}" value="${esc(cur)}" placeholder="اكتب السبب هنا" oninput="wrSet(this)">${extra||''}</div>`}
 /* ===================== settings ===================== */
 function patSet(k,v){const p=S.pat[k];if(!p)return;p.samples=[+v];p.days=+v;p.stable=true;save();stDraw()}
 function patDel(k){delete S.pat[k];save();stDraw()}
@@ -1188,9 +1194,8 @@ setInterval(()=>{document.querySelectorAll('[data-tm]').forEach(e=>{const p=e.da
 /* ===================== weekly: times, breaks, apps ===================== */
 const durTxt=ms=>tv(ms);
 function delBrl(id){S.brl=(S.brl||[]).filter(x=>String(x.id||x.t0)!==String(id));actMark();save();draw()}
-function wkTime(k,wend){let h='';const L=(S.tlog||[]).filter(x=>x.d>=k&&x.d<=wend);
- if(L.length){const bar=(e,a)=>{const mx=Math.max(e,a,1);return `<div class="eb"><i class="e" style="width:${e/mx*100}%"></i></div><div class="eb"><i style="width:${a/mx*100}%"></i></div>`};
-  h+=dt('tl'+k,'⏳ وقت المهام (متوقع / فعلي)',L.map(x=>`<div class="li"><div class="lt">${esc(x.title)}${x.sub?' ('+esc(x.sub)+')':''}</div><div class="ls">متوقع ${x.est?hm(x.est):'—'} · فعلي ${hm(x.act)}${x.est&&x.act>x.est?' · زاد '+hm(x.act-x.est):''}</div>${bar(x.est||0,x.act||0)}${x.parts.map(p=>`<div class="rn">${esc(p.t)}: متوقع ${p.est?hm(p.est):'—'} · فعلي ${hm(p.act)}</div>`+(p.kids||[]).map(q=>`<div class="rn" style="margin-inline-start:14px">↳ ${esc(q.t)}: متوقع ${q.est?hm(q.est):'—'} · فعلي ${hm(q.act)}</div>`).join('')).join('')}</div>`).join(''),'wc')}
+function tlBars(x){const mx=Math.max(x.est||0,x.act||0,1);return `<div class="eb"><i class="e" style="width:${(x.est||0)/mx*100}%"></i></div><div class="eb"><i style="width:${(x.act||0)/mx*100}%"></i></div>`}
+function wkTime(k,wend){let h='';
  const B=(S.brl||[]).filter(x=>x.d>=k&&x.d<=wend).sort((a,b)=>(a.t0||0)-(b.t0||0));
  if(B.length){const tot=B.reduce((s,x)=>s+x.ms,0);
   h+=dt('bl'+k,'☕ لما وقفت المذاكرة',`<div class="wcm">المجموع ${durTxt(tot)} · ${B.length} مرة</div>`+B.map(x=>`<div class="li"><div class="lt">${esc(x.what)}</div><div class="ls">${x.t0?DN[new Date(x.t0).getDay()]+' '+fd(x.d)+' · '+clk(x.t0)+' · ':fd(x.d)+' · '}${durTxt(x.ms)}${x.task?' · '+esc(x.task)+(x.part?' — '+esc(x.part):''):''}</div><button class="del" onclick="delBrl('${esc(String(x.id||x.t0))}')" aria-label="امسح">×</button></div>`).join(''),'wc')}
@@ -1198,7 +1203,7 @@ function wkTime(k,wend){let h='';const L=(S.tlog||[]).filter(x=>x.d>=k&&x.d<=wen
 let UD=null,UDt=0;
 function usageData(){if(!window.Android||!Android.usageData)return null;if(UD&&Date.now()-UDt<4000)return UD;try{UD=JSON.parse(Android.usageData()||'{}');UDt=Date.now()}catch(e){UD=null}return UD}
 function wkAdd(k,wend){const av=tmAvg(k,wend);
- return wkTime(k,wend)+(av.length?dt('av'+k,'⌛ متوسط وقت الأجزاء',av.map(a=>`<div class="li"><div class="lt">${esc(a.k)}</div><div class="ls">المتوسط ${hm(a.avg)} · ${a.n} مرة${a.e?' · المتوقع '+hm(a.e):''}</div></div>`).join(''),'wc'):'')+appsInline(k)}
+ return wkTime(k,wend)+appsInline(k)+(av.length?dt('av'+k,'⌛ متوسط وقت الأجزاء',av.map(a=>`<div class="li"><div class="lt">${esc(a.k)}</div><div class="ls">المتوسط ${hm(a.avg)} · ${a.n} مرة${a.e?' · المتوقع '+hm(a.e):''}</div></div>`).join(''),'wc'):'')}
 function appsInline(k){const d=usageData();if(!d)return'';stSync(k);return dt('ap'+k,'📱 التطبيقات','<div id="stIn">'+stHtml()+'</div>','wc')}
 /* ===================== settings: apps tracking ===================== */
 let APPS=null,appQ='';
@@ -1278,7 +1283,7 @@ function stHtml(){const[a,b]=stRange(),A=stAgg(a,b),ps=Object.keys(A.tot).sort((
  const crow=cs.map(c=>`<div class="li"><div class="lt">${esc(c.w)}</div><div class="ls">${esc(c.n)} · ${DN[new Date(c.id).getDay()]} ${ltr(fd(ymd(new Date(c.id))))} · وقفت ${ltr(clk(c.u))} · قعدت ${tv(c.use||0)}${(c.over||0)>60000?' · زودت '+tv(c.over):' · التزمت'}</div></div>`).join('');
  return `<div class="sth"><select class="stsel" onchange="stMode(this.value)">${modes.map(m=>`<option value="${m[0]}" ${m[0]===mv?'selected':''}>${m[1]}</option>`).join('')}</select><div class="stpill"><button onclick="stNav(1)">السابق</button><span>${stLabel(a,b)}</span><button onclick="stNav(-1)" ${ST.o<=0||ST.m==='r'?'disabled':''}>التالي</button></div></div>
 ${agg}${days7}
-<div class="stcard"><div class="stch">${barChart(vals,labs,all)}</div><div class="stsum"><span>الاستخدام الكلي</span><b>${tv(sum)}</b></div><div class="stsum sm"><span>${A.single?'اليوم':'المتوسط اليومي'}</span><b>${tv(avg)}</b></div>${A.hrs[pk]>0?`<div class="stsum sm"><span>أكتر وقت</span><b>${ltr(hr12(pk))} · ${tv(A.hrs[pk])}</b></div>`:''}</div>
+<div class="stcard"><div class="stch">${barChart(vals,labs,all)}</div><div class="stsum"><span>الاستخدام الكلي</span><b>${tv(sum)}</b></div>${A.hrs[pk]>0?`<div class="stsum sm"><span>أكتر وقت</span><b>${ltr(hr12(pk))} · ${tv(A.hrs[pk])}</b></div>`:''}</div>
 <div class="ulist">${list}</div>
 ${cs.length?`<h4 style="margin:14px 0 4px">إجاباتي والتزامي${over>60000?' · زودت '+tv(over):''}</h4>${crow}`:''}`}
 function stRender(){const o=$('stIn');if(o)o.innerHTML=stHtml()}

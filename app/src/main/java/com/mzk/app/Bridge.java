@@ -273,6 +273,7 @@ public class Bridge {
     @JavascriptInterface
     public String usageData() {
         try {
+            UsageCalc.refresh(c);
             SharedPreferences s = c.getSharedPreferences("watch", Context.MODE_PRIVATE);
             return "{\"u\":" + s.getString("usage", "{}") + ",\"h\":" + s.getString("hours", "{}")
                     + ",\"n\":" + s.getString("names", "{}") + ",\"c\":" + s.getString("commits", "[]") + "}";

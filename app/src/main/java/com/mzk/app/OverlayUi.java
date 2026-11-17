@@ -11,6 +11,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
 import android.text.Editable;
+import android.text.InputFilter;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.view.Gravity;
 import android.view.View;
@@ -157,6 +159,52 @@ public class OverlayUi {
         return l;
     }
 
+    static EditText numEdit(Context c, String v) {
+        EditText e = new EditText(c);
+        e.setText(v);
+        e.setInputType(InputType.TYPE_CLASS_NUMBER);
+        e.setFilters(new InputFilter[]{new InputFilter.LengthFilter(2)});
+        e.setTextSize(34);
+        e.setTypeface(null, Typeface.BOLD);
+        e.setGravity(Gravity.CENTER);
+        e.setTextColor(Color.parseColor("#111111"));
+        e.setBackgroundColor(Color.parseColor("#EEEEEE"));
+        e.setSelectAllOnFocus(true);
+        return e;
+    }
+
+    static int parseInt2(EditText e) {
+        try {
+            String s = e.getText().toString().trim();
+            if (s.isEmpty()) return -1;
+            return Integer.parseInt(s);
+        } catch (Exception ex) {
+            return -1;
+        }
+    }
+
+    // الساعة (1-12) والدقيقة + ص/م -> دقايق من نص الليل، أو -1 لو غلط
+    static int minsOf(EditText eh, EditText em, int ap) {
+        int h = parseInt2(eh);
+        int m = parseInt2(em);
+        if (h < 1 || h > 12 || m < 0 || m > 59) return -1;
+        return (h % 12 + (ap == 1 ? 12 : 0)) * 60 + m;
+    }
+
+    static void refreshInfo(TextView info, EditText eh, EditText em, int ap) {
+        int mins = minsOf(eh, em, ap);
+        if (mins < 0) {
+            info.setText("اكتب الساعة والدقايق");
+        } else {
+            info.setText("بعد " + afterTxt(targetOf(mins)));
+        }
+    }
+
+    static void paintAp(Button am, Button pm, int ap) {
+        am.setBackgroundColor(Color.parseColor(ap == 0 ? "#7C5CE0" : "#9E9E9E"));
+        pm.setBackgroundColor(Color.parseColor(ap == 1 ? "#7C5CE0" : "#9E9E9E"));
+    }
+
     // سؤال: بتعمل إيه في التطبيق ده + هتوقف الساعة كام
     static void showCheck(final Context ctx, final String pkg, final String name, final int wait) {
         try {
@@ -168,53 +216,70 @@ public class OverlayUi {
             col.addView(ed, lp(ctx, 14));
             col.addView(label(ctx, "هتوقف الساعة كام؟", 18, false), lp(ctx, 22));
 
-            final int[] m = new int[1];
+            final int[] ap = new int[1];
             Calendar c0 = Calendar.getInstance();
-            c0.add(Calendar.MINUTE, 30);
-            m[0] = ((c0.get(Calendar.HOUR_OF_DAY) * 60 + c0.get(Calendar.MINUTE) + 4) / 5 * 5) % 1440;
-
-            final TextView big = label(ctx, "", 46, true);
-            big.setGravity(Gravity.CENTER);
-            big.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-            col.addView(big, lp(ctx, 8));
+            int h24 = c0.get(Calendar.HOUR_OF_DAY);
+            int mm0 = c0.get(Calendar.MINUTE);
+            ap[0] = h24 >= 12 ? 1 : 0;
+            final EditText eh = numEdit(ctx, String.valueOf(h24 % 12 == 0 ? 12 : h24 % 12));
+            final EditText em = numEdit(ctx, (mm0 < 10 ? "0" : "") + mm0);
             final TextView info = label(ctx, "", 15, false);
             info.setGravity(Gravity.CENTER);
             info.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
             info.setTextColor(Color.parseColor("#555555"));
-            col.addView(info);
-            render(big, info, m[0]);
 
             LinearLayout r1 = new LinearLayout(ctx);
             r1.setOrientation(LinearLayout.HORIZONTAL);
             r1.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
-            r1.addView(adj(ctx, "-1س", -60, m, big, info), weight());
-            r1.addView(adj(ctx, "+1س", 60, m, big, info), weight());
-            r1.addView(adj(ctx, "-5د", -5, m, big, info), weight());
-            r1.addView(adj(ctx, "+5د", 5, m, big, info), weight());
-            col.addView(r1, lp(ctx, 14));
+            r1.setGravity(Gravity.CENTER);
+            TextView colon = label(ctx, ":", 34, true);
+            final Button am = btn(ctx, "ص");
+            final Button pm = btn(ctx, "م");
+            LinearLayout.LayoutParams lw = new LinearLayout.LayoutParams(dp(ctx, 70), LinearLayout.LayoutParams.WRAP_CONTENT);
+            r1.addView(eh, lw);
+            r1.addView(colon);
+            r1.addView(em, new LinearLayout.LayoutParams(dp(ctx, 70), LinearLayout.LayoutParams.WRAP_CONTENT));
+            LinearLayout.LayoutParams lb = new LinearLayout.LayoutParams(dp(ctx, 56), LinearLayout.LayoutParams.WRAP_CONTENT);
+            lb.leftMargin = dp(ctx, 12);
+            r1.addView(am, lb);
+            r1.addView(pm, new LinearLayout.LayoutParams(dp(ctx, 56), LinearLayout.LayoutParams.WRAP_CONTENT));
+            col.addView(r1, lp(ctx, 10));
+            col.addView(info, lp(ctx, 8));
+            paintAp(am, pm, ap[0]);
+            refreshInfo(info, eh, em, ap[0]);
 
-            LinearLayout r2 = new LinearLayout(ctx);
-            r2.setOrientation(LinearLayout.HORIZONTAL);
-            r2.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
-            Button am = btn(ctx, "ص");
             am.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (m[0] >= 720) m[0] -= 720;
-                    render(big, info, m[0]);
+                    ap[0] = 0;
+                    paintAp(am, pm, 0);
+                    refreshInfo(info, eh, em, 0);
                 }
             });
-            Button pm = btn(ctx, "م");
             pm.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (m[0] < 720) m[0] += 720;
-                    render(big, info, m[0]);
+                    ap[0] = 1;
+                    paintAp(am, pm, 1);
+                    refreshInfo(info, eh, em, 1);
                 }
             });
-            r2.addView(am, weight());
-            r2.addView(pm, weight());
-            col.addView(r2, lp(ctx, 8));
+            TextWatcher tw = new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int a1, int b1, int c1) {
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int a1, int b1, int c1) {
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                    refreshInfo(info, eh, em, ap[0]);
+                }
+            };
+            eh.addTextChangedListener(tw);
+            em.addTextChangedListener(tw);
 
             final Button ok = btn(ctx, "تأكيد");
             col.addView(ok, lp(ctx, 22));
@@ -247,13 +312,18 @@ public class OverlayUi {
                         Toast.makeText(ctx, "اكتب هتعمل إيه", Toast.LENGTH_SHORT).show();
                         return;
                     }
+                    int mins = minsOf(eh, em, ap[0]);
+                    if (mins < 0) {
+                        Toast.makeText(ctx, "اكتب الساعة والدقايق صح", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
                     try {
                         Intent s = new Intent(ctx, AppWatch.class);
                         s.setAction("COMMIT");
                         s.putExtra("p", pkg);
                         s.putExtra("n", name);
                         s.putExtra("w", w);
-                        s.putExtra("u", targetOf(m[0]));
+                        s.putExtra("u", targetOf(mins));
                         ctx.startService(s);
                     } catch (Exception e) {
                     }
