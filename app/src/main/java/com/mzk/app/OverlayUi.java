@@ -201,12 +201,33 @@ public class OverlayUi {
         }
     }
 
+    // المدة بالدقايق من خانتين: ساعات ودقايق (الخانة الفاضية = صفر). 0 أو أكتر من 24 ساعة = غلط
+    static int durMins(EditText eh, EditText em) {
+        int h = parseInt2(eh);
+        int m = parseInt2(em);
+        if (h < 0) h = 0;
+        if (m < 0) m = 0;
+        int d = h * 60 + m;
+        return d > 1440 ? -1 : d;
+    }
+
+    static void refreshDur(TextView info, EditText eh, EditText em) {
+        int d = durMins(eh, em);
+        if (d <= 0) {
+            info.setText("اكتب المدة");
+        } else {
+            Calendar c = Calendar.getInstance();
+            c.add(Calendar.MINUTE, d);
+            info.setText("هتوقف الساعة " + clock(c.get(Calendar.HOUR_OF_DAY) * 60 + c.get(Calendar.MINUTE)));
+        }
+    }
+
     static void paintAp(Button am, Button pm, int ap) {
         am.setBackgroundColor(Color.parseColor(ap == 0 ? "#7C5CE0" : "#9E9E9E"));
         pm.setBackgroundColor(Color.parseColor(ap == 1 ? "#7C5CE0" : "#9E9E9E"));
     }
 
-    // سؤال: بتعمل إيه في التطبيق ده + هتوقف الساعة كام
+    // سؤال: بتعمل إيه في التطبيق ده + هتقعد قد إيه (ساعات ودقايق)
     static void showCheck(final Context ctx, final String pkg, final String name, final int wait) {
         try {
             if (checkShown || !can(ctx)) return;
@@ -215,15 +236,10 @@ public class OverlayUi {
             col.addView(label(ctx, "بتعمل إيه في " + name + "؟", 22, true));
             final EditText ed = edit(ctx, "اكتب هتعمل إيه");
             col.addView(ed, lp(ctx, 14));
-            col.addView(label(ctx, "هتوقف الساعة كام؟", 18, false), lp(ctx, 22));
+            col.addView(label(ctx, "هتقعد قد إيه؟", 18, false), lp(ctx, 22));
 
-            final int[] ap = new int[1];
-            Calendar c0 = Calendar.getInstance();
-            int h24 = c0.get(Calendar.HOUR_OF_DAY);
-            int mm0 = c0.get(Calendar.MINUTE);
-            ap[0] = h24 >= 12 ? 1 : 0;
-            final EditText eh = numEdit(ctx, String.valueOf(h24 % 12 == 0 ? 12 : h24 % 12));
-            final EditText em = numEdit(ctx, (mm0 < 10 ? "0" : "") + mm0);
+            final EditText eh = numEdit(ctx, "0");
+            final EditText em = numEdit(ctx, "30");
             final TextView info = label(ctx, "", 15, false);
             info.setGravity(Gravity.CENTER);
             info.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
@@ -233,38 +249,23 @@ public class OverlayUi {
             r1.setOrientation(LinearLayout.HORIZONTAL);
             r1.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
             r1.setGravity(Gravity.CENTER);
-            TextView colon = label(ctx, ":", 34, true);
-            final Button am = btn(ctx, "ص");
-            final Button pm = btn(ctx, "م");
-            LinearLayout.LayoutParams lw = new LinearLayout.LayoutParams(dp(ctx, 70), LinearLayout.LayoutParams.WRAP_CONTENT);
-            r1.addView(eh, lw);
-            r1.addView(colon);
-            r1.addView(em, new LinearLayout.LayoutParams(dp(ctx, 70), LinearLayout.LayoutParams.WRAP_CONTENT));
-            LinearLayout.LayoutParams lb = new LinearLayout.LayoutParams(dp(ctx, 56), LinearLayout.LayoutParams.WRAP_CONTENT);
-            lb.leftMargin = dp(ctx, 12);
-            r1.addView(am, lb);
-            r1.addView(pm, new LinearLayout.LayoutParams(dp(ctx, 56), LinearLayout.LayoutParams.WRAP_CONTENT));
+            TextView hl = label(ctx, "ساعة", 16, false);
+            TextView ml = label(ctx, "دقيقة", 16, false);
+            LinearLayout.LayoutParams lh = new LinearLayout.LayoutParams(dp(ctx, 70), LinearLayout.LayoutParams.WRAP_CONTENT);
+            LinearLayout.LayoutParams lm = new LinearLayout.LayoutParams(dp(ctx, 70), LinearLayout.LayoutParams.WRAP_CONTENT);
+            LinearLayout.LayoutParams lt1 = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            lt1.leftMargin = dp(ctx, 8);
+            lt1.rightMargin = dp(ctx, 18);
+            LinearLayout.LayoutParams lt2 = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            lt2.leftMargin = dp(ctx, 8);
+            r1.addView(eh, lh);
+            r1.addView(hl, lt1);
+            r1.addView(em, lm);
+            r1.addView(ml, lt2);
             col.addView(r1, lp(ctx, 10));
             col.addView(info, lp(ctx, 8));
-            paintAp(am, pm, ap[0]);
-            refreshInfo(info, eh, em, ap[0]);
+            refreshDur(info, eh, em);
 
-            am.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    ap[0] = 0;
-                    paintAp(am, pm, 0);
-                    refreshInfo(info, eh, em, 0);
-                }
-            });
-            pm.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    ap[0] = 1;
-                    paintAp(am, pm, 1);
-                    refreshInfo(info, eh, em, 1);
-                }
-            });
             TextWatcher tw = new TextWatcher() {
                 @Override
                 public void beforeTextChanged(CharSequence s, int a1, int b1, int c1) {
@@ -276,7 +277,7 @@ public class OverlayUi {
 
                 @Override
                 public void afterTextChanged(Editable s) {
-                    refreshInfo(info, eh, em, ap[0]);
+                    refreshDur(info, eh, em);
                 }
             };
             eh.addTextChangedListener(tw);
@@ -313,9 +314,9 @@ public class OverlayUi {
                         Toast.makeText(ctx, "اكتب هتعمل إيه", Toast.LENGTH_SHORT).show();
                         return;
                     }
-                    int mins = minsOf(eh, em, ap[0]);
-                    if (mins < 0) {
-                        Toast.makeText(ctx, "اكتب الساعة والدقايق صح", Toast.LENGTH_SHORT).show();
+                    int dur = durMins(eh, em);
+                    if (dur <= 0) {
+                        Toast.makeText(ctx, "اكتب المدة (ساعات ودقايق)", Toast.LENGTH_SHORT).show();
                         return;
                     }
                     try {
@@ -325,7 +326,7 @@ public class OverlayUi {
                         s.putExtra("p", pkg);
                         s.putExtra("n", name);
                         s.putExtra("w", w);
-                        s.putExtra("u", targetOf(mins));
+                        s.putExtra("u", System.currentTimeMillis() + dur * 60000L);
                         ctx.startService(s);
                         }
                     } catch (Exception e) {

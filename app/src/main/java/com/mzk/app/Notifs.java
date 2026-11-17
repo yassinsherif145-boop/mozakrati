@@ -39,6 +39,30 @@ public class Notifs {
         }
         nm.cancel(900);
         p.edit().putString("nids", "").putString("lastjson", "").apply();
+        if (AppWatch.running) idle(c, "مفيش مهام دلوقتي");
+    }
+
+    // إشعار بسيط. لما مراقبة التطبيقات شغالة بنستخدمه بدل إشعار «المراقبة» المنفصل (الأندرويد بيفرض إشعار مع أي خدمة شغالة في الخلفية)
+    static Notification idleNote(Context c, String text) {
+        PendingIntent open = PendingIntent.getActivity(c, 1, new Intent(c, MainActivity.class), FLAGS);
+        return new Notification.Builder(c, CH)
+                .setSmallIcon(R.drawable.ic_stat)
+                .setContentTitle("مذاكرتي")
+                .setContentText(text)
+                .setOngoing(true)
+                .setOnlyAlertOnce(true)
+                .setVisibility(Notification.VISIBILITY_PUBLIC)
+                .setContentIntent(open)
+                .build();
+    }
+
+    static void idle(Context c, String text) {
+        try {
+            ensure(c);
+            NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
+            nm.notify(1000, idleNote(c, text));
+        } catch (Exception e) {
+        }
     }
 
     static void fill(RemoteViews rv, int col, String tag, String title, String body, int count) {

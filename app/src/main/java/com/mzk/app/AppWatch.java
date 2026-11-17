@@ -16,6 +16,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.PowerManager;
+import android.service.notification.StatusBarNotification;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -86,19 +87,24 @@ public class AppWatch extends Service {
         return null;
     }
 
+    // الخدمة محتاجة إشعار (قاعدة أندرويد). بنستخدم نفس إشعار المهام (رقم 1000) بدل إشعار «المراقبة» المنفصل
     void startFg() {
         try {
             NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-            if (Build.VERSION.SDK_INT >= 26) {
-                nm.createNotificationChannel(new NotificationChannel("watch2", "مراقبة التطبيقات", NotificationManager.IMPORTANCE_MIN));
+            Notifs.ensure(this);
+            Notification n = null;
+            try {
+                for (StatusBarNotification sbn : nm.getActiveNotifications()) {
+                    if (sbn.getId() == 1000) n = sbn.getNotification();
+                }
+            } catch (Exception e) {
             }
-            Notification n = new Notification.Builder(this, "watch2")
-                    .setSmallIcon(R.drawable.ic_stat)
-                    .setContentTitle("المراقبة")
-                    .setContentText("\u200F")
-                    .setOngoing(true)
-                    .build();
-            startForeground(56, n);
+            if (n == null) n = Notifs.idleNote(this, "مفيش مهام دلوقتي");
+            startForeground(1000, n);
+            try {
+                nm.cancel(56);
+            } catch (Exception e) {
+            }
         } catch (Exception e) {
         }
     }
@@ -125,6 +131,10 @@ public class AppWatch extends Service {
     public void onDestroy() {
         running = false;
         h.removeCallbacks(tick);
+        try {
+            stopForeground(Service.STOP_FOREGROUND_DETACH);
+        } catch (Exception e) {
+        }
         super.onDestroy();
     }
 
