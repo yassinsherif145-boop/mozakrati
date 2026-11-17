@@ -60,9 +60,25 @@ public class Notifs {
         return "على المسار";
     }
 
+    static int ugColor(int lv) {
+        if (lv >= 2) return 0xFFB23A3A;
+        if (lv == 1) return 0xFFA8741A;
+        return 0xFF5F8070;
+    }
+
+    static int ugIcon(int lv) {
+        if (lv >= 2) return R.drawable.ic_u2;
+        if (lv == 1) return R.drawable.ic_u1;
+        return R.drawable.ic_u0;
+    }
+
     static void fillRow(RemoteViews r, JSONObject t) {
+        int lv = t.optInt("lv");
         r.setTextViewText(R.id.rt, t.optString("t"));
-        r.setTextViewText(R.id.rm, ugLabel(t.optInt("lv")));
+        r.setTextViewText(R.id.rm, ugLabel(lv));
+        r.setTextColor(R.id.rm, ugColor(lv));
+        r.setImageViewResource(R.id.ic, ugIcon(lv));
+        r.setInt(R.id.ic, "setColorFilter", ugColor(lv));
     }
 
     static void show(Context c, String json) {

@@ -21,12 +21,19 @@
         android:textSize="17sp"
         android:textStyle="bold" />
 
+    <ImageView
+        android:id="@+id/ic"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:layout_marginStart="10dp" />
+
     <TextView
         android:id="@+id/rm"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
+        android:layout_marginStart="4dp"
         android:textColor="#FF757575"
         android:textDirection="rtl"
-        android:textSize="11sp" />
+        android:textSize="12sp"
+        android:textStyle="bold" />
 </LinearLayout>

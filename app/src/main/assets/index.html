@@ -483,13 +483,13 @@ function place(){const th=NOW().getDay()===1;
  const o=th?{wkTop:1,calBlock:2,slotA:3,slotB:4,yrBot:5}:{calBlock:1,slotA:2,slotB:3,wkBot:4,yrBot:5};
  ['wkTop','tabA','tabB','slotA','slotB','wkBot','yrBot','calBlock'].forEach(i=>{$(i).style.order=o[i]||9});$('calBtnW').style.order=99}
 function note(k,f,v){S.notes[k]=S.notes[k]||{};S.notes[k][f]=v;actMark();save()}
-function logToday(act,dn,T,ty){
- const tot=act.length+dn;if(!tot||T.getDay()===RD()){delete S.log[ty];return null}
+function logToday(act,dn,T,ty,xr){
+ xr=xr||{p:[],d:[]};const tot=act.length+dn+xr.p.length;if(!tot||T.getDay()===RD()){delete S.log[ty];return null}
  const sc=Math.round(dn/tot*100)/10;
  const st=dn===tot?S.items.filter(i=>i.big).reduce((a,i)=>a+i.subs.filter(s=>s.on===ty).length,0):0;
  const ac=accList(T);
  const nm=i=>i.title+(i.sid?' ('+sname(i.sid)+')':'');
- S.log[ty]={tot,dn,sc,st,ac,u:act.map(i=>({id:i.id,t:nm(i),ty:i.type})),us:act.flatMap(i=>i.subs.map((q,k)=>q.t&&!q.d?{id:i.id,i:k,t:q.t,p:i.title,ty:i.type}:null).filter(Boolean)),ds:S.items.flatMap(i=>i.subs.map((q,k)=>q.on===ty?i.id+':'+k:null).filter(Boolean)),d:S.items.filter(i=>i.done===ty).map(i=>i.id),dl:S.items.filter(i=>i.done===ty).map(nm)};
+ S.log[ty]={tot,dn,sc,st,ac,u:act.map(i=>({id:i.id,t:nm(i),ty:i.type})).concat(xr.p.map(x=>({id:x.id,t:x.t,ty:x.cat}))),us:act.flatMap(i=>i.subs.map((q,k)=>q.t&&!q.d?{id:i.id,i:k,t:q.t,p:i.title,ty:i.type}:null).filter(Boolean)),ds:S.items.flatMap(i=>i.subs.map((q,k)=>q.on===ty?i.id+':'+k:null).filter(Boolean)),d:S.items.filter(i=>i.done===ty).map(i=>i.id),dl:S.items.filter(i=>i.done===ty).map(nm)};
  save();return S.log[ty];
 }
 function clp(k){const st=[S.start].concat(Object.keys(S.log)).sort()[0];return ymd(prs(k)<prs(st)?prs(st):prs(k))}
@@ -702,7 +702,7 @@ function sweep(T){
  let ch=false;
  S.items.forEach(it=>{
   if(it.type==='exam'&&it.np==='d'&&diff(prs(it.due),T)<=4){it.np='v';ch=true}
-  if(!it.done&&!it.m&&prs(it.due)<T){it.m=true;S.miss=S.miss.filter(r=>r.id!==it.id);S.miss.push({id:it.id,t:it.title+(it.sid&&sname(it.sid)?' ('+sname(it.sid)+')':''),ty:it.type,due:it.due,subs:it.subs.filter(s=>s.t&&!s.d).map(s=>s.t)});ch=true}
+  if(!it.done&&!it.m&&(prs(it.due)<T||(!TM&&it.created!==ymd(T)&&diff(prs(it.due),T)===0&&nowMin()>=alarmMin(it.due)))){it.m=true;it.mday=prs(it.due)<T?null:ymd(T);S.miss=S.miss.filter(r=>r.id!==it.id);S.miss.push({id:it.id,t:it.title+(it.sid&&sname(it.sid)?' ('+sname(it.sid)+')':''),ty:it.type,due:it.due,subs:it.subs.filter(s=>s.t&&!s.d).map(s=>s.t)});ch=true}
  });
  const n0=S.miss.length;S.miss=S.miss.filter(r=>{const it=find(r.id);return !it||it.m});if(S.miss.length!==n0)ch=true;
  if(ch)save();
@@ -995,8 +995,8 @@ function draw(){
  tmClean();const T=mid(NOW()),ty=ymd(T);sweep(T);
  $('dt').textContent=DN[T.getDay()]+' '+fd(ty);
  const list=S.items.filter(i=>!i.m&&vis(i,T)&&(!i.done||i.done===ty)&&(T.getDay()!==RD()||i.done||diff(prs(i.due),T)<=0||acc(i)>0)).sort((a,b)=>(!!a.done-!!b.done)||((urg(b)||{lv:0}).lv-(urg(a)||{lv:0}).lv)||diff(prs(a.due),prs(b.due))||(a.type==='exam'?-1:1));
- const pend=list.filter(i=>!i.done&&i.np!=='d'),dn=list.length-pend.length,tot=list.length;
- const lg=logToday(pend,dn,T,ty),sc=tot?Math.round(dn/tot*100)/10:0;
+ const pend=list.filter(i=>!i.done&&i.np!=='d'),dn=list.length-pend.length,mt=S.items.filter(i=>i.m&&i.mday===ty).map(i=>({id:i.id,t:i.title+(i.sid&&sname(i.sid)?' ('+sname(i.sid)+')':''),cat:i.type})),tot=list.length+mt.length;
+ const lg=logToday(pend,dn,T,ty,{p:mt,d:[]}),sc=tot?Math.round(dn/tot*100)/10:0;
  let h=T.getDay()===RD()?`<div class="ok" style="color:var(--mu);padding:8px">${DN[T.getDay()]} راحة</div>`:'';
  if(tot){h+=`<div class="scr"><span class="sc10" dir="ltr">${sc}/10</span><span class="tg">خلصت ${dn} من ${tot}</span>${lg&&lg.st?`<span class="stc"><i>${'★'.repeat(Math.min(lg.st,10))}</i></span>`:''}</div><div class="bar"><i style="width:${dn/tot*100}%;background:${scCol(sc)}"></i></div>${dn===tot?`<div class="ok" style="padding:6px">🎉 خلصت كل قايمة النهاردة${lg&&lg.st?' ومعاها نجوم من الإضافية':''}</div>`:''}`+'<div class="cgrid">'+list.map(i=>card(i)).join('')+'</div>'}
  else h+='<div class="ok">مفيش حاجة النهاردة</div>';
