@@ -356,6 +356,10 @@ textarea.ag{overflow:hidden;resize:none}
 </div>
 </main>
 <script>
+function showErr(n,e){try{let b=document.getElementById('errBar');if(!b){b=document.createElement('div');b.id='errBar';b.style.cssText='position:fixed;left:8px;right:8px;bottom:8px;z-index:200;background:#7f1d1d;color:#fff;padding:8px 12px;border-radius:10px;font-size:12px;direction:ltr;text-align:left;word-break:break-all';b.onclick=function(){b.remove()};document.body.appendChild(b)}b.textContent='\u26A0 '+n+': '+((e&&e.message)||e)+' | '+String((e&&e.stack)||'').split('\n').slice(0,3).join(' ').slice(-140)}catch(x){}}
+function sf(f){try{f()}catch(e){showErr(f.name||'fn',e)}}
+function safeS(f,d){try{return f()}catch(e){showErr(f.name||'sec',e);return d===undefined?'':d}}
+try{window.addEventListener('error',function(ev){showErr('js',ev.error||ev.message)})}catch(e){}
 let K='study_v1',TM=false,FAKE=null,FH=null,fsSt='off',fsT=null;let S={subjects:[],items:[]};
 const PAL=['#3b82f6','#ef4444','#16a34a','#f59e0b','#8b5cf6','#ec4899','#0d9488','#f97316'];
 function load(k){try{const r=localStorage.getItem(k);return r?JSON.parse(r):null}catch(e){return null}}
@@ -611,13 +615,13 @@ function wkDetail(k,sw){
  <div class="wcm">✅ ملتزم ${cs.c} يوم · ⬜ غايب ${cs.a} يوم</div>
  <div class="wc" style="border-color:${col};text-align:center;margin:10px 0">${ring(pc,col,150)}</div>
  <div class="tbw" style="min-width:0">${t1}${t2}</div>
- ${wkAdd(k,wend)}${box('g','✨ The Good','#22c55e')}${box('b','⚠️ The Bad','#ef4444')}${box('l','💡 Lessons','#8b5cf6')}${plb}`;
+ ${safeS(()=>wkAdd(k,wend))}${box('g','✨ The Good','#22c55e')}${box('b','⚠️ The Bad','#ef4444')}${box('l','💡 Lessons','#8b5cf6')}${plb}`;
 }
 function wkRender(){
  const th=NOW().getDay()===1||NOW().getDay()===RD(),{cur,ks,data}=weeksAll(),A=activeSet();
  const rows=ks.slice().reverse().map(k=>{const d=data[k],c=d.pct==null?'#94a3b8':scCol(d.pct/10),key='w'+k,we=ymd(addD(prs(k),6)),cs=commitStats(k,we,A);
   if(OP[key]===undefined&&th&&k===ymd(addD(prs(cur),-7)))OP[key]=true;
-  return `<details class="wr" data-k="${key}" ${OP[key]?'open':''} ontoggle="OP[this.dataset.k]=this.open"><summary class="ws" style="border-right:5px solid ${c};${k===cur?'background:'+c+'22;':''}"><div class="wsr"><span class="ar"></span><b>أسبوع ${wn(k)}</b><small dir="ltr" style="text-align:right">${fd(clp(k))} – ${fd(we)}</small><span class="wpc" style="background:${c}">${d.pct==null?'—':d.pct+'%'}</span></div></summary><div class="wb">${wkDetail(k,d)}</div></details>`}).join('');
+  return `<details class="wr" data-k="${key}" ${OP[key]?'open':''} ontoggle="OP[this.dataset.k]=this.open"><summary class="ws" style="border-right:5px solid ${c};${k===cur?'background:'+c+'22;':''}"><div class="wsr"><span class="ar"></span><b>أسبوع ${wn(k)}</b><small dir="ltr" style="text-align:right">${fd(clp(k))} – ${fd(we)}</small><span class="wpc" style="background:${c}">${d.pct==null?'—':d.pct+'%'}</span></div></summary><div class="wb">${safeS(()=>wkDetail(k,d),'<div class="tg">خطأ في عرض الأسبوع</div>')}</div></details>`}).join('');
  WB.innerHTML=`${th?'<div class="wkt">السجل الأسبوعي</div>':''}${rows}`;
 }
 function moDetail(m,si,data){
@@ -981,7 +985,7 @@ function exSetDue(id,k){const it=find(id);if(!it)return;const n0=Math.max(1,exSt
  if(!exFit(it)){Object.assign(it,old);toast('فيه أجزاء مكتوبة أكتر من الأيام. امسح الأجزاء الأقدم الأول');return}
  const n=exStudyDays(it).length;while(it.subs.length&&it.subs.length<n)it.subs.unshift({t:'',d:false,on:null,a:1});
  actMark();save();tmSync();draw();eiDraw(id)}
-const APP_VER=20;
+const APP_VER=22;
 function updApply(html){const m=/APP_VER\s*=\s*(\d+)/.exec(html),v=m?+m[1]:0,sm=/<script>([\s\S]*)<\/script>/.exec(html);
  try{if(!sm||!v)throw 0;new Function(sm[1])}catch(e){toast('الملف ده مش تحديث صالح');return 0}
  return v}
@@ -1092,7 +1096,7 @@ function draw(){
  $('tm').innerHTML=TM?`<div style="background:#7c3aed;color:#fff;border-radius:10px;padding:8px 12px;margin:8px 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b>🧪 وضع التجربة</b><span>التاريخ:</span><input type="date" value="${FAKE}" onchange="fakeSet(this.value)" style="flex:none"><button class="ch" style="background:#fff;color:#4c1d95" onclick="fakeNext()">+ يوم</button><button class="ch" style="background:#fff;color:#4c1d95" onclick="exitTest()">خروج</button></div>`:'';
  $('sqb').hidden=!(type==='hw'||(type==='exam'&&Object.keys(S.exLead||{}).length>0));$('dtb').hidden=type!=='exam';dateBtn();subjBtn();
  if(!TM&&S.al.on&&S.al.warn!==false&&hr()>=S.al.cut&&S.wd!==ty&&examsWeek().some(i=>acc(i)>0)){S.wd=ty;save();showWarn()}
- szUpdate();calRender();place();wkRender();moRender();yrRender();alInfo();lsPop();nativeSync();drRestore();pendCheck();wkCheck();pzCheck();pzPoll();
+ [szUpdate,calRender,place,wkRender,moRender,yrRender,alInfo,lsPop,nativeSync,drRestore,pendCheck,wkCheck,pzCheck,pzPoll].forEach(sf);
 }
 const RD=()=>(S.al&&S.al.rest!=null)?S.al.rest:4;
 /* ===================== helpers ===================== */
@@ -1420,9 +1424,9 @@ function stN(d){ST.n=Math.max(1,Math.min(ST.m==='w'?26:24,ST.n+d));ST.d='';stRen
 function stPick(o){ST.o=o;ST.d='';stRender()}
 function stDay(d){ST.d=d;stRender()}
 
-norm();
-draw();
-route();
+sf(norm);
+sf(draw);
+sf(route);
 try{if(window.Android&&Android.pageOk)Android.pageOk()}catch(e){}
 let lastDay=ymd(NOW());setInterval(()=>{const d=ymd(NOW());if(d!==lastDay){lastDay=d;draw()}},30000);
 </script></body></html>
