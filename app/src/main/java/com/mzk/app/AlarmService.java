@@ -19,6 +19,8 @@ public class AlarmService extends Service {
     MediaPlayer mp;
     long quietUntil = 0;
     long grace = 0;
+    long nextTry = 0;
+    long endAt = 0;
     String route = "#alarm";
     final Handler h = new Handler(Looper.getMainLooper());
 
@@ -27,6 +29,11 @@ public class AlarmService extends Service {
         @Override
         public void run() {
             if (!running) return;
+            if (endAt > 0 && System.currentTimeMillis() > endAt) {
+                Util.closeAlarmUi(AlarmService.this);
+                Util.stopAlarm(AlarmService.this);
+                return;
+            }
             if (!AlarmActivity.visible) {
                 Util.openAlarm(AlarmService.this, route);
                 if (mp == null && System.currentTimeMillis() > grace) startSound();
@@ -90,6 +97,8 @@ public class AlarmService extends Service {
         running = true;
         quietUntil = 0;
         grace = 0;
+        nextTry = 0;
+        endAt = reason ? System.currentTimeMillis() + 10 * 60 * 1000L : 0;
         if (reason) {
             // هادي في الأول عشان لو مفيش حاجة تتكتب، وبيرن لو سبت الشاشة
             grace = System.currentTimeMillis() + 8000;
@@ -123,6 +132,17 @@ public class AlarmService extends Service {
         if (uri == null) return false;
         try {
             mp = new MediaPlayer();
+            mp.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+                @Override
+                public boolean onError(MediaPlayer m, int what, int extra) {
+                    try {
+                        m.release();
+                    } catch (Exception e) {
+                    }
+                    if (mp == m) mp = null;
+                    return true;
+                }
+            });
             mp.setAudioAttributes(new AudioAttributes.Builder()
                     .setUsage(AudioAttributes.USAGE_ALARM)
                     .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
@@ -144,6 +164,7 @@ public class AlarmService extends Service {
     }
 
     void startSound() {
+        if (System.currentTimeMillis() < nextTry) return;
         stopSound();
         forceVolume();
         String saved = getSharedPreferences("mzk", Context.MODE_PRIVATE).getString("tone", "");
@@ -156,6 +177,7 @@ public class AlarmService extends Service {
         for (Uri u : cands) {
             if (play(u)) return;
         }
+        nextTry = System.currentTimeMillis() + 20000;
     }
 
     void stopSound() {

@@ -50,6 +50,8 @@ public class Bridge {
             Util.closeAlarmUi(c);
         } else if ("openmain".equals(ev)) {
             Util.openMain(c);
+        } else if ("ready".equals(ev)) {
+            AlarmActivity.ready = true;
         }
     }
 

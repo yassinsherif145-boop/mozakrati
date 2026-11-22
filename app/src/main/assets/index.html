@@ -881,7 +881,7 @@ function stDraw(){const p=$('stPanel');if(!p)return;const a=S.al,T=ymd(mid(NOW()
   b+=sRow('وضع التجربة','','<button class="ch" onclick="testMenu()">🧪 تجربة</button>');
  }
  p.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:20px">⚙ الإعدادات</b><button class="go" onclick="setClose()">تم</button></div><div class="stabs">${tabs.map(([k,l])=>`<button class="ch ${stTab===k?'on':''}" onclick="stTabSet('${k}')">${l}</button>`).join('')}</div>${b}`}
-function route(){const h=(location.hash||'').replace('#','');if(h==='alarm'){if(S.rsWait&&pendList().length)pendScreen();else showAlarm()}else if(h==='reason')reasonScreen([]);else if(h==='warn')showWarn();else if(h==='pend')pendScreen();else if(h==='wk')weeklyScreen();else if(h==='pz')pzRoute()}
+function route(){nat('ready');const h=(location.hash||'').replace('#','');if(h==='alarm'){if(S.rsWait&&pendList().length)pendScreen();else showAlarm()}else if(h==='reason')reasonScreen([]);else if(h==='warn')showWarn();else if(h==='pend')pendScreen();else if(h==='wk')weeklyScreen();else if(h==='pz')pzRoute()}
 window.addEventListener('hashchange',route);
 window.MZK={resumeT:()=>{pzPoll();tmResume()},today:todayTasks,
  notif:()=>{const ts=todayTasks();return{title:'مهام النهاردة ('+ts.length+')',lines:ts.map(t=>'• '+t.t+(t.ty==='exam'?' — باقي '+t.n+' أيام':'')+(t.parts.length?' ← '+t.parts.join('، '):''))}},
@@ -981,7 +981,7 @@ function exSetDue(id,k){const it=find(id);if(!it)return;const n0=Math.max(1,exSt
  if(!exFit(it)){Object.assign(it,old);toast('فيه أجزاء مكتوبة أكتر من الأيام. امسح الأجزاء الأقدم الأول');return}
  const n=exStudyDays(it).length;while(it.subs.length&&it.subs.length<n)it.subs.unshift({t:'',d:false,on:null,a:1});
  actMark();save();tmSync();draw();eiDraw(id)}
-const APP_VER=18;
+const APP_VER=20;
 function updApply(html){const m=/APP_VER\s*=\s*(\d+)/.exec(html),v=m?+m[1]:0,sm=/<script>([\s\S]*)<\/script>/.exec(html);
  try{if(!sm||!v)throw 0;new Function(sm[1])}catch(e){toast('الملف ده مش تحديث صالح');return 0}
  return v}
@@ -1121,6 +1121,22 @@ let exPT=[];
 function exEdit(n,tag){const L=exDayList(prs(exDate),curD,exX);while(exPT.length<L.length)exPT.unshift('');while(exPT.length>L.length)exPT.shift();
  const rows=L.map((x,i)=>`<div class="sb"><span class="tg">${DN[prs(x).getDay()]} ${fd(x)}</span><input type="text" style="flex:1" value="${esc(exPT[i]||'')}" placeholder="جزء (اختياري)" oninput="exPT[${i}]=this.value">${i===0&&curD>curMin&&!(exPT[0]||'').trim()?'<button class="dx" onclick="pdAdj(-1)" aria-label="شيل اليوم">×</button>':''}</div>`).reverse().join('');
  return `<div class="tg">فاضل ${n} ${n===1?'يوم':'أيام'} للامتحان${tag?' · '+tag:''}</div>${rows}<div class="row"><button class="ch" ${curD>=curMax?'disabled':''} onclick="pdAdj(1)">＋ يوم</button></div>`}
+function szUpdate(){kwUpdate();const el=$('sz');if(!el)return;
+ const{sb,t}=pick();
+ const f=S.al.learn===false?null:patFor(type,t,sb?sb.id:null,kwSel?kwSel.w:null),sg=f?(f.p.stable?f.p.days:mdn(f.p.samples)):null;
+ const tag=f?(f.p.stable?'نمط ثابت':'نمط بيتعلّم'):'';
+ const edit=(tx,n)=>`<div class="tg">${tx}${tag?' · '+tag:''} <button class="ch" onclick="pdE=!pdE;szUpdate()">${pdE?'تم':'تعديل'}</button></div>${pdE?`<div class="row pat"><button class="ch" onclick="pdAdj(-1)">−</button><b>${curD}</b><button class="ch" onclick="pdAdj(1)">＋</button></div>`:''}`;
+ if(type==='exam'){
+  if(!exDate){curD=0;el.innerHTML='';return}
+  const rds=restDates(NOW(),prs(exDate)).length,n=Math.max(0,wdays(NOW(),prs(exDate),exX)),base=sg!=null?sg:(kwSel?kwSel.d:n),want=pd!=null?pd:base;
+  curMin=1;curMax=Math.max(1,n);curD=n<2?0:Math.min(want,n);
+  el.innerHTML=n<2?'<div class="tg">الامتحان بكرة أو النهاردة، مفيش وقت يتقسم</div>':exEdit(n,tag)+(rds?`<div class="row"><button class="ch ${exX?'on':''}" onclick="exX=!exX;pd=null;szUpdate()">＋ ${DN[RD()]} ضمن الأيام</button></div>`:'');return}
+ const d=dueOf(sb),n=d?diff(d,NOW()):0;if(n<2){el.innerHTML='';size='s';curD=0;return}
+ const hwd=S.al.hwd||1,mx=Math.max(1,n-hwd+1);
+ if(sg!=null&&!sizeT)size=sg>0?'b':'s';
+ if(size==='b'){curMin=1;curMax=mx;curD=Math.min(mx,Math.max(1,pd!=null?pd:(sg>0?sg:mx)))}else curD=0;
+ if(sg!=null&&!pdE){el.innerHTML=`<div class="tg">${size==='b'?'كبير على '+dayW(curD):'صغير'}${tag?' · '+tag:''} <button class="ch" onclick="pdE=true;szUpdate()">تعديل</button></div>`;return}
+ el.innerHTML=`<div class="row"><div class="szb"><button class="ch ${size==='s'?'on':''}" onclick="size='s';sizeT=true;szUpdate()">صغير</button></div><div class="szb"><button class="ch ${size==='b'?'on':''}" onclick="size='b';sizeT=true;szUpdate()">كبير ++</button><div class="hint">فاضل ${n} يوم</div></div></div>${size==='b'?`<div class="row pat"><span class="tg">قسّم على</span><button class="ch" onclick="pdAdj(-1)">−</button><b>${curD}</b><button class="ch" onclick="pdAdj(1)">＋</button><span class="tg">يوم من ${mx}</span></div>`:''}`}
 function pdAdj(d){if(d<0)exPT.shift();else if(curD<curMax)exPT.unshift('');pdT=true;pd=Math.min(curMax,Math.max(curMin,curD+d));szUpdate()}
 function addItem(){
  const{sb,t}=pick();if(!t)return msg('اكتب اسم المهمة');
