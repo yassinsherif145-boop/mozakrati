@@ -150,6 +150,7 @@ input::placeholder{color:var(--mu);opacity:1}
 .nt.ndn{opacity:.45;filter:grayscale(1)}
 .kids{margin-right:18px;display:flex;flex-direction:column;gap:2px}
 .kids .sb{border:0;background:var(--sf);border-radius:12px;padding:3px 10px}
+.rr>summary{cursor:pointer;list-style-position:inside}.rr[open]>summary{margin-bottom:6px}
 .wkm{border:1px solid var(--ln);border-radius:12px;padding:8px 10px;margin:8px 0}.wkm>summary{cursor:pointer}.wkp{margin:6px 12px 0 0;padding:2px 0;border-top:1px dashed var(--ln)}.wkp>summary{cursor:pointer;font-size:14px}
 .kids .sb span{font-size:12px}
 .kids .sb input[type=text]{font-size:11px;padding:1px 6px}
@@ -507,7 +508,9 @@ const xl=(h,rows)=>`<div style="overflow-x:auto"><table class="xl"><tr>${h.map(x
 function mv(id,to){const e=$(id),t=$(to);if(e.parentNode!==t)t.appendChild(e)}
 function attHtml(){const c=calStats(),r=S.al.rule||'any',rt={any:'اليوم بيتحسب حضور لما تخلّص أي مهمة أو جزء فيه',half:'اليوم بيتحسب حضور لما تخلّص نص مهام اليوم على الأقل',all:'اليوم بيتحسب حضور لما تخلّص كل مهام اليوم'}[r]||'';return `<div class="att"><div><span>✅ حضور <b>${c.c}</b> يوم</span><span>⬜ غياب <b>${c.a}</b> يوم</span></div><div class="attn">${rt} · وده نفس اللي في التقويم · <a onclick="stTab='d';setOpen()">غيّر القاعدة</a></div></div>`}
 function attDraw(){const el=$('attBar');if(el)el.innerHTML=''}
-function place(){attDraw();const th=NOW().getDay()===1||NOW().getDay()===RD();
+function rvDay(){return S.al&&S.al.rvd!=null?S.al.rvd:1}
+function rvWeek(d){d=d||NOW();const ws=wkStart(d);return ymd(d.getDay()===0?ws:addD(ws,-7))}
+function place(){attDraw();const th=NOW().getDay()===rvDay()||NOW().getDay()===RD();
  mv('wkBody',th?'wkTop':'wkBotBody');
  $('tabA').hidden=$('tabB').hidden=true;$('slotA').hidden=$('slotB').hidden=calV;$('wkBot').hidden=th;$('calBlock').hidden=!calV;
  $('calBtn').textContent=calV?'القايمة':'التقويم';
@@ -604,12 +607,12 @@ function wkDetail(k,sw){
  const TL=y=>y==='exam'?'امتحان':y==='hw'?'واجب':'—';
  const li=(t,s,b)=>`<div class="li"><div class="lt">${t}</div><div class="ls">${s}</div>${b||''}</div>`;
  const prt=S.pp.filter(p=>p.d>=k&&p.d<=wend);
- const nl=sw.never.map(o=>({dt:o.dt,r:rrow(k,'n',o.id,esc(o.t),TL(o.ty)+' · '+o.n+' · '+fd(o.dt)+spanTxt(o.id),prt.filter(p=>p.id===o.id||baseT(p.t)===baseT(o.t)),find(o.id)?`<button class="ch" style="margin-top:6px" onclick="restoreMiss('${o.id}')">استرجاع</button>`:'')})).concat(sw.nsubs.map(o=>({dt:o.dt,r:rrow(k,'s',o.p+'←'+o.t,esc(o.p)+' ← '+esc(o.t),'جزء · '+TL(o.ty)+' · '+o.n+' · '+fd(o.dt),[])}))).sort((p,q)=>p.dt<q.dt?-1:1).map(x=>x.r).join('');
+ const nl=sw.never.map(o=>({dt:o.dt,r:rrow(k,'n',o.id,esc(o.t),TL(o.ty)+' · '+o.n+' · '+fd(o.dt)+spanTxt(o.id),prt.filter(p=>p.id===o.id||baseT(p.t)===baseT(o.t)),find(o.id)?`<button class="ch" style="margin-top:6px" onclick="restoreMiss('${o.id}')">استرجاع</button>`:'',o.n)})).concat(sw.nsubs.map(o=>({dt:o.dt,r:rrow(k,'s',o.p+'←'+o.t,esc(o.p)+' ← '+esc(o.t),'جزء · '+TL(o.ty)+' · '+o.n+' · '+fd(o.dt),[],'',o.n)}))).sort((p,q)=>p.dt<q.dt?-1:1).map(x=>x.r).join('');
  const dr=S.items.filter(i=>i.done&&i.done>=k&&i.done<=wend).sort((a,b)=>a.done<b.done?-1:1);
  const dp=`<details class="sb2" data-k="dn${k}" ${OP['dn'+k]?'open':''} ontoggle="OP[this.dataset.k]=this.open"><summary>الحاجات اللي عملتها <small class="tg">${dr.length}</small></summary>${dr.length?dr.map(i=>{const tl=(S.tlog||[]).find(x=>x.id===i.id),np=i.subs.filter(s=>s.t).length,nd=i.subs.filter(s=>s.t&&s.d).length;return li(esc(i.title)+(i.sid&&sname(i.sid)?' ('+esc(sname(i.sid))+')':''),TL(i.type)+' · '+DN[prs(i.done).getDay()]+' · '+fd(i.done)+(np?' · الأجزاء '+nd+'/'+np:'')+(tl?' · متوقع '+(tl.est?hm(tl.est):'—')+' · فعلي '+hm(tl.act):''),(tl?tlBars(tl):'')+`<button class="ch" style="margin-top:4px" onclick="redoDone('${i.id}')">إعادة</button>`)}).join(''):'<div class="tg">لا يوجد</div>'}</details>`;
  const t1=dt('nv'+k,`❌ ما اتعملش <b class="cnt">${sw.never.length}</b>`,dp+(nl||'<div class="tg">لا يوجد</div>'),'tb r');
  const nid=new Set(sw.never.map(o=>o.id)),nta=new Set(sw.acl.map(o=>baseT(o.t))),nnt=new Set(sw.never.map(o=>baseT(o.t))),orph=prt.filter(p=>!nid.has(p.id)&&!nta.has(baseT(p.t))&&!nnt.has(baseT(p.t)));
- const t2=dt('zq'+k,`🧱 راكمت كم مرة <b class="cnt">${sw.acl.length}</b>`,(sw.acl.length||orph.length?sw.acl.map(o=>rrow(k,'a',o.t,esc(o.t),o.n+' · '+fd(o.dt),prt.filter(p=>baseT(p.t)===baseT(o.t)))).join('')+orph.map(p=>rrow(k,'a',p.t,esc(p.t),fd(p.d),[p])).join(''):'<div class="tg">لا يوجد</div>'),'tb o');
+ const t2=dt('zq'+k,`🧱 راكمت كم مرة <b class="cnt">${sw.acl.length}</b>`,(sw.acl.length||orph.length?sw.acl.map(o=>rrow(k,'a',o.t,esc(o.t),o.n+' · '+fd(o.dt),prt.filter(p=>baseT(p.t)===baseT(o.t)),'',o.n)).join('')+orph.map(p=>rrow(k,'a',p.t,esc(p.t),fd(p.d),[p],'',DN[prs(p.d).getDay()])).join(''):'<div class="tg">لا يوجد</div>'),'tb o');
  const pk0=ymd(addD(prs(k),-7)),pn0=((S.notes[pk0]||{}).l||'').trim(),plb=pn0?`<details class="pl" data-k="pl${k}" ${OP['pl'+k]?'open':''} ontoggle="OP[this.dataset.k]=this.open"><summary>دروس الأسبوع السابق</summary><div class="lst">${esc(pn0)}</div></details>`:'';
  return `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b dir="ltr" style="font-size:14px">${fd(clp(k))} – ${fd(wend)}</b><button class="ch" onclick="dV='${k}';draw()">الأيام</button></div>
  <div class="wcm">✅ ملتزم ${cs.c} يوم · ⬜ غايب ${cs.a} يوم</div>
@@ -618,9 +621,9 @@ function wkDetail(k,sw){
  ${safeS(()=>wkAdd(k,wend))}${box('g','✨ The Good','#22c55e')}${box('b','⚠️ The Bad','#ef4444')}${box('l','💡 Lessons','#8b5cf6')}${plb}`;
 }
 function wkRender(){
- const th=NOW().getDay()===1||NOW().getDay()===RD(),{cur,ks,data}=weeksAll(),A=activeSet();
+ const th=NOW().getDay()===rvDay()||NOW().getDay()===RD(),{cur,ks,data}=weeksAll(),A=activeSet();
  const rows=ks.slice().reverse().map(k=>{const d=data[k],c=d.pct==null?'#94a3b8':scCol(d.pct/10),key='w'+k,we=ymd(addD(prs(k),6)),cs=commitStats(k,we,A);
-  if(OP[key]===undefined&&th&&k===ymd(addD(prs(cur),-7)))OP[key]=true;
+  if(OP[key]===undefined&&th&&k===rvWeek())OP[key]=true;
   return `<details class="wr" data-k="${key}" ${OP[key]?'open':''} ontoggle="OP[this.dataset.k]=this.open"><summary class="ws" style="border-right:5px solid ${c};${k===cur?'background:'+c+'22;':''}"><div class="wsr"><span class="ar"></span><b>أسبوع ${wn(k)}</b><small dir="ltr" style="text-align:right">${fd(clp(k))} – ${fd(we)}</small><span class="wpc" style="background:${c}">${d.pct==null?'—':d.pct+'%'}</span></div></summary><div class="wb">${safeS(()=>wkDetail(k,d),'<div class="tg">خطأ في عرض الأسبوع</div>')}</div></details>`}).join('');
  WB.innerHTML=`${th?'<div class="wkt">السجل الأسبوعي</div>':''}${rows}`;
 }
@@ -985,7 +988,7 @@ function exSetDue(id,k){const it=find(id);if(!it)return;const n0=Math.max(1,exSt
  if(!exFit(it)){Object.assign(it,old);toast('فيه أجزاء مكتوبة أكتر من الأيام. امسح الأجزاء الأقدم الأول');return}
  const n=exStudyDays(it).length;while(it.subs.length&&it.subs.length<n)it.subs.unshift({t:'',d:false,on:null,a:1});
  actMark();save();tmSync();draw();eiDraw(id)}
-const APP_VER=22;
+const APP_VER=23;
 function updApply(html){const m=/APP_VER\s*=\s*(\d+)/.exec(html),v=m?+m[1]:0,sm=/<script>([\s\S]*)<\/script>/.exec(html);
  try{if(!sm||!v)throw 0;new Function(sm[1])}catch(e){toast('الملف ده مش تحديث صالح');return 0}
  return v}
@@ -1072,7 +1075,7 @@ function scheduleList(){const out={rings:[],cuts:[],rsn:[],wk:[]},now=Date.now()
  for(let d=0;d<10;d++){const day=addD(T,d),dm=alarmMinD(day.getDay()),rest=day.getDay()===RD()&&!S.items.some(i=>!i.done&&!i.m&&(i.xd||[]).indexOf(ymd(day))>=0);
   if(!rest&&S.al.skip!==ymd(day)){const r=day.getTime()+dm*60000;if(r>now)out.rings.push(r)}
   const c=day.getTime()+(S.al.cut||20)*3600000;if(!rest&&c>now)out.cuts.push(c);
-  if(day.getDay()===1){if(S.al.wkf!==false&&!(d===0&&!wkNeed()))wins(day).forEach(t=>{if(t>now)out.wk.push(t)})}
+  if(day.getDay()===rvDay()){if(S.al.wkf!==false&&!(d===0&&!wkNeed()))wins(day).forEach(t=>{if(t>now)out.wk.push(t)})}
   else if(day.getDay()!==RD()&&S.al.rsnOn!==false&&!(d===0&&!pendList().length))wins(day).forEach(t=>{if(t>now)out.rsn.push(t)})}
  return out}
 function nativeSync(){try{if(window.Android&&!TM){if(Android.setTasks)Android.setTasks(JSON.stringify(notifPayload()));if(Android.setSchedule)Android.setSchedule(JSON.stringify(scheduleList()));tmSync();wtSync()}}catch(e){}}
@@ -1193,8 +1196,8 @@ function pendCheck(){if(TM||location.hash||$('rsOv')||$('wkOv')||S.al.rsnOn===fa
 /* ===================== weekly log: Monday ===================== */
 function wkMig(){if(S.wkm)return;S.wkm=1;const nn={};Object.keys(S.notes||{}).forEach(k=>{const d=prs(k);let nk=k;if(d.getDay()===5)nk=ymd(addD(d,3));const a=nn[nk]=nn[nk]||{};['g','b','l'].forEach(f=>{const v=(S.notes[k]||{})[f];if(v)a[f]=a[f]?a[f]+'\n'+v:v})});S.notes=nn}
 function closeWkS(){const o=$('wkOv');if(o)o.remove()}
-function wkNeed(){const d=NOW();if(d.getDay()!==1)return false;const k=ymd(addD(wkStart(d),-7));if(S.wkd[k])return false;const sw=weekData(k);return sw.days.some(x=>x.e)||sw.never.length>0}
-function weeklyScreen(force){const k=ymd(addD(wkStart(NOW()),-7));closeWkS();if(!force&&!wkNeed()){nat('reasoned');return}
+function wkNeed(){const d=NOW();if(d.getDay()!==rvDay())return false;const k=rvWeek(d);if(S.wkd[k])return false;const sw=weekData(k);return sw.days.some(x=>x.e)||sw.never.length>0}
+function weeklyScreen(force){const k=rvWeek();closeWkS();if(!force&&!wkNeed()){nat('reasoned');return}
  const sw=weekData(k);OP['nv'+k]=true;OP['zq'+k]=true;
  const o=document.createElement('div');o.id='wkOv';o.style.cssText='position:fixed;inset:0;z-index:95;background:var(--bg);color:var(--tx);overflow:auto;padding:16px';
  o.innerHTML=`<div class="wkt">السجل الأسبوعي</div>${wkDetail(k,sw)}<div class="row" style="margin:12px 0 24px"><button class="go" style="flex:1;font-size:18px;padding:12px" onclick="wkFin('${k}')">تم</button><button class="ch" onclick="wkLater()">بعدين</button></div>`;
@@ -1216,9 +1219,9 @@ try{new MutationObserver(()=>{clearTimeout(window.__agT);window.__agT=setTimeout
 function spanTxt(id){const it=find(id);if(!it)return'';
  if(it.type==='exam'){const a=it.start||it.show,n=it.subs.length||Math.max(0,diff(prs(it.due),prs(a)));return n>0?` · ${dayW(n)} <bdi dir="ltr">${fd(a)} ← ${fd(ymd(addD(prs(it.due),-1)))}</bdi>`:''}
  if(it.big&&it.subs.length)return ` · ${dayW(it.subs.length)}`;return''}
-function rrow(k,kind,id,t,s,old,extra){
- const wk_=k+'|'+kind+'|'+id,cur=(S.wrs||{})[wk_]||'';
- return `<div class="li rr"><div class="lt">${t}</div><div class="ls">${s}</div>${(old||[]).map(r=>{const ix=S.pp.indexOf(r);return `<div class="rn">سبب (${fd(r.d)}) <button class="del" onclick="ppDel(${ix})" aria-label="مسح السبب">🗑 مسح</button></div><textarea class="ag" rows="2" oninput="ppEdit(${ix},this.value);agr(this)">${esc(r.r)}</textarea>`}).join('')}<textarea class="ag" rows="1" data-wk="${esc(wk_)}" placeholder="اكتب السبب هنا" oninput="wrSet(this);agr(this)">${esc(cur)}</textarea>${cur?`<button class="del" onclick="wrDel('${esc(wk_)}')" aria-label="مسح">🗑 مسح السبب</button>`:''}${extra||''}</div>`}
+function rrow(k,kind,id,t,s,old,extra,dn){
+ const wk_=k+'|'+kind+'|'+id,cur=(S.wrs||{})[wk_]||'',key='rr'+wk_,has=cur||(old||[]).length;
+ return `<details class="li rr" data-k="${esc(key)}" ${OP[key]?'open':''} ontoggle="OP[this.dataset.k]=this.open"><summary><span class="lt">${t}</span>${dn?` <span class="tg">${dn}</span>`:''}${has?' <span class="tg">✎</span>':''}</summary><div class="ls">${s}</div>${(old||[]).map(r=>{const ix=S.pp.indexOf(r);return `<div class="rn">سبب (${DN[prs(r.d).getDay()]}) <button class="del" onclick="ppDel(${ix})" aria-label="مسح السبب">🗑 مسح</button></div><textarea class="ag" rows="2" oninput="ppEdit(${ix},this.value);agr(this)">${esc(r.r)}</textarea>`}).join('')}<textarea class="ag" rows="1" data-wk="${esc(wk_)}" placeholder="اكتب السبب هنا" oninput="wrSet(this);agr(this)">${esc(cur)}</textarea>${cur?`<button class="del" onclick="wrDel('${esc(wk_)}')" aria-label="مسح">🗑 مسح السبب</button>`:''}${extra||''}</details>`}
 /* ===================== settings ===================== */
 function patSet(k,v){const p=S.pat[k];if(!p)return;p.samples=[+v];p.days=+v;p.stable=true;save();stDraw()}
 function patDel(k){delete S.pat[k];save();stDraw()}
@@ -1241,6 +1244,7 @@ function stRsn(a){let b='';
  b+=sRow('لحد الساعة','',`<input type="time" value="${esc(a.rsnE||'07:10')}" onchange="setAl('rsnE',this.value)">`);
  b+=sRow('كل قد إيه','',selH('rsnI',[[5,'5 دقايق'],[10,'10 دقايق'],[15,'15 دقيقة'],[20,'20 دقيقة']],a.rsnI||10));
  b+=sRow('يوم الراحة','',selH('rest',[[4,'الخميس'],[5,'الجمعة'],[6,'السبت'],[0,'الأحد'],[-1,'مفيش']],a.rest!=null?a.rest:4));
+  b+=sRow('يوم مراجعة السجل','اليوم اللي السجل الأسبوعي بيظهر فيه فوق ويفكّرك تكتب الأسباب.',selH('rvd',[[1,'الاتنين'],[2,'التلات'],[3,'الأربع'],[4,'الخميس'],[5,'الجمعة'],[6,'السبت'],[0,'الأحد']],rvDay()));
  return b}
 
 /* ===================== estimate + timers per part ===================== */
@@ -1316,7 +1320,7 @@ function tlBars(x){const mx=Math.max(x.est||0,x.act||0,1);return `<div class="eb
 function wkTime(k,wend){let h='';
  const B=(S.brl||[]).filter(x=>x.d>=k&&x.d<=wend).sort((a,b)=>(a.t0||0)-(b.t0||0));
  if(B.length){const tot=B.reduce((s,x)=>s+x.ms,0);
-  h+=dt('bl'+k,'☕ لما وقفت المذاكرة',`<div class="wcm">المجموع ${durTxt(tot)} · ${B.length} مرة</div>`+B.map(x=>`<div class="li"><div class="lt">${x.task?esc(x.task)+(x.part?' — '+esc(x.part):''):'—'}</div><div class="ls">⏸ ${durTxt(x.ms)} · السبب: ${esc(x.what)}</div><div class="ls">${x.t0?DN[new Date(x.t0).getDay()]+' '+fd(x.d)+' · '+clk(x.t0):fd(x.d)}</div><button class="del" onclick="delBrl('${esc(String(x.id||x.t0))}')" aria-label="امسح">×</button></div>`).join(''),'wc')}
+  h+=dt('bl'+k,'☕ لما وقفت المذاكرة',`<div class="wcm">المجموع ${durTxt(tot)} · ${B.length} مرة</div>`+B.map(x=>{const bk='bk'+String(x.id||x.t0);return `<details class="li rr" data-k="${esc(bk)}" ${OP[bk]?'open':''} ontoggle="OP[this.dataset.k]=this.open"><summary><span class="lt">${x.task?esc(x.task)+(x.part?' — '+esc(x.part):''):'وقفة'}</span> <span class="tg">${DN[prs(x.d).getDay()]}</span></summary><div class="ls">⏸ ${durTxt(x.ms)} · ${x.t0?clk(x.t0):''}</div><div class="ls">السبب: ${esc(x.what)}</div><button class="del" onclick="delBrl('${esc(String(x.id||x.t0))}')" aria-label="امسح">× مسح</button></details>`}).join(''),'wc')}
  return h}
 let UD=null,UDt=0;
 function usageData(){if(!window.Android||!Android.usageData)return null;if(UD&&Date.now()-UDt<4000)return UD;try{UD=JSON.parse(Android.usageData()||'{}');UDt=Date.now()}catch(e){UD=null}return UD}
@@ -1334,7 +1338,7 @@ function apxEdit(id){S.apx=S.apx||{};const c=((usageData()||{}).c||[]).find(x=>x
  editDlg('تعديل السبب',cur,v=>{S.apx[id]=Object.assign(S.apx[id]||{},{w:v});actMark();save();draw()},()=>{S.apx[id]={x:1};actMark();save();draw()})}
 function appsInline(k){const d=usageData();if(!window.Android)return'';const we=ymd(addD(prs(k),6));
   S.apx=S.apx||{};const cs=((d&&d.c)||[]).filter(c=>{const y=ymd(new window.Date(c.id));return y>=k&&y<=we&&!(S.apx[c.id]&&S.apx[c.id].x)});
-  const rows=cs.length?cs.map(c=>`<div class="li"><div class="lt">${esc(c.n)} · ${DN[new window.Date(c.id).getDay()]} ${clk(c.u)}</div><div class="ls">السبب: ${esc((S.apx[c.id]&&S.apx[c.id].w)||c.w)} <button class="del" onclick="apxEdit(${c.id})" aria-label="تعديل">✎</button></div><div class="ls">قعدت ${hm((c.use||0)/60000)}${(c.over||0)>60000?' · زودت '+hm(c.over/60000):' · التزمت'}</div></div>`).join(''):'<div class="ls">مفيش حاجة اتسجلت الأسبوع ده</div>';
+  const rows=cs.length?cs.map(c=>{const ak='ax'+c.id;return `<details class="li rr" data-k="${ak}" ${OP[ak]?'open':''} ontoggle="OP[this.dataset.k]=this.open"><summary><span class="lt">${esc(c.n)}</span> <span class="tg">${DN[new window.Date(c.id).getDay()]} · ${clk(c.u)}</span></summary><div class="ls">السبب: ${esc((S.apx[c.id]&&S.apx[c.id].w)||c.w)} <button class="del" onclick="apxEdit(${c.id})" aria-label="تعديل">✎</button></div><div class="ls">قعدت ${hm((c.use||0)/60000)}${(c.over||0)>60000?' · زودت '+hm(c.over/60000):' · التزمت'}</div></details>`}).join(''):'<div class="ls">مفيش حاجة اتسجلت الأسبوع ده</div>';
   return dt('ap'+k,'📱 ليه دخلت التطبيقات <b class="cnt">'+cs.length+'</b>',rows,'wc')}
 /* ===================== settings: apps tracking ===================== */
 let APPS=null,appQ='';
