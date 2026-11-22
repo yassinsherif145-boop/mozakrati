@@ -150,7 +150,7 @@ input::placeholder{color:var(--mu);opacity:1}
 .nt.ndn{opacity:.45;filter:grayscale(1)}
 .kids{margin-right:18px;display:flex;flex-direction:column;gap:2px}
 .kids .sb{border:0;background:var(--sf);border-radius:12px;padding:3px 10px}
-.rr>summary{cursor:pointer;list-style-position:inside}.rr[open]>summary{margin-bottom:6px}
+.rr>summary{cursor:pointer;list-style-position:inside}.ar{padding:6px 0;border-top:1px dashed var(--ln)}.rr[open]>summary{margin-bottom:6px}
 .wkm{border:1px solid var(--ln);border-radius:12px;padding:8px 10px;margin:8px 0}.wkm>summary{cursor:pointer}.wkp{margin:6px 12px 0 0;padding:2px 0;border-top:1px dashed var(--ln)}.wkp>summary{cursor:pointer;font-size:14px}
 .kids .sb span{font-size:12px}
 .kids .sb input[type=text]{font-size:11px;padding:1px 6px}
@@ -597,7 +597,7 @@ function showDay(d){
 function daysPage(k,sw){
  let cum=0;const np=[];sw.days.forEach(x=>{if(x.e){cum+=x.e.dn-(x.e.tot-x.e.dn)-(S.acc!==false?x.e.ac.length:0);np.push({l:x.n,v:cum})}});
  const boxes=sw.days.map(x=>{const e=x.e,it=e?dayItems(e):null;
-  return `<div class="dbox" role="button" tabindex="0" onclick="showDay('${x.dt}')" onkeydown="if(event.key==='Enter')showDay('${x.dt}')"><div class="dh"><b>${x.n}</b><small>${fd(x.dt)}</small></div>${e?`<span class="sc10 dsc" dir="ltr">${e.sc}/10</span>`:''}<div>${it?it.done.map(t=>`<div class="dn2">✓ ${esc(t)}</div>`).join('')+it.und.map(t=>`<div>○ ${esc(t)}</div>`).join(''):'<span class="tg">—</span>'}</div></div>`}).join('');
+  return `<div class="dbox" role="button" tabindex="0" onclick="showDay('${x.dt}')" onkeydown="if(event.key==='Enter')showDay('${x.dt}')"><div class="dh"><b>${x.n}</b><small>${fd(x.dt)}</small></div>${e?`<span class="sc10 dsc" dir="ltr">${e.sc}/10</span>`:''}<div>${it?it.done.map(t=>`<div class="dn2">✓ ${esc(t)}</div>`).join('')+it.und.map(t=>`<div>○ ${esc(t)}</div>`).join(''):'<span class="tg">'+(x.dt<=ymd(NOW())?'ما فتحتش التطبيق':'—')+'</span>'}</div></div>`}).join('');
  return `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b>أسبوع ${wn(k)} · ${fd(clp(k))} – ${fd(ymd(addD(prs(k),6)))} ${sw.pct==null?'':`<span class="sc10" dir="ltr">${sw.pct}%</span>`}</b><button class="ch" onclick="dV=null;draw()">رجوع ←</button></div><div class="dgrid">${boxes}</div><h3 style="margin:14px 0 4px">📈 رصيد الأسبوع</h3>${net(np)}<div class="row"><button class="ch ${S.acc!==false?'on':''}" onclick="S.acc=S.acc===false;save();draw()">🧱 راكمت في الرسم: ${S.acc!==false?'مضاف':'مشال'}</button></div>`;
 }
 function wkDetail(k,sw){
@@ -988,7 +988,7 @@ function exSetDue(id,k){const it=find(id);if(!it)return;const n0=Math.max(1,exSt
  if(!exFit(it)){Object.assign(it,old);toast('فيه أجزاء مكتوبة أكتر من الأيام. امسح الأجزاء الأقدم الأول');return}
  const n=exStudyDays(it).length;while(it.subs.length&&it.subs.length<n)it.subs.unshift({t:'',d:false,on:null,a:1});
  actMark();save();tmSync();draw();eiDraw(id)}
-const APP_VER=23;
+const APP_VER=26;
 function updApply(html){const m=/APP_VER\s*=\s*(\d+)/.exec(html),v=m?+m[1]:0,sm=/<script>([\s\S]*)<\/script>/.exec(html);
  try{if(!sm||!v)throw 0;new Function(sm[1])}catch(e){toast('الملف ده مش تحديث صالح');return 0}
  return v}
@@ -1320,7 +1320,8 @@ function tlBars(x){const mx=Math.max(x.est||0,x.act||0,1);return `<div class="eb
 function wkTime(k,wend){let h='';
  const B=(S.brl||[]).filter(x=>x.d>=k&&x.d<=wend).sort((a,b)=>(a.t0||0)-(b.t0||0));
  if(B.length){const tot=B.reduce((s,x)=>s+x.ms,0);
-  h+=dt('bl'+k,'☕ لما وقفت المذاكرة',`<div class="wcm">المجموع ${durTxt(tot)} · ${B.length} مرة</div>`+B.map(x=>{const bk='bk'+String(x.id||x.t0);return `<details class="li rr" data-k="${esc(bk)}" ${OP[bk]?'open':''} ontoggle="OP[this.dataset.k]=this.open"><summary><span class="lt">${x.task?esc(x.task)+(x.part?' — '+esc(x.part):''):'وقفة'}</span> <span class="tg">${DN[prs(x.d).getDay()]}</span></summary><div class="ls">⏸ ${durTxt(x.ms)} · ${x.t0?clk(x.t0):''}</div><div class="ls">السبب: ${esc(x.what)}</div><button class="del" onclick="delBrl('${esc(String(x.id||x.t0))}')" aria-label="امسح">× مسح</button></details>`}).join(''),'wc')}
+  h+=dt('bl'+k,'☕ لما وقفت المذاكرة',`<div class="wcm">المجموع ${durTxt(tot)} · ${B.length} مرة</div>`+(()=>{const g={};B.forEach(x=>{(g[x.d]=g[x.d]||[]).push(x)});return Object.keys(g).sort().map(y=>{const L=g[y],dk='bkd'+y,tot=L.reduce((a,x)=>a+x.ms,0);
+   return `<details class="li rr" data-k="${dk}" ${OP[dk]?'open':''} ontoggle="OP[this.dataset.k]=this.open"><summary><span class="lt">${DN[prs(y).getDay()]}</span> <span class="tg">${L.length} ${L.length===1?'مرة':'مرات'} · ${durTxt(tot)}</span></summary>${L.map(x=>`<div class="ar"><div class="lt">${x.task?esc(x.task)+(x.part?' — '+esc(x.part):''):'وقفة'}</div><div class="ls">⏸ ${durTxt(x.ms)}${x.t0?' · '+clk(x.t0):''} · ${esc(x.what)}</div><button class="del" onclick="delBrl('${esc(String(x.id||x.t0))}')" aria-label="امسح">× مسح</button></div>`).join('')}</details>`}).join('')})(),'wc')}
  return h}
 let UD=null,UDt=0;
 function usageData(){if(!window.Android||!Android.usageData)return null;if(UD&&Date.now()-UDt<4000)return UD;try{UD=JSON.parse(Android.usageData()||'{}');UDt=Date.now()}catch(e){UD=null}return UD}
@@ -1328,17 +1329,20 @@ function subjOf(it){if(it.sid){const x=S.subjects.find(z=>z.id===it.sid);if(x)re
  const tk=nz(it.title||'').split(' ').filter(w=>w.length>=3);if(!tk.length)return null;
  for(const x of S.subjects){const ns=[x.name,x.alias].filter(Boolean).map(nz);if(tk.some(w=>ns.some(n=>n.split(' ').some(q=>q.length>=3&&(q.startsWith(w)||w.startsWith(q))))))return x}return null}
 const wkT=(e,a)=>`<span class="tg">متوقع <b>${e?hm(e):'—'}</b> · فعلي <b>${a>0?hm(a/60000):'—'}</b></span>`;
-function wkEst(k,wend){const L=S.items.filter(i=>i.due>=k&&i.due<=wend&&i.subs.some(s=>s.t));if(!L.length)return'';
+function wkEst(k,wend){const L=S.items.filter(i=>((i.due>=k&&i.due<=wend)||(i.done&&i.done>=k&&i.done<=wend)||i.subs.some(s=>s.on&&s.on>=k&&s.on<=wend))&&i.subs.some(s=>s.t));if(!L.length)return'';
  return dt('es'+k,'⏱ وقت المهام',L.map(it=>{const sj=subjOf(it);
-  const parts=it.subs.filter(s=>s.t).map(s=>`<details class="wkp"><summary>${esc(s.t)}</summary><div class="ls">${wkT(tmPartEst(s),tmPartMs(s))}</div>${(s.c||[]).map(q=>`<details class="wkp"><summary>${esc(q.t)}</summary><div class="ls">${wkT(q.est||0,tmElapsed(q))}</div></details>`).join('')}</details>`).join('');
-  return `<details class="wkm"><summary><b>${esc(it.title)}</b>${sj?` <span class="tg">${esc(sj.alias||sj.name)}</span>`:''}<div>${wkT(tmSumEst(it),tmTaskMs(it))}</div></summary>${parts}</details>`}).join(''),'wc')}
+  const dyOf=(i)=>{try{const x=it.subs[i];const d=x.on?prs(x.on):planned(it,i);return DN[d.getDay()]}catch(e){return''}};
+  const parts=it.subs.map((s,i)=>s.t?`<details class="wkp"><summary>${esc(s.t)} <span class="tg">${dyOf(i)}</span></summary><div class="ls">${wkT(tmPartEst(s),tmPartMs(s))}</div>${(s.c||[]).map(q=>`<details class="wkp"><summary>${esc(q.t)}</summary><div class="ls">${wkT(q.est||0,tmElapsed(q))}</div></details>`).join('')}</details>`:'').join('');
+  return `<details class="wkm"><summary><b>${esc(it.title)}</b>${sj?` <span class="tg">${esc(sj.alias||sj.name)}</span>`:''} <span class="tg">${DN[prs(it.done||it.due).getDay()]}</span><div>${wkT(tmSumEst(it),tmTaskMs(it))}</div></summary>${parts}</details>`}).join(''),'wc')}
 function wkAdd(k,wend){const av=tmAvg(k,wend);
  return wkEst(k,wend)+wkTime(k,wend)+appsInline(k)+(av.length?dt('av'+k,'⌛ متوسط وقت الأجزاء',av.map(a=>`<div class="li"><div class="lt">${esc(a.k)}</div><div class="ls">المتوسط ${hm(a.avg)} · ${a.n} مرة${a.e?' · المتوقع '+hm(a.e):''}</div></div>`).join(''),'wc'):'')}
 function apxEdit(id){S.apx=S.apx||{};const c=((usageData()||{}).c||[]).find(x=>x.id===id);const cur=(S.apx[id]&&S.apx[id].w)||(c?c.w:'');
  editDlg('تعديل السبب',cur,v=>{S.apx[id]=Object.assign(S.apx[id]||{},{w:v});actMark();save();draw()},()=>{S.apx[id]={x:1};actMark();save();draw()})}
 function appsInline(k){const d=usageData();if(!window.Android)return'';const we=ymd(addD(prs(k),6));
-  S.apx=S.apx||{};const cs=((d&&d.c)||[]).filter(c=>{const y=ymd(new window.Date(c.id));return y>=k&&y<=we&&!(S.apx[c.id]&&S.apx[c.id].x)});
-  const rows=cs.length?cs.map(c=>{const ak='ax'+c.id;return `<details class="li rr" data-k="${ak}" ${OP[ak]?'open':''} ontoggle="OP[this.dataset.k]=this.open"><summary><span class="lt">${esc(c.n)}</span> <span class="tg">${DN[new window.Date(c.id).getDay()]} · ${clk(c.u)}</span></summary><div class="ls">السبب: ${esc((S.apx[c.id]&&S.apx[c.id].w)||c.w)} <button class="del" onclick="apxEdit(${c.id})" aria-label="تعديل">✎</button></div><div class="ls">قعدت ${hm((c.use||0)/60000)}${(c.over||0)>60000?' · زودت '+hm(c.over/60000):' · التزمت'}</div></details>`}).join(''):'<div class="ls">مفيش حاجة اتسجلت الأسبوع ده</div>';
+  S.apx=S.apx||{};const cs=((d&&d.c)||[]).filter(c=>{const y=ymd(new window.Date(c.id));return y>=k&&y<=we&&!(S.apx[c.id]&&S.apx[c.id].x)}).sort((p,q)=>p.id-q.id);
+  const g={};cs.forEach(c=>{const y=ymd(new window.Date(c.id));(g[y]=g[y]||[]).push(c)});
+  const rows=cs.length?Object.keys(g).sort().map(y=>{const L=g[y],dk='axd'+y,tot=L.reduce((a,c)=>a+(c.use||0),0);
+   return `<details class="li rr" data-k="${dk}" ${OP[dk]?'open':''} ontoggle="OP[this.dataset.k]=this.open"><summary><span class="lt">${DN[prs(y).getDay()]}</span> <span class="tg">${L.length} ${L.length===1?'مرة':'مرات'} · ${hm(tot/60000)}</span></summary>${L.map(c=>`<div class="ar"><div class="lt">${clk(c.u)} · ${esc(c.n)}</div><div class="ls">${esc((S.apx[c.id]&&S.apx[c.id].w)||c.w)} <button class="del" onclick="apxEdit(${c.id})" aria-label="تعديل">✎</button></div><div class="ls">قعدت ${hm((c.use||0)/60000)}${(c.over||0)>60000?' · زودت '+hm(c.over/60000):' · التزمت'}</div></div>`).join('')}</details>`}).join(''):'<div class="ls">مفيش حاجة اتسجلت الأسبوع ده</div>';
   return dt('ap'+k,'📱 ليه دخلت التطبيقات <b class="cnt">'+cs.length+'</b>',rows,'wc')}
 /* ===================== settings: apps tracking ===================== */
 let APPS=null,appQ='';
