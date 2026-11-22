@@ -150,6 +150,7 @@ input::placeholder{color:var(--mu);opacity:1}
 .nt.ndn{opacity:.45;filter:grayscale(1)}
 .kids{margin-right:18px;display:flex;flex-direction:column;gap:2px}
 .kids .sb{border:0;background:var(--sf);border-radius:12px;padding:3px 10px}
+.wkm{border:1px solid var(--ln);border-radius:12px;padding:8px 10px;margin:8px 0}.wkm>summary{cursor:pointer}.wkp{margin:6px 12px 0 0;padding:2px 0;border-top:1px dashed var(--ln)}.wkp>summary{cursor:pointer;font-size:14px}
 .kids .sb span{font-size:12px}
 .kids .sb input[type=text]{font-size:11px;padding:1px 6px}
 .lsn{border:2px solid #8b5cf6;border-radius:14px;background:rgba(139,92,246,.09);padding:12px 16px;margin:10px 0 14px}
@@ -433,7 +434,7 @@ const rdOff=D=>D.getDay()===RD()&&!S.items.some(i=>(i.xd||[]).indexOf(ymd(D))>=0
 function xdOpts(it){const R=RD(),T=mid(NOW()),m=prs(it.due),o=[];for(let d=T;d<m;d=addD(d,1))if(d.getDay()===R&&(it.xd||[]).indexOf(ymd(d))<0)o.push(ymd(d));return o}
 function daysLeft(it){const T=mid(NOW()),m=prs(it.due),x=it.xd||[];let n=0;for(let d=T;d<m;d=addD(d,1))if(d.getDay()!==RD()||x.indexOf(ymd(d))>=0)n++;return n}
 function xdAdd(id,d){const it=find(id);if(!it)return;it.xd=(it.xd||[]).concat([d]);save();draw();toast('اتضاف '+DN[prs(d).getDay()]+' · فاضل '+daysLeft(it)+' يوم')}
-function exFit(it){if(!it.subs.length)return true;const need=it.subs.length-exStudyDays(it).length;if(need<=0)return true;const ix=[];it.subs.forEach((s,i)=>{if(ix.length<need&&!s.t&&!s.d&&!s.ts&&!(s.ac>0)&&!isRun(it.id,i,null))ix.push(i)});if(ix.length<need)return false;ix.reverse().forEach(i=>{it.subs.splice(i,1);tmShift(it.id,i,null)});return true}
+function exFit(it){if(!it.subs.length)return true;const need=it.subs.length-exStudyDays(it).length;if(need<=0)return true;const ix=[];for(let i=0;i<it.subs.length&&ix.length<need;i++){const s=it.subs[i];if(!s.t&&!s.d&&!s.ts&&!(s.ac>0)&&!isRun(it.id,i,null))ix.push(i)}if(ix.length<need)return false;ix.reverse().forEach(i=>{it.subs.splice(i,1);tmShift(it.id,i,null)});return true}
 function xdDel(id,d){const it=find(id);if(!it)return;const old=it.xd||[];it.xd=old.filter(x=>x!==d);if(!exFit(it)){it.xd=old;toast('فيه جزء مكتوب في اليوم ده. امسح الجزء الأول');return}save();draw();toast('اتشال '+DN[prs(d).getDay()])}
 function xdChip(it){if(it.type!=='exam'||it.done||it.m||!acc(it))return'';const o=xdOpts(it);if(!o.length)return'';const n=daysLeft(it);return `<div class="xd"><span>فاضل ${n} ${n===1?'يوم':'أيام'}</span><button class="ch" onclick="event.preventDefault();event.stopPropagation();xdAdd('${it.id}','${o[0]}')">＋ أضف ${DN[prs(o[0]).getDay()]} (يبقى ${n+1})</button></div>`}
 function xdBtns(it){if(it.type!=='exam')return'';let h='';const o=xdOpts(it);if(o.length&&!it.done&&!it.m)h+=`<button class="ch" onclick="xdAdd('${it.id}','${o[0]}')">＋ ${DN[prs(o[0]).getDay()]}</button>`;(it.xd||[]).filter(d=>prs(d)>=mid(NOW())).forEach(d=>{h+=`<button class="ch" onclick="xdDel('${it.id}','${d}')">− شيل ${DN[prs(d).getDay()]} ${fd(d)}</button>`});return h}
@@ -629,12 +630,18 @@ function moDetail(m,si,data){
 function moRender(){}
 let yrSel=null;
 function yrPick(i){yrSel=yrSel===i?null:i;yrRender()}
+function tlStats(f){const g={};(S.tlog||[]).filter(f).forEach(x=>{if(!(x.est>0||x.act>0))return;let n=x.sub;if(!n){const j=subjOf({title:x.title});n=j?(j.alias||j.name):'غير مصنف'}const o=g[n]=g[n]||{n:0,p:0,e:0,a:0};o.n++;o.p+=(x.parts||[]).length;o.e+=x.est||0;o.a+=x.act||0});return g}
+function avgRows(g){return Object.keys(g).map(k=>{const o=g[k];return `<div class="li"><div class="lt">${esc(k)} <span class="tg">${o.n} ${o.n===1?'مهمة':'مهام'}</span></div><div class="ls">متوسط عدد الأجزاء ${Math.round(o.p/o.n*10)/10} · المتوقع ${hm(o.e/o.n)} · الفعلي ${hm(o.a/o.n)}</div></div>`}).join('')}
+function moAvg(m){const g=tlStats(x=>x.d.slice(0,7)===m);return Object.keys(g).length?`<div style="margin:8px 0"><b>📊 متوسط وقت المهام حسب المادة</b>${avgRows(g)}</div>`:''}
+function allAvg(){const g=tlStats(()=>true);return Object.keys(g).length?dt('avAll','📊 متوسط وقت المهام الرئيسية حسب المادة (كل المدة)',avgRows(g),'wc'):''}
+function avgNote(){S.avgSeen=S.avgSeen||{};const g=tlStats(()=>true),r=Object.keys(g).filter(k=>k!=='غير مصنف'&&(S.avgSeen[k]==null?g[k].n>=3:g[k].n>=S.avgSeen[k]+5));return{n:r.length,h:r.length?`<div class="ug u1" style="margin:6px 0"><span>بقى عندك بيانات كفاية عن متوسط وقت: ${r.map(esc).join('، ')}</span> <button class="ch" onclick="avgOk()">تمام</button></div>`:''}}
+function avgOk(){const g=tlStats(()=>true);S.avgSeen=S.avgSeen||{};Object.keys(g).forEach(k=>S.avgSeen[k]=g[k].n);save();draw()}
 function yrRender(){
- const yr=NOW().getFullYear(),pv=[],zv=[];
+ const yr=NOW().getFullYear(),pv=[],zv=[];{const sm=document.querySelector('#yrBot>summary');if(sm)sm.textContent='السنوي والشهري'+(avgNote().n?' 🔔':'')}
  for(let m=1;m<=12;m++){const i=mInfo(yr+'-'+String(m).padStart(2,'0'),[],{});pv.push(i.pct);zv.push(i.ds.length?i.z:null)}
  const zm=Math.max(3,...zv.map(v=>v||0)),cs=commitStats(yr+'-01-01',yr+'-12-31',activeSet());
- let det='';if(yrSel!=null){const m=yr+'-'+String(yrSel+1).padStart(2,'0'),W=weeksAll(),si=mInfo(m,W.ks,W.data);det=`<div style="margin-top:10px;border:1px solid var(--ln);border-radius:12px;padding:10px"><b>${MN[yrSel]} ${yr}</b>${moDetail(m,si,W.data)}</div>`}
- $('yrBody').innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><b>${yr}</b><div class="row" style="margin:0"><button class="ch ${yMode==='m'?'on':''}" onclick="yMode='m';draw()">التقييم</button><button class="ch ${yMode==='z'?'on':''}" onclick="yMode='z';draw()">راكمت كم مرة</button></div></div>`+(yMode==='m'?bars(pv,MS,100,v=>scCol(v/10),'%','yrPick'):bars(zv,MS,zm,cls,'','yrPick'))+det+`<div class="wcm">السنة: ✅ ملتزم ${cs.c} يوم · ⬜ غايب ${cs.a} يوم</div>`;
+ let det='';if(yrSel!=null){const m=yr+'-'+String(yrSel+1).padStart(2,'0'),W=weeksAll(),si=mInfo(m,W.ks,W.data);det=`<div style="margin-top:10px;border:1px solid var(--ln);border-radius:12px;padding:10px"><b>${MN[yrSel]} ${yr}</b>${moAvg(m)}${moDetail(m,si,W.data)}</div>`}
+ $('yrBody').innerHTML=avgNote().h+allAvg()+`<div style="display:flex;justify-content:space-between;align-items:center"><b>${yr}</b><div class="row" style="margin:0"><button class="ch ${yMode==='m'?'on':''}" onclick="yMode='m';draw()">التقييم</button><button class="ch ${yMode==='z'?'on':''}" onclick="yMode='z';draw()">راكمت كم مرة</button></div></div>`+(yMode==='m'?bars(pv,MS,100,v=>scCol(v/10),'%','yrPick'):bars(zv,MS,zm,cls,'','yrPick'))+det+`<div class="wcm">السنة: ✅ ملتزم ${cs.c} يوم · ⬜ غايب ${cs.a} يوم</div>`;
 }
 function goWeek(k){const th=NOW().getDay()===RD();dV=null;wk=k;OP['w'+k]=true;if(!th)$('wkBot').open=true;draw();setTimeout(()=>{const e=document.querySelector('[data-k="w'+k+'"]')||$('wkBot');e.scrollIntoView({behavior:'smooth',block:'start'})},80)}
 function commitStats(a,b,A){const t=mid(NOW()),st=prs([S.start||ymd(t)].concat([...A]).sort()[0]),e=prs(b);let c=0,x=0;for(let d=prs(a);d<=e&&d<=t;d=addD(d,1)){if(d<st)continue;if(A.has(ymd(d)))c++;else if(d<t&&d.getDay()!==RD())x++}return{c,a:x}}
@@ -949,11 +956,12 @@ function editItem(id){const it=find(id);if(!it)return;closeEI();const o=document
 function exStudyDays(it){const R=RD(),xd=it.xd||[],a=prs(it.start||it.show),due=prs(it.due),o=[];for(let d=mid(a);d<due;d=addD(d,1))if(d.getDay()!==R||xd.indexOf(ymd(d))>=0)o.push(ymd(d));return o}
 function exPrev(it){const R=RD(),T=mid(NOW()),xd=it.xd||[];let d=addD(mid(prs(it.start||it.show)),-1);while(d>=T){if(d.getDay()!==R||xd.indexOf(ymd(d))>=0)return d;d=addD(d,-1)}return null}
 function eiSetSub(id,i,el){const it=find(id);if(!it||!it.subs[i])return;it.subs[i].t=el.value.trim();actMark();save();draw()}
-function eiDays(it){const L=exStudyDays(it),ok=it.subs.length>0,canDel=ok&&L.length>1&&!it.subs[0].t&&!it.subs[0].d&&!isRun(it.id,0,null)&&!it.subs[0].ts,dl=daysLeft(it),EL=L;
- return `<div class="tg" style="margin-top:10px">أيام المذاكرة · فاضل ${dl} ${dl===1?'يوم':'أيام'} للامتحان</div>${it.subs.map((s,i)=>{const pp=EL[i]?prs(EL[i]):planned(it,i);return `<div class="sb"><span class="tg">${DN[pp.getDay()]} ${fd(ymd(pp))}</span><input type="text" style="flex:1" value="${esc(s.t||'')}" placeholder="جزء ${i+1}" onchange="eiSetSub('${it.id}',${i},this)">${i===0&&canDel?`<button class="dx" onclick="exDelDay('${it.id}')" aria-label="شيل اليوم">×</button>`:''}</div>`}).join('')}<div class="row"><button class="ch" ${ok&&exPrev(it)?'':'disabled'} onclick="exAddDay('${it.id}')">＋ يوم</button></div>${ok?'':'<div class="tg">الامتحان قريب، مفيش أيام تتقسم</div>'}`}
+function eiDays(it){const L=exStudyDays(it),ok=it.subs.length>0,s0=ok?it.subs[0]:null,canDel=ok&&L.length>1&&!s0.t&&!s0.d&&!s0.ts&&!(s0.ac>0)&&!isRun(it.id,0,null),dl=daysLeft(it);
+ const rows=it.subs.map((s,i)=>{const pp=L[i]?prs(L[i]):planned(it,i);return `<div class="sb"><span class="tg">${DN[pp.getDay()]} ${fd(ymd(pp))}</span><input type="text" style="flex:1" value="${esc(s.t||'')}" placeholder="جزء" onchange="eiSetSub('${it.id}',${i},this)">${i===0&&canDel?`<button class="dx" onclick="exDelDay('${it.id}')" aria-label="شيل اليوم">×</button>`:''}</div>`}).reverse().join('');
+ return `<div class="tg" style="margin-top:10px">فاضل ${dl} ${dl===1?'يوم':'أيام'} للامتحان</div>${rows}<div class="row"><button class="ch" ${ok&&exPrev(it)?'':'disabled'} onclick="exAddDay('${it.id}')">＋ يوم</button></div>${ok?'':'<div class="tg">الامتحان قريب، مفيش أيام تتقسم</div>'}`}
 function eiDraw(id){const it=find(id),s=$('eiS');if(!it||!s)return;const ex=it.type==='exam',t0=$('eiT')?$('eiT').value:it.title,j0=$('eiSj')?$('eiSj').value:(it.sid||'');
  const sbs=S.subjects.filter(x=>x.days.length||x.id===it.sid);
- let h=`<div style="font-size:16px;margin-bottom:8px"><b>تعديل ${ex?'الامتحان':'الواجب'}</b></div><input type="text" id="eiT" style="width:100%;font-size:16px" value="${esc(t0)}"><div class="row" style="margin-top:8px"><select id="eiSj" class="ch" style="flex:1">${ex?'<option value="">— من غير مادة —</option>':''}${sbs.map(x=>`<option value="${x.id}" ${x.id===j0?'selected':''}>${esc(x.alias||x.name)}</option>`).join('')}</select></div>`;
+ let h=`<div style="font-size:16px;margin-bottom:8px"><b>تعديل ${ex?'الامتحان':'الواجب'}</b></div><input type="text" id="eiT" style="width:100%;font-size:16px" value="${esc(t0)}"><div class="row" style="margin-top:8px"><select id="eiSj" class="ch" style="flex:1">${ex&&!j0?'<option value="">— اختار المادة —</option>':''}${sbs.map(x=>`<option value="${x.id}" ${x.id===j0?'selected':''}>${esc(x.alias||x.name)}</option>`).join('')}</select></div>`;
  if(ex)h+=`<div class="row" style="margin-top:8px"><button class="pk" onclick="eiDate('${id}')">${ICO_CAL}${DN[prs(it.due).getDay()]} ${fd(it.due)}</button></div>`+eiDays(it);
  h+=`<div class="row" style="margin-top:12px"><button class="go" onclick="eiSave('${id}')">حفظ</button><button class="ch" style="color:var(--rd)" onclick="eiDel('${id}')">مسح</button><button class="ch" onclick="closeEI()">إغلاق</button></div>`;
  s.innerHTML=h}
@@ -963,15 +971,17 @@ function eiDel(id){closeEI();delItem(id)}
 function exAddDay(id){const it=find(id);if(!it||!it.subs.length)return;const d=exPrev(it);if(!d){toast('مفيش يوم قبل كده');return}
  it.start=ymd(d);if(prs(it.show)>d)it.show=ymd(d);it.subs.unshift({t:'',d:false,on:null,a:1});['run','brk','pz'].forEach(k=>{const x=S[k];if(x&&x.id===id&&x.i!=null)x.i++});
  actMark();save();tmSync();draw();eiDraw(id)}
-function exDelDay(id){const it=find(id);if(!it)return;const L=exStudyDays(it);if(L.length<2||!it.subs.length)return;const s0=it.subs[0];if(s0.t||s0.d||s0.ts||isRun(id,0,null)){toast('اليوم ده فيه جزء مكتوب. امسح الجزء الأول');return}
+function exDelDay(id){const it=find(id);if(!it)return;const L=exStudyDays(it);if(L.length<2||!it.subs.length)return;const s0=it.subs[0];if(s0.t||s0.d||s0.ts||(s0.ac>0)||isRun(id,0,null)){toast('اليوم ده فيه جزء مكتوب. امسح الجزء الأول');return}
  it.subs.splice(0,1);tmShift(id,0,null);it.start=L[1];actMark();save();tmSync();draw();eiDraw(id)}
 let dpCb=null;
 function eiDate(id){dateSheet();dpCb=k=>exSetDue(id,k)}
 function exSetDue(id,k){const it=find(id);if(!it)return;const n0=Math.max(1,exStudyDays(it).length),due=prs(k),xd2=(it.xd||[]).filter(x=>x<k);
  const L=exDayList(due,n0,false,xd2);if(!L.length){toast('التاريخ قريب جدًا');return}
- it.due=k;it.xd=xd2;it.start=L[0];it.show=L[0];const n=L.length;if(it.subs.length){while(it.subs.length<n)it.subs.unshift({t:'',d:false,on:null,a:1});while(it.subs.length>n&&!it.subs[0].t&&!it.subs[0].d&&!it.subs[0].ts)it.subs.shift()}
+ const old={due:it.due,xd:it.xd,start:it.start,show:it.show};it.due=k;it.xd=xd2;it.start=L[0];it.show=L[0];
+ if(!exFit(it)){Object.assign(it,old);toast('فيه أجزاء مكتوبة أكتر من الأيام. امسح الأجزاء الأقدم الأول');return}
+ const n=exStudyDays(it).length;while(it.subs.length&&it.subs.length<n)it.subs.unshift({t:'',d:false,on:null,a:1});
  actMark();save();tmSync();draw();eiDraw(id)}
-const APP_VER=16;
+const APP_VER=18;
 function updApply(html){const m=/APP_VER\s*=\s*(\d+)/.exec(html),v=m?+m[1]:0,sm=/<script>([\s\S]*)<\/script>/.exec(html);
  try{if(!sm||!v)throw 0;new Function(sm[1])}catch(e){toast('الملف ده مش تحديث صالح');return 0}
  return v}
@@ -1109,24 +1119,8 @@ function ask2(t,la,fa,lb,fb,note){const o=document.createElement('div');o.id='a2
 function exDayList(due,k,inc,xd){const R=RD(),T=mid(NOW()),o=[];let d=addD(due,-1);while(o.length<k&&d>=T){if(inc||d.getDay()!==R||(xd||[]).indexOf(ymd(d))>=0)o.push(ymd(d));d=addD(d,-1)}return o.reverse()}
 let exPT=[];
 function exEdit(n,tag){const L=exDayList(prs(exDate),curD,exX);while(exPT.length<L.length)exPT.unshift('');while(exPT.length>L.length)exPT.shift();
- return `<div class="tg">المذاكرة على ${dayW(curD)}${tag?' · '+tag:''} · فاضل ${n} ${n===1?'يوم':'أيام'} للامتحان</div>${L.map((x,i)=>`<div class="sb"><span class="tg">${DN[prs(x).getDay()]} ${fd(x)}</span><input type="text" style="flex:1" value="${esc(exPT[i]||'')}" placeholder="جزء ${i+1} (اختياري)" oninput="exPT[${i}]=this.value">${i===0&&curD>curMin?'<button class="dx" onclick="pdAdj(-1)" aria-label="شيل اليوم">×</button>':''}</div>`).join('')}<div class="row"><button class="ch" ${curD>=curMax?'disabled':''} onclick="pdAdj(1)">＋ يوم</button></div>`}
-/* الأيام بتتحدد لوحدها: نمط محفوظ، وبعدها الكلمة الخاصة/الافتراضي، ومتقصّة على قد الأيام اللي فاضلة قبل الامتحان بيوم */
-function szUpdate(){kwUpdate();const el=$('sz');if(!el)return;
- const{sb,t}=pick();
- const f=S.al.learn===false?null:patFor(type,t,sb?sb.id:null,kwSel?kwSel.w:null),sg=f?(f.p.stable?f.p.days:mdn(f.p.samples)):null;
- const tag=f?(f.p.stable?'نمط ثابت':'نمط بيتعلّم'):'';
- const edit=(tx,n)=>`<div class="tg">${tx}${tag?' · '+tag:''} <button class="ch" onclick="pdE=!pdE;szUpdate()">${pdE?'تم':'تعديل'}</button></div>${pdE?`<div class="row pat"><button class="ch" onclick="pdAdj(-1)">−</button><b>${curD}</b><button class="ch" onclick="pdAdj(1)">＋</button></div>`:''}`;
- if(type==='exam'){
-  if(!exDate){curD=0;el.innerHTML='';return}
-  const rds=restDates(NOW(),prs(exDate)).length,n=Math.max(0,wdays(NOW(),prs(exDate),exX)),base=sg!=null?sg:(kwSel?kwSel.d:(S.al.exd||4)),want=pd!=null?pd:base;
-  curMin=1;curMax=Math.max(1,n);curD=n<2?0:Math.min(want,n);
-  el.innerHTML=n<2?'<div class="tg">الامتحان بكرة أو النهاردة، مفيش وقت يتقسم</div>':exEdit(n,tag)+(rds?`<div class="row"><button class="ch ${exX?'on':''}" onclick="exX=!exX;pd=null;szUpdate()">＋ ${DN[RD()]} ضمن الأيام</button></div>`:'');return}
- const d=dueOf(sb),n=d?diff(d,NOW()):0;if(n<2){el.innerHTML='';size='s';curD=0;return}
- const hwd=S.al.hwd||1,mx=Math.max(1,n-hwd+1);
- if(sg!=null&&!sizeT)size=sg>0?'b':'s';
- if(size==='b'){curMin=1;curMax=mx;curD=Math.min(mx,Math.max(1,pd!=null?pd:(sg>0?sg:mx)))}else curD=0;
- if(sg!=null&&!pdE){el.innerHTML=`<div class="tg">${size==='b'?'كبير على '+dayW(curD):'صغير'}${tag?' · '+tag:''} <button class="ch" onclick="pdE=true;szUpdate()">تعديل</button></div>`;return}
- el.innerHTML=`<div class="row"><div class="szb"><button class="ch ${size==='s'?'on':''}" onclick="size='s';sizeT=true;szUpdate()">صغير</button></div><div class="szb"><button class="ch ${size==='b'?'on':''}" onclick="size='b';sizeT=true;szUpdate()">كبير ++</button><div class="hint">فاضل ${n} يوم</div></div></div>${size==='b'?`<div class="row pat"><span class="tg">قسّم على</span><button class="ch" onclick="pdAdj(-1)">−</button><b>${curD}</b><button class="ch" onclick="pdAdj(1)">＋</button><span class="tg">يوم من ${mx}</span></div>`:''}`}
+ const rows=L.map((x,i)=>`<div class="sb"><span class="tg">${DN[prs(x).getDay()]} ${fd(x)}</span><input type="text" style="flex:1" value="${esc(exPT[i]||'')}" placeholder="جزء (اختياري)" oninput="exPT[${i}]=this.value">${i===0&&curD>curMin&&!(exPT[0]||'').trim()?'<button class="dx" onclick="pdAdj(-1)" aria-label="شيل اليوم">×</button>':''}</div>`).reverse().join('');
+ return `<div class="tg">فاضل ${n} ${n===1?'يوم':'أيام'} للامتحان${tag?' · '+tag:''}</div>${rows}<div class="row"><button class="ch" ${curD>=curMax?'disabled':''} onclick="pdAdj(1)">＋ يوم</button></div>`}
 function pdAdj(d){if(d<0)exPT.shift();else if(curD<curMax)exPT.unshift('');pdT=true;pd=Math.min(curMax,Math.max(curMin,curD+d));szUpdate()}
 function addItem(){
  const{sb,t}=pick();if(!t)return msg('اكتب اسم المهمة');
@@ -1253,7 +1247,7 @@ function estBad(it,i){const s=it.subs[i];if(!s||!s.t)return false;if(s.c&&s.c.le
 function estGate(it,i){if(!estBad(it,i))return false;const s=it.subs[i];toast('اكتب الوقت المتوقع الأول');OP['k'+it.id+':'+i]=true;if(s.c&&s.c.length)s.c.forEach((q,j)=>{if(!q.est)OP['t'+kpath(it.id,i,j)]=true});else OP['t'+kpath(it.id,i,null)]=true;draw();return true}
 function tmPanel(it,o,i,j,force){const p=kpath(it.id,i,j),run=isRun(it.id,i,j);if(!force&&!OP['t'+p]&&!run)return'';
  const h=Math.floor((o.est||0)/60),m=(o.est||0)%60,a=`'${it.id}',${i==null?'null':i},${j==null?'null':j}`;
- return `<div class="tmp"><span class="tg">المتوقع</span><input type="number" min="0" max="23" inputmode="numeric" class="hm" value="${h||''}" placeholder="0" oninput="tmEst(${a},this.parentNode)"><span class="tg">س</span><input type="number" min="0" max="59" inputmode="numeric" class="hm" value="${m||''}" placeholder="0" oninput="tmEst(${a},this.parentNode)"><span class="tg">د</span>${run?`<button class="ch" onclick="tmPause()">⏸ إيقاف</button>`:`<button class="ch" onclick="tmStart(${a})">▶ ابدأ</button>`}<span class="tg" data-tm="${esc(p)}">${fmtMS(tmElapsed(o))}</span></div>`}
+ return `<div class="tmp"><span class="tg">المتوقع</span><input type="number" min="0" max="23" inputmode="numeric" class="hm" value="${h||''}" placeholder="0" oninput="tmEst(${a},this.parentNode)"><span class="tg">س</span><input type="number" min="0" max="59" inputmode="numeric" class="hm" value="${m||''}" placeholder="0" oninput="tmEst(${a},this.parentNode)"><span class="tg">د</span>${run?`<button class="ch" onclick="tmPause()">⏸ إيقاف</button>`:`<button class="ch" onclick="tmStart(${a})">▶ ابدأ</button>`}</div>`}
 function tmHtml(it){if(!it.subs.length)return'';const e=tmSumEst(it);return `<div class="tmp"><span class="tg">مجموع وقت الأجزاء</span> <b class="tg tsum" data-ts="${it.id}">${e?hm(e):'—'}</b></div>`}
 function tmStart(id,i,j){const o=tmGet(id,i,j);if(!o)return;
  if(!(o.est>0)){toast('اكتب الوقت المتوقع الأول');OP['t'+kpath(id,i,j)]=true;draw();return}
@@ -1263,8 +1257,10 @@ function tmStart(id,i,j){const o=tmGet(id,i,j);if(!o)return;
  o.ts=Date.now();S.run={id,i:i==null?null:i,j:j==null?null:j};save();tmSync();draw()}
 function tmPauseSilent(){const r=S.run;if(!r)return;const o=tmGet(r.id,r.i,r.j);if(o&&o.ts){o.ac=(o.ac||0)+Date.now()-o.ts;o.ts=null}S.run=null}
 function tmPause(){const r=S.run;if(!r)return;tmPauseSilent();S.pz={id:r.id,i:r.i,j:r.j};save();tmSync();pzShow();draw()}
+const brkMs=b=>(b.pzAt||Date.now())-b.t0;
+function brkTog(){const b=S.brk;if(!b)return;if(b.pzAt){b.t0+=Date.now()-b.pzAt;b.pzAt=null}else b.pzAt=Date.now();save();draw()}
 function tmEndBreak(){const b=S.brk;if(!b)return;const it=find(b.id),o=tmGet(b.id,b.i,b.j);
- S.brl=S.brl||[];S.brl.push({id:String(b.t0),t0:b.t0,d:ymd(NOW()),what:b.what,ms:Math.max(0,Date.now()-b.t0),task:it?it.title:'',part:(o&&o!==it&&o.t)?o.t:''});if(S.brl.length>400)S.brl.shift();S.brk=null}
+ S.brl=S.brl||[];S.brl.push({id:String(b.t0),t0:b.t0,d:ymd(NOW()),what:b.what,ms:Math.max(0,brkMs(b)),task:it?it.title:'',part:(o&&o!==it&&o.t)?o.t:''});if(S.brl.length>400)S.brl.shift();S.brk=null}
 function tmResume(){const b=S.brk;if(!b)return;const id=b.id,i=b.i,j=b.j;tmEndBreak();tmStart(id,i,j)}
 function tmStopFor(id,i,j){const o=tmGet(id,i,j);if(o&&o.ts){o.ac=(o.ac||0)+Date.now()-o.ts;o.ts=null}
  if(S.run&&S.run.id===id&&S.run.i===(i==null?null:i)&&S.run.j===(j==null?null:j))S.run=null;
@@ -1290,9 +1286,9 @@ function tmSync(){try{if(!window.Android||!Android.setTimer)return;
  else if(S.brk)Android.setTimer(JSON.stringify({k:'break',l:S.brk.what,s:S.brk.t0}));
  else Android.setTimer('')}catch(e){}}
 function runBanner(){const r=S.run;if(!r)return'';const o=tmGet(r.id,r.i,r.j),it=find(r.id);if(!o||!it)return'';return `<div class="brk"><span>شغال: ${esc(it.title)}${o!==it&&o.t?' — '+esc(o.t):''}</span><b id="rnT">${fmtMS(tmElapsed(o))}</b><button class="ch" onclick="tmPause()">⏸ إيقاف</button></div>`}
-function brkBanner(){const b=S.brk;if(!b)return'';return `<div class="brk"><span>استراحة: ${esc(b.what)}</span><b id="bkT">${fmtMS(Date.now()-b.t0)}</b><button class="ch" onclick="tmResume()">استكمال</button></div>`}
+function brkBanner(){const b=S.brk;if(!b)return'';return `<div class="brk"><span>استراحة: ${esc(b.what)}</span><b id="bkT">${fmtMS(brkMs(b))}</b><button class="del" onclick="brkTog()" aria-label="إيقاف العد">${b.pzAt?'▶':'⏸'}</button><button class="ch" onclick="tmResume()">استكمال</button></div>`}
 setInterval(()=>{document.querySelectorAll('[data-tm]').forEach(e=>{const p=e.dataset.tm.split('|'),o=tmGet(p[0],p[1]===''?null:+p[1],p[2]===''?null:+p[2]);if(o)e.textContent=fmtMS(tmElapsed(o))});
- const b=S.brk,e=$('bkT');if(b&&e)e.textContent=fmtMS(Date.now()-b.t0);const r=S.run,e2=$('rnT');if(r&&e2){const o=tmGet(r.id,r.i,r.j);if(o)e2.textContent=fmtMS(tmElapsed(o))}},1000);
+ const b=S.brk,e=$('bkT');if(b&&e)e.textContent=fmtMS(brkMs(b));const r=S.run,e2=$('rnT');if(r&&e2){const o=tmGet(r.id,r.i,r.j);if(o)e2.textContent=fmtMS(tmElapsed(o))}},1000);
 /* ===================== weekly: times, breaks, apps ===================== */
 const durTxt=ms=>tv(ms);
 function delBrl(id){S.brl=(S.brl||[]).filter(x=>String(x.id||x.t0)!==String(id));actMark();save();draw()}
@@ -1300,21 +1296,26 @@ function tlBars(x){const mx=Math.max(x.est||0,x.act||0,1);return `<div class="eb
 function wkTime(k,wend){let h='';
  const B=(S.brl||[]).filter(x=>x.d>=k&&x.d<=wend).sort((a,b)=>(a.t0||0)-(b.t0||0));
  if(B.length){const tot=B.reduce((s,x)=>s+x.ms,0);
-  h+=dt('bl'+k,'☕ لما وقفت المذاكرة',`<div class="wcm">المجموع ${durTxt(tot)} · ${B.length} مرة</div>`+B.map(x=>`<div class="li"><div class="lt">${esc(x.what)}</div><div class="ls">${x.t0?DN[new Date(x.t0).getDay()]+' '+fd(x.d)+' · '+clk(x.t0)+' · ':fd(x.d)+' · '}${durTxt(x.ms)}${x.task?' · '+esc(x.task)+(x.part?' — '+esc(x.part):''):''}</div><button class="del" onclick="delBrl('${esc(String(x.id||x.t0))}')" aria-label="امسح">×</button></div>`).join(''),'wc')}
+  h+=dt('bl'+k,'☕ لما وقفت المذاكرة',`<div class="wcm">المجموع ${durTxt(tot)} · ${B.length} مرة</div>`+B.map(x=>`<div class="li"><div class="lt">${x.task?esc(x.task)+(x.part?' — '+esc(x.part):''):'—'}</div><div class="ls">⏸ ${durTxt(x.ms)} · السبب: ${esc(x.what)}</div><div class="ls">${x.t0?DN[new Date(x.t0).getDay()]+' '+fd(x.d)+' · '+clk(x.t0):fd(x.d)}</div><button class="del" onclick="delBrl('${esc(String(x.id||x.t0))}')" aria-label="امسح">×</button></div>`).join(''),'wc')}
  return h}
 let UD=null,UDt=0;
 function usageData(){if(!window.Android||!Android.usageData)return null;if(UD&&Date.now()-UDt<4000)return UD;try{UD=JSON.parse(Android.usageData()||'{}');UDt=Date.now()}catch(e){UD=null}return UD}
+function subjOf(it){if(it.sid){const x=S.subjects.find(z=>z.id===it.sid);if(x)return x}
+ const tk=nz(it.title||'').split(' ').filter(w=>w.length>=3);if(!tk.length)return null;
+ for(const x of S.subjects){const ns=[x.name,x.alias].filter(Boolean).map(nz);if(tk.some(w=>ns.some(n=>n.split(' ').some(q=>q.length>=3&&(q.startsWith(w)||w.startsWith(q))))))return x}return null}
+const wkT=(e,a)=>`<span class="tg">متوقع <b>${e?hm(e):'—'}</b> · فعلي <b>${a>0?hm(a/60000):'—'}</b></span>`;
 function wkEst(k,wend){const L=S.items.filter(i=>i.due>=k&&i.due<=wend&&i.subs.some(s=>s.t));if(!L.length)return'';
- const row=(t,e,a)=>`<div class="ls">${esc(t)} · المتوقع ${e?hm(e):'—'}${a>0?' · الفعلي '+hm(a/60000):''}</div>`;
- return dt('es'+k,'⏱ وقت المهام',L.map(it=>{const e=tmSumEst(it),a=tmTaskMs(it);return `<div class="li"><div class="lt">${esc(it.title)} · <b>${e?hm(e):'—'}</b>${a>0?' · فعلي '+hm(a/60000):''}</div>`+it.subs.filter(s=>s.t).map(s=>row('• '+s.t,tmPartEst(s),tmPartMs(s))+(s.c||[]).map(q=>row('   ◦ '+q.t,q.est||0,tmElapsed(q))).join('')).join('')+'</div>'}).join(''),'wc')}
+ return dt('es'+k,'⏱ وقت المهام',L.map(it=>{const sj=subjOf(it);
+  const parts=it.subs.filter(s=>s.t).map(s=>`<details class="wkp"><summary>${esc(s.t)}</summary><div class="ls">${wkT(tmPartEst(s),tmPartMs(s))}</div>${(s.c||[]).map(q=>`<details class="wkp"><summary>${esc(q.t)}</summary><div class="ls">${wkT(q.est||0,tmElapsed(q))}</div></details>`).join('')}</details>`).join('');
+  return `<details class="wkm"><summary><b>${esc(it.title)}</b>${sj?` <span class="tg">${esc(sj.alias||sj.name)}</span>`:''}<div>${wkT(tmSumEst(it),tmTaskMs(it))}</div></summary>${parts}</details>`}).join(''),'wc')}
 function wkAdd(k,wend){const av=tmAvg(k,wend);
  return wkEst(k,wend)+wkTime(k,wend)+appsInline(k)+(av.length?dt('av'+k,'⌛ متوسط وقت الأجزاء',av.map(a=>`<div class="li"><div class="lt">${esc(a.k)}</div><div class="ls">المتوسط ${hm(a.avg)} · ${a.n} مرة${a.e?' · المتوقع '+hm(a.e):''}</div></div>`).join(''),'wc'):'')}
 function apxEdit(id){S.apx=S.apx||{};const c=((usageData()||{}).c||[]).find(x=>x.id===id);const cur=(S.apx[id]&&S.apx[id].w)||(c?c.w:'');
  editDlg('تعديل السبب',cur,v=>{S.apx[id]=Object.assign(S.apx[id]||{},{w:v});actMark();save();draw()},()=>{S.apx[id]={x:1};actMark();save();draw()})}
-function appsInline(k){const d=usageData();if(!d||!d.c||!d.c.length)return'';const we=ymd(addD(prs(k),6));
- S.apx=S.apx||{};const cs=d.c.filter(c=>{const y=ymd(new window.Date(c.id));return y>=k&&y<=we&&!(S.apx[c.id]&&S.apx[c.id].x)});if(!cs.length)return'';
- const rows=cs.map(c=>`<div class="li"><div class="lt">${esc((S.apx[c.id]&&S.apx[c.id].w)||c.w)} <button class="del" onclick="apxEdit(${c.id})" aria-label="تعديل">✎</button></div><div class="ls">${esc(c.n)} · ${DN[new window.Date(c.id).getDay()]} · وقفت ${clk(c.u)} · قعدت ${hm((c.use||0)/60000)}${(c.over||0)>60000?' · زودت '+hm(c.over/60000):' · التزمت'}</div></div>`).join('');
- return dt('ap'+k,'📱 ليه دخلت التطبيقات <b class="cnt">'+cs.length+'</b>',rows,'wc')}
+function appsInline(k){const d=usageData();if(!window.Android)return'';const we=ymd(addD(prs(k),6));
+  S.apx=S.apx||{};const cs=((d&&d.c)||[]).filter(c=>{const y=ymd(new window.Date(c.id));return y>=k&&y<=we&&!(S.apx[c.id]&&S.apx[c.id].x)});
+  const rows=cs.length?cs.map(c=>`<div class="li"><div class="lt">${esc(c.n)} · ${DN[new window.Date(c.id).getDay()]} ${clk(c.u)}</div><div class="ls">السبب: ${esc((S.apx[c.id]&&S.apx[c.id].w)||c.w)} <button class="del" onclick="apxEdit(${c.id})" aria-label="تعديل">✎</button></div><div class="ls">قعدت ${hm((c.use||0)/60000)}${(c.over||0)>60000?' · زودت '+hm(c.over/60000):' · التزمت'}</div></div>`).join(''):'<div class="ls">مفيش حاجة اتسجلت الأسبوع ده</div>';
+  return dt('ap'+k,'📱 ليه دخلت التطبيقات <b class="cnt">'+cs.length+'</b>',rows,'wc')}
 /* ===================== settings: apps tracking ===================== */
 let APPS=null,appQ='';
 function appsLoad(){if(APPS||!window.Android||!Android.appsList)return;try{APPS=JSON.parse(Android.appsList()||'[]')}catch(e){APPS=[]}}
