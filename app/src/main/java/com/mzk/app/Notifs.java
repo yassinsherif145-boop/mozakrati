@@ -17,7 +17,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class Notifs {
-    static final String CH = "tasks2";
+    static final String CH = "tasks3";
+    static final String ALARM = "alarm2";
     static final int FLAGS = PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE;
     static final int RED = 0xFFD32F2F;
     static final int BLUE = 0xFF1976D2;
@@ -25,12 +26,22 @@ public class Notifs {
     static void ensure(Context c) {
         if (Build.VERSION.SDK_INT >= 26) {
             NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
-            nm.createNotificationChannel(new NotificationChannel(CH, "مهام اليوم", NotificationManager.IMPORTANCE_MIN));
+            NotificationChannel tc = new NotificationChannel(CH, "مهام اليوم", NotificationManager.IMPORTANCE_MIN);
+            NotificationChannel ac = new NotificationChannel(ALARM, "المنبه", NotificationManager.IMPORTANCE_HIGH);
             try {
-                nm.deleteNotificationChannel("tasks");
+                // يتخطى وضع عدم الإزعاج (بيشتغل بس لو المستخدم أدّى صلاحية "عدم الإزعاج" للتطبيق)
+                tc.setBypassDnd(true);
+                ac.setBypassDnd(true);
             } catch (Exception e) {
             }
-            nm.createNotificationChannel(new NotificationChannel("alarm", "المنبه", NotificationManager.IMPORTANCE_HIGH));
+            nm.createNotificationChannel(tc);
+            try {
+                nm.deleteNotificationChannel("tasks");
+                nm.deleteNotificationChannel("tasks2");
+                nm.deleteNotificationChannel("alarm");
+            } catch (Exception e) {
+            }
+            nm.createNotificationChannel(ac);
             nm.createNotificationChannel(new NotificationChannel("idle", "إشعار الخلفية (صامت)", NotificationManager.IMPORTANCE_MIN));
         }
     }

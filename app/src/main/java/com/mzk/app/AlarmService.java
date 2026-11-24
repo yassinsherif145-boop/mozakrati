@@ -84,7 +84,7 @@ public class AlarmService extends Service {
         ai.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         PendingIntent pi = PendingIntent.getActivity(this, 77, ai,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-        Notification n = new Notification.Builder(this, "alarm")
+        Notification n = new Notification.Builder(this, Notifs.ALARM)
                 .setSmallIcon(R.drawable.ic_stat)
                 .setContentTitle(weekly ? "السجل الأسبوعي" : (reason ? "اكتب الأسباب" : "وقت المذاكرة"))
                 .setContentText(weekly ? "افتح واكتب السجل الأسبوعي" : (reason ? "افتح واكتب الأسباب" : "افتح وابدأ"))

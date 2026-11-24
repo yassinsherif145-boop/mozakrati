@@ -206,6 +206,26 @@ public class Bridge {
     }
 
     @JavascriptInterface
+    public void openDndSettings() {
+        try {
+            Intent i = new Intent("android.settings.NOTIFICATION_POLICY_ACCESS_SETTINGS");
+            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            c.startActivity(i);
+        } catch (Exception e) {
+        }
+    }
+
+    @JavascriptInterface
+    public boolean dndOk() {
+        try {
+            android.app.NotificationManager nm = (android.app.NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
+            return nm.isNotificationPolicyAccessGranted();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    @JavascriptInterface
     public String appsList() {
         try {
             PackageManager pm = c.getPackageManager();
