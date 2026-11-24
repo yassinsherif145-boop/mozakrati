@@ -59,9 +59,9 @@
         android:id="@+id/nc"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:textColor="#40000000"
-        android:textSize="24sp"
+        android:layout_marginStart="10dp"
+        android:textColor="#66000000"
+        android:textSize="13sp"
         android:textStyle="bold"
         android:visibility="gone" />
 </LinearLayout>

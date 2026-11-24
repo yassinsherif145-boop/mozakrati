@@ -247,6 +247,7 @@ public class OverlayUi {
             col.addView(label(ctx, "هتقعد قد إيه؟", 18, false), lp(ctx, 22));
 
             final int[] sel = new int[]{15};
+            final Runnable[] ev = new Runnable[1];
             final EditText em = numEdit(ctx, "30");
             em.setFilters(new InputFilter[]{new InputFilter.LengthFilter(3)});
             em.setVisibility(View.GONE);
@@ -271,6 +272,7 @@ public class OverlayUi {
                         em.setVisibility(opts[idx] < 0 ? View.VISIBLE : View.GONE);
                         int m = opts[idx] > 0 ? opts[idx] : parseInt2(em);
                         ok.setText(m > 0 ? "افتح لمدة " + m + " د" : "اكتب المدة بالدقايق");
+                        if (ev[0] != null) ev[0].run();
                     }
                 });
                 r1.addView(c, weight());
@@ -292,14 +294,15 @@ public class OverlayUi {
                         int m = parseInt2(em);
                         ok.setText(m > 0 ? "افتح لمدة " + m + " د" : "اكتب المدة بالدقايق");
                     }
+                    if (ev[0] != null) ev[0].run();
                 }
             });
 
             final SharedPreferences wp = ctx.getSharedPreferences("watch", Context.MODE_PRIVATE);
-            final boolean needGate = wait > 0 && wp.getBoolean("ch", true);
+            final boolean needGate = wp.getBoolean("ch", true);
             final int chn = Math.max(1, Math.min(4, wp.getInt("chn", 1)));
-            final boolean[] gate = new boolean[]{!needGate};
-            final boolean[] timeUp = new boolean[]{wait <= 0};
+            final boolean[] gate = new boolean[]{true};
+            final boolean[] timeUp = new boolean[]{true};
             final Runnable upd = new Runnable() {
                 @Override
                 public void run() {
@@ -350,18 +353,21 @@ public class OverlayUi {
                     chs[q] = chal(pool.get(q % pool.size()), types[(int) (Math.random() * types.length)].trim());
                 }
                 final int[] ix = new int[]{0};
-                final TextView st = label(ctx, "خلصت وقتك. " + chs[0][0], 16, true);
-                col.addView(st, lp(ctx, 18));
+                final LinearLayout box = new LinearLayout(ctx);
+                box.setOrientation(LinearLayout.VERTICAL);
+                box.setVisibility(View.GONE);
+                col.addView(box, lp(ctx, 4));
+                final TextView st = label(ctx, "وقت أكتر من 15 دقيقة. " + chs[0][0], 16, true);
+                box.addView(st, lp(ctx, 18));
                 final TextView sl = label(ctx, chs[0][2] + auOf(authOf, chs[0][2]), 18, false);
                 sl.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
                 sl.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
-                col.addView(sl, lp(ctx, 8));
+                box.addView(sl, lp(ctx, 8));
                 final EditText es = edit(ctx, "اكتب هنا");
                 es.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
                 es.setLongClickable(false);
                 es.setTextIsSelectable(false);
-                col.addView(es, lp(ctx, 8));
-                startRing(ctx);
+                box.addView(es, lp(ctx, 8));
                 es.addTextChangedListener(new TextWatcher() {
                     @Override
                     public void beforeTextChanged(CharSequence s, int a1, int b1, int c1) {
@@ -390,9 +396,31 @@ public class OverlayUi {
                         }
                     }
                 });
+                ev[0] = new Runnable() {
+                    @Override
+                    public void run() {
+                        int m = sel[0] > 0 ? sel[0] : parseInt2(em);
+                        boolean need = m > 15;
+                        boolean shown = box.getVisibility() == View.VISIBLE;
+                        if (need && !shown) {
+                            ix[0] = 0;
+                            gate[0] = false;
+                            st.setText("وقت أكتر من 15 دقيقة. " + chs[0][0]);
+                            sl.setText(chs[0][2] + auOf(authOf, chs[0][2]));
+                            es.setText("");
+                            box.setVisibility(View.VISIBLE);
+                            startRing(ctx);
+                        } else if (!need && shown) {
+                            box.setVisibility(View.GONE);
+                            gate[0] = true;
+                            stopRing();
+                        }
+                        upd.run();
+                    }
+                };
             }
             col.addView(ok, lp(ctx, 22));
-            if (wait > 0) {
+            if (false) {
                 ok.setEnabled(false);
                 ok.setAlpha(0.5f);
                 final CharSequence okTxt = ok.getText();

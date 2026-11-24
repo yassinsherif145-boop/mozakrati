@@ -1,0 +1,11 @@
+انسخ الرسالة اللي بين الخطين وابعتها لأي AI، وغيّر آخر سطر بطلبك:
+
+------------------------------------------------------------
+I own an Android app called "مذاكرتي" (Java WebView app + one big HTML/JS file).
+Code (public): https://github.com/yassinsherif145-boop/mozakrati
+FIRST read this guide completely: https://raw.githubusercontent.com/yassinsherif145-boop/mozakrati/main/START_HERE.md
+Rules: reply in short Egyptian Arabic. If you can push to the repo, do it (GitHub Actions builds an APK and the app updates itself from the Releases page). If you cannot, send me ONLY the changed files (never the whole project) and tell me exactly where to upload them on GitHub. Do not rebuild anything marked CANCELLED in the guide.
+My request: <اكتب طلبك هنا>
+------------------------------------------------------------
+
+لو الـ AI مبيفتحش روابط: ابعتله ملف START_HERE.md (من المستودع) وملف index.html لو الطلب في الواجهة، أو الملف اللي عايز يتعدّل.
