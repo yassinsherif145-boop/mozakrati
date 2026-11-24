@@ -244,10 +244,19 @@ public class Bridge {
             int w = o.optInt("w", 30);
             SharedPreferences s = c.getSharedPreferences("watch", Context.MODE_PRIVATE);
             boolean changed = !sb.toString().equals(s.getString("tracked", "")) || w != s.getInt("wait", 30);
-            s.edit().putString("tracked", sb.toString()).putInt("wait", w).apply();
+            s.edit().putString("tracked", sb.toString()).putInt("wait", w).putBoolean("ch", o.optBoolean("ch", true)).putInt("chn", o.optInt("chn", 1)).putString("ct", o.optString("ct", "copy,upper,rev,ini")).putString("sn", o.optString("sn", "")).apply();
             if (changed || (!AppWatch.running && sb.length() > 0)) {
                 AppWatch.ensure(c);
             }
+        } catch (Exception e) {
+        }
+    }
+
+    @JavascriptInterface
+    public void ring(boolean on) {
+        try {
+            if (on) OverlayUi.startRing(c);
+            else OverlayUi.stopRing();
         } catch (Exception e) {
         }
     }

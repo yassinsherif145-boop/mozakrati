@@ -27,6 +27,7 @@ public class Notifs {
             NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
             nm.createNotificationChannel(new NotificationChannel(CH, "مهام اليوم", NotificationManager.IMPORTANCE_LOW));
             nm.createNotificationChannel(new NotificationChannel("alarm", "المنبه", NotificationManager.IMPORTANCE_HIGH));
+            nm.createNotificationChannel(new NotificationChannel("idle", "إشعار الخلفية (صامت)", NotificationManager.IMPORTANCE_MIN));
         }
     }
 
@@ -45,7 +46,7 @@ public class Notifs {
     // إشعار بسيط. لما مراقبة التطبيقات شغالة بنستخدمه بدل إشعار «المراقبة» المنفصل (الأندرويد بيفرض إشعار مع أي خدمة شغالة في الخلفية)
     static Notification idleNote(Context c, String text) {
         PendingIntent open = PendingIntent.getActivity(c, 1, new Intent(c, MainActivity.class), FLAGS);
-        return new Notification.Builder(c, CH)
+        return new Notification.Builder(c, "idle")
                 .setSmallIcon(R.drawable.ic_stat)
                 .setContentTitle("مذاكرتي")
                 .setContentText(text)
@@ -111,6 +112,14 @@ public class Notifs {
             NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
             ensure(c);
             try {
+                if (new JSONObject(json).optBoolean("hush", false)) {
+                    NotificationManager nmh = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
+                    nmh.cancel(1000);
+                    nmh.cancel(900);
+                    p.edit().putString("nids", "").putString("lastjson", "").apply();
+                    if (AppWatch.running) idle(c, "مفيش مهام دلوقتي");
+                    return;
+                }
                 if (new JSONObject(json).optBoolean("rest", false)) {
                     clear(c);
                     return;
@@ -136,6 +145,17 @@ public class Notifs {
             if (a == null || a.length() == 0) return;
             RemoteViews small = new RemoteViews(c.getPackageName(), R.layout.notif_row);
             fillRow(small, a.getJSONObject(0));
+            small.setTextViewText(R.id.nc, String.valueOf(a.length()));
+            small.setViewVisibility(R.id.nc, View.VISIBLE);
+            StringBuilder others = new StringBuilder();
+            for (int i = 1; i < a.length() && i < 5; i++) {
+                if (others.length() > 0) others.append(" · ");
+                others.append(a.getJSONObject(i).optString("t"));
+            }
+            if (others.length() > 0) {
+                small.setTextViewText(R.id.r2, others.toString());
+                small.setViewVisibility(R.id.r2, View.VISIBLE);
+            }
             RemoteViews big = new RemoteViews(c.getPackageName(), R.layout.notif_big);
             big.removeAllViews(R.id.list);
             for (int i = 0; i < a.length() && i < 6; i++) {
@@ -161,6 +181,7 @@ public class Notifs {
 
     static void timer(Context c, String json) {
         try {
+            OverlayUi.bubble(c, json);
             NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
             if (json == null || json.isEmpty()) {
                 nm.cancel(1001);
@@ -171,6 +192,7 @@ public class Notifs {
             String k = o.optString("k");
             String l = o.optString("l");
             long s = o.optLong("s", System.currentTimeMillis());
+            long e = o.optLong("e", 0);
             Notification.Builder b = new Notification.Builder(c, CH)
                     .setSmallIcon(R.drawable.ic_stat)
                     .setContentTitle(l.isEmpty() ? "عداد" : l)
@@ -179,7 +201,8 @@ public class Notifs {
                     .setOnlyAlertOnce(true)
                     .setShowWhen(true)
                     .setUsesChronometer(true)
-                    .setWhen(s)
+                    .setWhen(e > System.currentTimeMillis() ? e : s)
+                    .setChronometerCountDown(e > System.currentTimeMillis())
                     .setVisibility(Notification.VISIBILITY_PUBLIC)
                     .setContentIntent(PendingIntent.getActivity(c, 1, new Intent(c, MainActivity.class), FLAGS));
             if ("break".equals(k)) {
