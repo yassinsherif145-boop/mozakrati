@@ -678,13 +678,15 @@ public class OverlayUi {
             p.setStyle(Paint.Style.FILL);
             p.setColor(Color.WHITE);
             p.setTextAlign(Paint.Align.CENTER);
-            p.setTextSize(dp(getContext(), 11));
+            p.setTextSize(w * 0.2f);
             p.setTypeface(Typeface.DEFAULT_BOLD);
-            cv.drawText(txt, w / 2f, h / 2f + dp(getContext(), 5), p);
+            cv.drawText(txt, w / 2f, h / 2f + w * 0.075f, p);
         }
     }
 
     static View panelView = null;
+    static int bubDp = 58, bubX = 12, bubY = 120;
+    static boolean ringStopOn = true;
     static boolean bubbleHidden = false;
     static long hiddenS = 0L;
 
@@ -697,6 +699,22 @@ public class OverlayUi {
         panelView = null;
     }
 
+    static TextView panelRow(Context ctx, String icon, String name, int color) {
+        TextView t = new TextView(ctx);
+        t.setText(icon + "   " + name);
+        t.setTextColor(color);
+        t.setTextSize(15);
+        t.setTypeface(Typeface.DEFAULT_BOLD);
+        t.setGravity(Gravity.CENTER_VERTICAL | Gravity.START);
+        t.setPadding(dp(ctx, 16), dp(ctx, 13), dp(ctx, 16), dp(ctx, 13));
+        android.graphics.drawable.StateListDrawable sl = new android.graphics.drawable.StateListDrawable();
+        sl.addState(new int[]{android.R.attr.state_pressed}, new android.graphics.drawable.ColorDrawable(0x33FFFFFF));
+        sl.addState(new int[]{}, new android.graphics.drawable.ColorDrawable(0x00000000));
+        t.setBackground(sl);
+        t.setClickable(true);
+        return t;
+    }
+
     static void showBubblePanel(final Context ctx, final RingView bv) {
         try {
             if (panelView != null) {
@@ -706,13 +724,23 @@ public class OverlayUi {
             final WindowManager wm = (WindowManager) ctx.getSystemService(Context.WINDOW_SERVICE);
             LinearLayout col = new LinearLayout(ctx);
             col.setOrientation(LinearLayout.VERTICAL);
-            col.setBackgroundColor(0xF2212121);
-            col.setPadding(dp(ctx, 8), dp(ctx, 8), dp(ctx, 8), dp(ctx, 8));
+            android.graphics.drawable.GradientDrawable bg = new android.graphics.drawable.GradientDrawable();
+            bg.setColor(0xFA1B1F2A);
+            bg.setCornerRadius(dp(ctx, 16));
+            bg.setStroke(dp(ctx, 1), 0x33FFFFFF);
+            col.setBackground(bg);
+            col.setPadding(0, dp(ctx, 6), 0, dp(ctx, 6));
+            String[] icons = new String[]{"☕", "📱", "🙈", "⏹"};
             String[] names = new String[]{"استراحة", "فتح التطبيق", "إخفاء العداد", "إنهاء العداد"};
             for (int q = 0; q < names.length; q++) {
                 final int id = q;
-                Button b = btn(ctx, names[q]);
-                col.addView(b, lp(ctx, 6));
+                if (q == 3) {
+                    View sep = new View(ctx);
+                    sep.setBackgroundColor(0x22FFFFFF);
+                    col.addView(sep, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(ctx, 1)));
+                }
+                TextView b = panelRow(ctx, icons[q], names[q], q == 3 ? 0xFFFF6B6B : Color.WHITE);
+                col.addView(b, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
                 b.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -731,6 +759,8 @@ public class OverlayUi {
                                 hiddenS = bv.s;
                                 hideBubble(ctx);
                             } else {
+                                // نفس إنهاء العداد من جوه التطبيق: المنبه بيرن فورًا وبعدين شاشة الجمل
+                                if (ringStopOn) startRing(ctx);
                                 Util.openAlarm(ctx, "#stop");
                             }
                         } catch (Exception e) {
@@ -742,12 +772,20 @@ public class OverlayUi {
                     ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
                     : WindowManager.LayoutParams.TYPE_PHONE;
             WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
-                    dp(ctx, 170), WindowManager.LayoutParams.WRAP_CONTENT, type,
-                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+                    dp(ctx, 190), WindowManager.LayoutParams.WRAP_CONTENT, type,
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
+                            | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
                     PixelFormat.TRANSLUCENT);
             lp.gravity = Gravity.TOP | Gravity.END;
-            lp.x = dp(ctx, 12);
-            lp.y = dp(ctx, 190);
+            lp.x = bubX;
+            lp.y = bubY + dp(ctx, bubDp) + dp(ctx, 8);
+            col.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View view, android.view.MotionEvent ev) {
+                    if (ev.getAction() == android.view.MotionEvent.ACTION_OUTSIDE) hidePanel(ctx);
+                    return false;
+                }
+            });
             wm.addView(col, lp);
             panelView = col;
             H.postDelayed(new Runnable() {
@@ -755,7 +793,7 @@ public class OverlayUi {
                 public void run() {
                     hidePanel(ctx);
                 }
-            }, 8000);
+            }, 10000);
         } catch (Exception e) {
         }
     }
@@ -790,6 +828,19 @@ public class OverlayUi {
                         hideBubble(ctx);
                         return;
                     }
+                    ringStopOn = o.optBoolean("rs", true);
+                    String sz = o.optString("sz", "m");
+                    int want = "s".equals(sz) ? 46 : ("l".equals(sz) ? 76 : 58);
+                    SharedPreferences bp = ctx.getSharedPreferences("mzk", Context.MODE_PRIVATE);
+                    int rp = o.optInt("rp", 0);
+                    if (rp != bp.getInt("bubRp", 0)) {
+                        bp.edit().remove("bubX").remove("bubY").putInt("bubRp", rp).apply();
+                        hideBubble(ctx);
+                    }
+                    if (want != bubDp) {
+                        bubDp = want;
+                        hideBubble(ctx);
+                    }
                     final WindowManager wm = (WindowManager) ctx.getSystemService(Context.WINDOW_SERVICE);
                     RingView v;
                     if (bubbleView == null) {
@@ -798,12 +849,15 @@ public class OverlayUi {
                                 ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
                                 : WindowManager.LayoutParams.TYPE_PHONE;
                         final WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
-                                dp(ctx, 58), dp(ctx, 58), type,
+                                dp(ctx, bubDp), dp(ctx, bubDp), type,
                                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
                                 PixelFormat.TRANSLUCENT);
                         lp.gravity = Gravity.TOP | Gravity.END;
-                        lp.x = dp(ctx, 12);
-                        lp.y = dp(ctx, 120);
+                        final SharedPreferences bp2 = ctx.getSharedPreferences("mzk", Context.MODE_PRIVATE);
+                        lp.x = bp2.getInt("bubX", dp(ctx, 12));
+                        lp.y = bp2.getInt("bubY", dp(ctx, 120));
+                        bubX = lp.x;
+                        bubY = lp.y;
                         final float[] d = new float[4];
                         v.setOnTouchListener(new View.OnTouchListener() {
                             @Override
@@ -818,12 +872,18 @@ public class OverlayUi {
                                     case android.view.MotionEvent.ACTION_MOVE:
                                         lp.x = (int) (d[2] - (ev.getRawX() - d[0]));
                                         lp.y = (int) (d[3] + (ev.getRawY() - d[1]));
+                                        bubX = lp.x;
+                                        bubY = lp.y;
                                         try {
                                             wm.updateViewLayout(view, lp);
                                         } catch (Exception e) {
                                         }
                                         return true;
                                     case android.view.MotionEvent.ACTION_UP:
+                                        try {
+                                            bp2.edit().putInt("bubX", lp.x).putInt("bubY", lp.y).apply();
+                                        } catch (Exception e) {
+                                        }
                                         if (Math.abs(ev.getRawX() - d[0]) < 12 && Math.abs(ev.getRawY() - d[1]) < 12) {
                                             showBubblePanel(ctx, (RingView) view);
                                         }

@@ -324,20 +324,17 @@ details.wr{border:1px solid var(--ln);border-radius:12px;margin:8px 0;background
 textarea.ag{overflow:hidden;resize:none}
 #shOv{z-index:120}
 .rr .rn .del{font-size:12px;margin-inline-start:8px}
-.ckr{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--ln)}.ckl{display:flex;align-items:center;gap:8px;flex:1 1 60%;min-width:0}.ckr small{color:var(--mu);font-size:12px}.ckd{text-decoration:line-through;opacity:.6}.ckf{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
 </style></head><body><main>
 <h1>My Studying Session</h1>
 <div style="display:flex;justify-content:space-between;align-items:center"><p class="sub" id="dt"></p><div class="row" style="margin:0"><button class="ch" onclick="setOpen()">⚙</button><button class="ch" onclick="ttOpen()">الجدول</button></div></div>
 <span id="ali" hidden></span>
 <div id="tm"></div>
 <div id="bk"></div>
-<div id="sesBn"></div>
 
 <div id="stack" style="display:flex;flex-direction:column"><div id="attBar"></div><div id="wkTop"></div>
 <details id="tabA" hidden open><summary>📋 قايمة اليوم والإضافية</summary><div id="tabAb"></div></details>
 <details id="tabB" hidden><summary>➕ إضافة شيء، المواد، القادم</summary><div id="tabBb"></div></details>
 <div id="slotA"><div id="blockA"><div id="today"></div><div id="exl"></div></div></div>
-<details id="catBox" class="addT"><summary id="catSum">📂 التصنيفات والجلسات</summary><div id="catBody"></div></details>
 <div id="slotB"><div id="blockB">
 
 <details id="addTab" class="addT"><summary>＋ مهمة جديدة</summary><div class="add">
@@ -470,7 +467,7 @@ function ugHtml(it){const u=urg(it);return u?`<div class="ug u${u.lv}">${UGI[u.l
 function dyHtml(it){const n=diff(prs(it.due),mid(NOW())),ex=it.type==='exam';
  return n<0?'<span class="dy">فات</span>':n===0?'<span class="dy">النهاردة</span>':(ex&&n===1)?'<span class="dy">آخر يوم</span>':n===1?'<span class="dy">بكرة</span>':`<span class="dy"><b>${n}</b> أيام</span>`}
 function boxHtml(it,key,tag,subs,tot,dn,st){
- return `<details class="tk ${it.type==='exam'?'tkE':'tkH'}${it.done?' dn':''}" data-k="${key}" ${OP[key]?'open':''} ontoggle="OP[this.dataset.k]=this.open"><summary><div class="bt"><input type="checkbox" ${it.done?'checked':''} onchange="toggle('${it.id}')" aria-label="خلصت المهمة"><div class="bn">${esc(it.title)}${st}</div></div><div class="bm">${dyHtml(it)}<span class="bg">${tag}</span>${tot?`<span class="pg">${dn}/${tot}</span>`:''}</div>${ugHtml(it)}${xdChip(it)}</summary><div class="tkb"><div class="subs">${subs}${adderHtml(it)}</div>${tmHtml(it)}<div class="row tkx">${xdBtns(it)}<button class="ch" onclick="editItem('${it.id}')">تعديل</button><button class="ch" style="color:var(--rd)" onclick="delItem('${it.id}')">حذف</button></div></div></details>`}
+ return `<details class="tk ${it.type==='exam'?'tkE':'tkH'}${it.done?' dn':''}" data-k="${key}" ${OP[key]?'open':''} ontoggle="OP[this.dataset.k]=this.open"><summary><div class="bt"><input type="checkbox" ${it.done?'checked':''} onchange="toggle('${it.id}')" aria-label="خلصت المهمة"><div class="bn">${esc(it.title)}${st}</div></div><div class="bm">${dyHtml(it)}<span class="bg">${tag}</span>${tot?`<span class="pg">${dn}/${tot}</span>`:''}</div>${ugHtml(it)}${xdChip(it)}</summary><div class="tkb"><div class="subs">${subs}${adderHtml(it)}</div>${tmHtml(it)}<div class="row tkx">${xdBtns(it)}<button class="ch" style="color:var(--rd)" onclick="delItem('${it.id}')">حذف</button></div></div></details>`}
 function card(it,far){
  const T=mid(NOW()),n=diff(prs(it.due),T),l=lbl(n),ex=it.type==='exam',st=it.big?' ++':'';
  const a=ex?acc(it):0;
@@ -867,6 +864,8 @@ function stDraw(){const p=$('stPanel');if(!p)return;const a=S.al,T=ymd(mid(NOW()
   b+=sRow('تخطي وضع عدم الإزعاج','عشان المنبه وإشعار المهام يطلعوا حتى لو الموبايل صامت/عدم إزعاج: دوس الزرار وفعّل «مذاكرتي» في القايمة. '+((window.Android&&Android.dndOk&&Android.dndOk())?'✓ مفعّل':'(لسه مش مفعّل)'),'<button class="ch" onclick="try{Android.openDndSettings()}catch(e){toast(\'محتاج نسخة APK الجديدة\')}">فتح</button>');
   b+=sRow('طول الاستراحة (دقيقة)','العداد بينزل من الرقم ده لحد صفر.',`<input type="number" min="1" max="120" value="${a.brkLen||15}" style="width:64px" onchange="setAl('brkLen',Math.max(1,+this.value||15))">`);
   b+=sRow('دائرة العداد العايمة','دايرة بخط بيقل بتفضل فوق أي تطبيق وتتسحب بإصبعك، وتدوس عليها تفتح التطبيق. لو قفلتها بيرجع الإشعار العادي بعدّ تنازلي.',`<input type="checkbox" ${a.bubble===false?'':'checked'} onchange="setAl('bubble',this.checked)">`);
+  b+=sRow('حجم الدايرة العايمة','',`<select onchange="setAl('bubSz',this.value)" class="stsel" style="flex:none;min-width:0"><option value="s" ${a.bubSz==='s'?'selected':''}>صغيرة</option><option value="m" ${(a.bubSz||'m')==='m'?'selected':''}>وسط</option><option value="l" ${a.bubSz==='l'?'selected':''}>كبيرة</option></select>`);
+  b+=sRow('مكان الدايرة','بتفتكر آخر مكان سحبتها فيه. لو ضاعت أو مش عاجبك مكانها رجّعها للمكان الأصلي.',`<button class="ch" onclick="setAl('bubRp',(S.al.bubRp||0)+1);toast('اتعمل')">رجّعها</button>`);
   b+=sRow('منبه صوت لما تلغي العداد','بيرن بصوت عالي لحد ما تنسخ الجمل (أو ترجع).',`<input type="checkbox" ${a.ringStop===false?'':'checked'} onchange="setAl('ringStop',this.checked)">`);
   b+=`<div class="sr"><div class="srt"><span>أنواع التحديات (للعداد والتطبيقات)</span></div><div class="row" style="flex-wrap:wrap">${CHT.map(x=>`<label class="ch"><input type="checkbox" ${chTypes().includes(x[0])?'checked':''} onchange="chTog('${x[0]}',this.checked)"> ${x[1]}</label>`).join('')}</div><div class="sd">لازم نوع واحد على الأقل.</div></div>`;
   b+=`<div class="sr"><div class="srt"><span>جمل التحدي</span></div><textarea id="sentBox" dir="ltr" rows="5" style="width:100%;font-size:14px" onchange="sentSet(this.value)" placeholder="جملة في كل سطر (إنجليزي بترقيم). سيبها فاضية للجمل الافتراضية.">${esc((S.al.sents||[]).join('\n'))}</textarea></div>`;
@@ -902,7 +901,7 @@ function stDraw(){const p=$('stPanel');if(!p)return;const a=S.al,T=ymd(mid(NOW()
   b+=sRow('وضع التجربة','','<button class="ch" onclick="testMenu()">🧪 تجربة</button>');
  }
  p.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:20px">⚙ الإعدادات</b><button class="go" onclick="setClose()">تم</button></div><div class="stabs">${tabs.map(([k,l])=>`<button class="ch ${stTab===k?'on':''}" onclick="stTabSet('${k}')">${l}</button>`).join('')}</div>${b}`}
-function route(){nat('ready');const h=(location.hash||'').replace('#','');if(h==='alarm'){if(S.rsWait&&pendList().length)pendScreen();else showAlarm()}else if(h==='stop')tmStop();else if(h==='reason')reasonScreen([]);else if(h==='warn')showWarn();else if(h==='pend')pendScreen();else if(h==='wk')weeklyScreen();else if(h==='pz')pzRoute()}
+function route(){nat('ready');const h=(location.hash||'').replace('#','');if(h==='alarm'){if(S.rsWait&&pendList().length)pendScreen();else showAlarm()}else if(h==='stop'){tmStop();if(!$('tsOv')){ringOn(false);location.hash='';nat('closeui')}}else if(h==='reason')reasonScreen([]);else if(h==='warn')showWarn();else if(h==='pend')pendScreen();else if(h==='wk')weeklyScreen();else if(h==='pz')pzRoute()}
 window.addEventListener('hashchange',route);
 window.MZK={resumeT:()=>{pzPoll();tmResume()},today:todayTasks,
  notif:()=>{const ts=todayTasks();return{title:'مهام النهاردة ('+ts.length+')',lines:ts.map(t=>'• '+t.t+(t.ty==='exam'?' — باقي '+t.n+' أيام':'')+(t.parts.length?' ← '+t.parts.join('، '):''))}},
@@ -1012,7 +1011,7 @@ function exSetDue(id,k){const it=find(id);if(!it)return;const n0=Math.max(1,exSt
  if(!exFit(it)){Object.assign(it,old);toast('فيه أجزاء مكتوبة أكتر من الأيام. امسح الأجزاء الأقدم الأول');return}
  const n=exStudyDays(it).length;while(it.subs.length&&it.subs.length<n)it.subs.unshift({t:'',d:false,on:null,a:1});
  actMark();save();tmSync();draw();eiDraw(id)}
-const APP_VER=32;
+const APP_VER=33;
 function updApply(html){const m=/APP_VER\s*=\s*(\d+)/.exec(html),v=m?+m[1]:0,sm=/<script>([\s\S]*)<\/script>/.exec(html);
  try{if(!sm||!v)throw 0;new Function(sm[1])}catch(e){toast('الملف ده مش تحديث صالح');return 0}
  return v}
@@ -1123,7 +1122,7 @@ function draw(){
  $('tm').innerHTML=TM?`<div style="background:#7c3aed;color:#fff;border-radius:10px;padding:8px 12px;margin:8px 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b>🧪 وضع التجربة</b><span>التاريخ:</span><input type="date" value="${FAKE}" onchange="fakeSet(this.value)" style="flex:none"><button class="ch" style="background:#fff;color:#4c1d95" onclick="fakeNext()">+ يوم</button><button class="ch" style="background:#fff;color:#4c1d95" onclick="exitTest()">خروج</button></div>`:'';
  $('sqb').hidden=!(type==='hw'||(type==='exam'&&Object.keys(S.exLead||{}).length>0));$('dtb').hidden=type!=='exam';dateBtn();subjBtn();
  if(!TM&&S.al.on&&S.al.warn!==false&&hr()>=S.al.cut&&S.wd!==ty&&examsWeek().some(i=>acc(i)>0)){S.wd=ty;save();showWarn()}
- [szUpdate,catRender,calRender,place,wkRender,moRender,yrRender,alInfo,lsPop,nativeSync,drRestore,pendCheck,wkCheck,pzCheck,pzPoll].forEach(sf);
+ [szUpdate,calRender,place,wkRender,moRender,yrRender,alInfo,lsPop,nativeSync,drRestore,pendCheck,wkCheck,pzCheck,pzPoll].forEach(sf);
 }
 const RD=()=>(S.al&&S.al.rest!=null)?S.al.rest:4;
 /* ===================== helpers ===================== */
@@ -1357,8 +1356,8 @@ function pzOk(){const v=($('pzIn').value||'').trim();if(v.length<2||!S.pz)return
 function pzCheck(){if(TM||Date.now()<TMX)return;if(S.pz&&!$('pzOv'))pzShow()}
 function pzRoute(){if(S.run)tmPause();else pzCheck()}
 function tmSync(){try{if(!window.Android||!Android.setTimer)return;
- if(S.run){const o=tmGet(S.run.id,S.run.i,S.run.j),it=find(S.run.id),r=tmRem(o);Android.setTimer(JSON.stringify({k:'task',l:(it?it.title:'')+((o&&o!==it&&o.t)?' — '+o.t:''),s:o?(Date.now()-tmElapsed(o)):Date.now(),e:(r!=null&&r>0)?Date.now()+r:0,bub:S.al.bubble!==false}))}
- else if(S.brk)Android.setTimer(JSON.stringify({k:'break',l:S.brk.what,s:S.brk.t0,e:S.brk.pzAt?0:S.brk.t0+brkLen(),bub:S.al.bubble!==false}));
+ if(S.run){const o=tmGet(S.run.id,S.run.i,S.run.j),it=find(S.run.id),r=tmRem(o);Android.setTimer(JSON.stringify({k:'task',l:(it?it.title:'')+((o&&o!==it&&o.t)?' — '+o.t:''),s:o?(Date.now()-tmElapsed(o)):Date.now(),e:(r!=null&&r>0)?Date.now()+r:0,bub:S.al.bubble!==false,sz:S.al.bubSz||'m',rp:S.al.bubRp||0,rs:S.al.ringStop!==false}))}
+ else if(S.brk)Android.setTimer(JSON.stringify({k:'break',l:S.brk.what,s:S.brk.t0,e:S.brk.pzAt?0:S.brk.t0+brkLen(),bub:S.al.bubble!==false,sz:S.al.bubSz||'m',rp:S.al.bubRp||0,rs:S.al.ringStop!==false}));
  else Android.setTimer('');
  if(!TM&&Android.setTasks)Android.setTasks(JSON.stringify(notifPayload()))}catch(e){}}
 function runBanner(){const r=S.run;if(!r)return'';const o=tmGet(r.id,r.i,r.j),it=find(r.id);if(!o||!it)return'';return `<div class="brk"><span>شغال: ${esc(it.title)}${o!==it&&o.t?' — '+esc(o.t):''}</span><b id="rnT">${tmTxt(o)}</b><button class="ch" onclick="tmPause()">⏸ راحة</button><button class="del" onclick="tmStop()" aria-label="إلغاء">⏹</button></div>`}
@@ -1492,72 +1491,4 @@ sf(draw);
 sf(route);
 try{if(window.Android&&Android.pageOk)Android.pageOk()}catch(e){}
 let lastDay=ymd(NOW());setInterval(()=>{const d=ymd(NOW());if(d!==lastDay){lastDay=d;draw()}},30000);
-/* ===================== v32: التصنيفات والجلسات ===================== */
-const CATS={due:'موعد التسليم',resp:'مسؤول',dev:'التطوير اليومي'};
-let catV='due',catAdd={due:'',est:'',rec:'none'};
-function ckInit(){S.tk=S.tk||[];S.plan=S.plan||{};S.cl=S.cl||[];S.sw=Object.assign({cap:{due:90,resp:90,dev:90},bed:'21:00',buf:15},S.sw||{});S.sw.cap=Object.assign({due:90,resp:90,dev:90},S.sw.cap||{})}
-const ckT=()=>ymd(mid(NOW()));
-const ckHol=()=>{const d=mid(NOW()).getDay();return d===RD()||!((S.tt&&S.tt.days)||[1,2,3,4,6]).includes(d)};
-function ckApplies(t,ds){if(t.rec==='daily')return true;if(t.rec==='wd')return prs(ds).getDay()!==RD();return false}
-function ckDone(t,ds){return t.rec&&t.rec!=='none'?!!(t.dn&&t.dn[ds]):t.st==='done'}
-function ckToday(cat){ckInit();const T=ckT();return S.tk.filter(t=>t.cat===cat&&!t.x&&(t.rec&&t.rec!=='none'?ckApplies(t,T):(t.st==='done'?t.doneAt===T:(S.plan[T]||[]).includes(t.id))))}
-function ckInbox(){ckInit();const T=ckT();return S.tk.filter(t=>t.cat==='resp'&&!t.x&&(!t.rec||t.rec==='none')&&t.st!=='done'&&!(S.plan[T]||[]).includes(t.id))}
-function ckLeft(cat){if(cat==='due')return todayTasks().length;return ckToday(cat).filter(t=>!ckDone(t,ckT())).length}
-function ckSweep(){ckInit();const T=ckT();let ch=false;S.tk.forEach(t=>{if(!t.rec||t.rec==='none')return;const from=t.sw||t.created||T;let d=addD(prs(from),0),n=0;t.miss=t.miss||[];while(ymd(d)<T&&n<30){const k=ymd(d);if(k>=(t.created||k)&&ckApplies(t,k)&&!(t.dn&&t.dn[k])&&!t.miss.includes(k)){t.miss.push(k);ch=true}d=addD(d,1);n++}if(t.sw!==T){t.sw=T;ch=true}});if(ch)save()}
-function ckCap(cat){ckInit();const T0=NOW(),W=Math.max(0,parseClock(S.sw.bed)-(T0.getHours()*60+T0.getMinutes()));let uc=S.sw.cap[cat]||90;if(ckHol())uc=Math.max(uc,120);
- const ks=['due','resp','dev'].filter(c=>c===cat||ckLeft(c)>0),k=Math.max(1,ks.length),brk=25*(k-1),raw=Math.floor((W*(1-(S.sw.buf||15)/100)-brk)/k/5)*5;return Math.max(5,Math.min(uc,raw))}
-/* ---- مهام ---- */
-function ckAdd(){ckInit();const ti=$('ckT').value.trim();if(!ti){toast('اكتب المهمة');return}const est=Math.max(0,+$('ckE').value||0),rec=catV==='dev'?($('ckR').value==='none'?'daily':$('ckR').value):$('ckR').value;
- S.tk.push({id:uid(),title:ti,cat:catV==='dev'?'dev':'resp',est,due:catAdd.due||'',rec,st:'inbox',created:ckT()});catAdd.due='';$('ckT').value='';$('ckE').value='';catAdd.t='';catAdd.e='';save();draw()}
-function ckDate(){dateSheet();dpCb=k=>{catAdd.due=k;catRender()}}
-function ckPlan(id){ckInit();const T=ckT(),a=S.plan[T]=S.plan[T]||[];const i=a.indexOf(id);if(i>=0)a.splice(i,1);else a.push(id);save();draw()}
-function ckTick(id){ckInit();const T=ckT(),t=S.tk.find(x=>x.id===id);if(!t)return;const rec=t.rec&&t.rec!=='none';
- if(rec){t.dn=t.dn||{};if(t.dn[T])delete t.dn[T];else{t.dn[T]=1;ckAct(t)}}else{if(t.st==='done'){t.st='inbox';t.doneAt=null}else{t.st='done';t.doneAt=T;ckAct(t)}}save();draw()}
-function ckAct(t){const s=S.ses;if(s&&s.cat===t.cat){const e=sesEl();t.act=Math.max(0,Math.round((e-(s.lm||0))/6e4));s.lm=e}}
-function ckDel(id){const t=S.tk.find(x=>x.id===id);if(!t)return;askDlg('تمسح «'+t.title+'»؟',()=>{t.x=1;save();draw()})}
-function ckRow(t,mode){const T=ckT(),dn=ckDone(t,T),rec=t.rec&&t.rec!=='none';
- const meta=[t.est?t.est+' د':'',rec?(t.rec==='daily'?'يومي':'أيام الدراسة'):'',t.due?('لحد '+fd(t.due)):'',(t.miss&&t.miss.length)?('ما اتعملش '+t.miss.length+'×'):''].filter(Boolean).join(' · ');
- return `<div class="ckr"><label class="ckl"><input type="checkbox" ${dn?'checked':''} onchange="ckTick('${t.id}')"><span class="${dn?'ckd':''}">${esc(t.title)}</span></label><small>${esc(meta)}</small>`+(mode==='inbox'?`<button class="ch" onclick="ckPlan('${t.id}')">النهاردة</button>`:(!rec&&t.cat==='resp'&&!dn?`<button class="ch" onclick="ckPlan('${t.id}')">رجّعها</button>`:''))+`<button class="dx" onclick="ckDel('${t.id}')">×</button></div>`}
-/* ---- جلسة ---- */
-function sesEl(){const s=S.ses;if(!s)return 0;const n=Date.now();return Math.max(0,n-s.st-(s.pt||0)-(s.bs?n-s.bs:0))}
-function sesStart(cat){ckInit();if(S.sbk&&S.sbk.end>Date.now()){sbShow();return}if(S.ses){toast('فيه جلسة شغالة');return}const cap=ckCap(cat);S.ses={cat,st:Date.now(),cap,pt:0,bs:0,lm:0};save();draw();toast('الجلسة بدأت · الحد الأقصى '+cap+' دقيقة')}
-function sesBrk(){const s=S.ses;if(!s||s.bs)return;s.bs=Date.now();s.be=s.bs+15*6e4;save();draw()}
-function sesBack(){const s=S.ses;if(!s||!s.bs)return;s.pt=(s.pt||0)+(Date.now()-s.bs);s.bs=0;s.be=0;save();draw()}
-function sesEnd(auto){const s=S.ses;if(!s)return;const m=Math.round(sesEl()/6e4);if(m>0)S.cl.push({d:ckT(),cat:s.cat,min:m});S.ses=null;S.sbk={end:Date.now()+25*6e4};save();draw();if(auto)toast('وصلت للحد الأقصى ('+s.cap+' د) · استراحة');sbShow()}
-function sbShow(){if($('sbOv'))return;const o=document.createElement('div');o.id='sbOv';o.className='ov';o.style.cssText='align-items:center;z-index:130;background:rgba(0,0,0,.92)';o.innerHTML='<div class="sheet" style="border-radius:16px;max-width:420px;margin:16px;text-align:center"><div style="font-size:16px">استراحة بين الجلسات</div><div id="sbT" dir="ltr" style="font-size:44px;font-weight:800;margin:10px 0">25:00</div><div class="sd" style="font-size:13px;color:var(--mu)">قوم، اشرب مية، وسيب الشاشة.</div><div id="sbX" style="margin-top:14px"><button class="ch" onclick="sbEsc()">أكمّل قبل الوقت</button></div></div>';document.body.appendChild(o);sesTick()}
-function sbEsc(){const q=pickFrom(qShort(),'sbk',1)[0];if(!q)return sbDone();$('sbX').innerHTML=`<div dir="ltr" style="font-weight:700;text-align:left;margin-bottom:6px">«${esc(q.t)}»${qAu(q.a)}</div><input type="text" id="sbI" style="width:100%" onpaste="return false"><div id="sbM" style="color:var(--rd);min-height:18px"></div><button class="go" onclick="if(nz($('sbI').value)===nz(${JSON.stringify(q.t)}))sbDone();else $('sbM').textContent='مش مطابقة'">تأكيد</button>`}
-function sbDone(){S.sbk=null;save();const o=$('sbOv');if(o)o.remove();draw()}
-const mmss=ms=>{ms=Math.max(0,Math.ceil(ms/1000));return Math.floor(ms/60)+':'+String(ms%60).padStart(2,'0')};
-function sesTick(){try{if(location.hash)return;const s=S.ses,b=$('sesBn');
- if(S.sbk){if(S.sbk.end<=Date.now()){sbDone();return}if(!$('sbOv'))sbShow();const t=$('sbT');if(t)t.textContent=mmss(S.sbk.end-Date.now())}
- if(s){if(s.bs&&s.be&&Date.now()>=s.be){sesBack();return}
-  if(!s.bs&&sesEl()>=s.cap*6e4){sesEnd(true);return}
-  const left=s.cap*6e4-sesEl();if(b)b.innerHTML=`<div class="brk"><span>${s.bs?'☕ راحة':'⏱ جلسة '+esc(CATS[s.cat])}</span><b dir="ltr">${s.bs?mmss(s.be-Date.now()):mmss(left)}</b>${s.bs?'<button class="ch" onclick="sesBack()">كمّل</button>':'<button class="ch" onclick="sesBrk()">راحة ١٥</button>'}<button class="ch" onclick="sesEnd()">إنهاء</button></div>`}
- else if(b&&b.innerHTML)b.innerHTML=''}catch(e){}}
-setInterval(sesTick,1000);
-/* ---- إحصائيات ---- */
-function ckStats(){ckInit();const T=mid(NOW()),w0=addD(T,-6),cs=['due','resp','dev'];let h='';
- const wk={due:0,resp:0,dev:0},mo={due:{},resp:{},dev:{}};S.cl.forEach(l=>{const d=prs(l.d);if(d>=w0&&d<=T)wk[l.cat]=(wk[l.cat]||0)+l.min;if(d.getFullYear()===T.getFullYear()&&d.getMonth()===T.getMonth()){mo[l.cat][l.d]=(mo[l.cat][l.d]||0)+l.min}});
- const mx=Math.max(1,...cs.map(c=>wk[c])),tot=cs.reduce((a,c)=>a+wk[c],0);if(!tot)return '';
- h+='<div class="sd" style="margin:8px 0 2px">آخر ٧ أيام (دقايق لكل تصنيف)</div>'+cs.map(c=>`<div class="stt"><span style="min-width:96px">${CATS[c]}</span><div class="eb" style="flex:1;margin:0 8px"><i style="width:${wk[c]/mx*100}%"></i></div><b dir="ltr">${wk[c]}</b></div>`).join('');
- const st=cs.map(c=>{const a=Object.values(mo[c]);if(a.length<3)return '';const m=a.reduce((x,y)=>x+y,0)/a.length,sd=Math.sqrt(a.reduce((x,y)=>x+(y-m)*(y-m),0)/a.length),cv=m?sd/m:9;return `<div class="stt"><span>${CATS[c]}</span><span>${cv<0.25?'ثابت ✓':'مش ثابت'} <small>(متوسط ${Math.round(m)} د)</small></span></div>`}).join('');
- if(st)h+='<div class="sd" style="margin:10px 0 2px">ثبات الوقت الشهر ده</div>'+st;
- const wkS=ymd(w0),wt=S.tk.filter(t=>!t.x&&t.due&&t.due>=wkS&&t.due<=ymd(T)&&(!t.rec||t.rec==='none'));if(wt.length)h+=`<div class="stt"><span>مهام «مسؤول» ليها موعد</span><b dir="ltr">${wt.filter(t=>t.st==='done').length}/${wt.length}</b></div>`;
- return h}
-/* ---- العرض ---- */
-var __ckR;function catRender(){if(!__ckR)return;ckInit();ckSweep();const el=$('catBody');if(!el)return;if($('ckT')){catAdd.t=$('ckT').value;catAdd.e=$('ckE').value;catAdd.r=$('ckR').value}const T=ckT(),s=S.ses;
- const chips=Object.keys(CATS).map(k=>`<button class="ch ${catV===k?'on':''}" onclick="catV='${k}';catRender()">${CATS[k]}${ckLeft(k)?' ('+ckLeft(k)+')':''}</button>`).join('');
- let h=`<div class="row">${chips}</div>`;
- if(catV==='due'){h+=`<div class="sd" style="margin:6px 0">مهام التسليم (واجب/امتحان) موجودة في قايمة اليوم فوق. من هنا بتبدأ جلسة مذاكرة لها وقت أقصى.</div>`}
- else if(catV==='resp'){const td=ckToday('resp'),ib=ckInbox();h+=`<div class="sd" style="margin:6px 0">النهاردة</div>`+(td.map(t=>ckRow(t,'today')).join('')||'<div class="tg">اختار من الصندوق تحت</div>')+`<div class="sd" style="margin:10px 0 2px">صندوق المسؤوليات (${ib.length})</div>`+(ib.map(t=>ckRow(t,'inbox')).join('')||'<div class="tg">فاضي</div>')}
- else{const td=ckToday('dev');h+=(td.map(t=>ckRow(t,'today')).join('')||'<div class="tg">ضيف عادة يومية تحت</div>')}
- if(catV!=='due'){h+=`<div class="ckf"><input type="text" id="ckT" placeholder="${catV==='dev'?'عادة/تطوير جديد':'مسؤولية جديدة'}" style="flex:1 1 100%"><input type="number" id="ckE" placeholder="دقيقة" min="0" style="width:84px"><select id="ckR" class="stsel" style="flex:none;min-width:0">${catV==='resp'?'<option value="none">مرة</option>':''}<option value="daily">يومي</option><option value="wd">أيام الدراسة</option></select>`+(catV==='resp'?`<button class="ch" onclick="ckDate()">${catAdd.due?'لحد '+fd(catAdd.due)+' ✎':'موعد (اختياري)'}</button>`:'')+`<button class="go" onclick="ckAdd()">＋</button></div>`}
- const cap=ckCap(catV);h+=`<div class="stt" style="margin-top:12px"><span>الحد الأقصى المتاح للجلسة دلوقتي</span><b dir="ltr">${cap} د</b></div>`;
- h+=s?`<div class="sd">فيه جلسة شغالة (${esc(CATS[s.cat])})</div>`:`<div class="row" style="margin-top:8px"><button class="go" style="flex:1" onclick="sesStart('${catV}')">ابدأ جلسة ${CATS[catV]}</button></div>`;
- h+=`<details style="margin-top:10px"><summary class="sd">إعدادات الجلسات</summary><div class="ckf">${['due','resp','dev'].map(c=>`<label class="sd">${CATS[c]} (حد أقصى HH:MM)<input type="text" value="${fmtHM(S.sw.cap[c])}" style="width:72px;direction:ltr;text-align:center" onchange="ckSetCap('${c}',this.value)"></label>`).join('')}<label class="sd">وقت النوم<input type="text" value="${esc(S.sw.bed)}" style="width:72px;direction:ltr;text-align:center" onchange="ckSetBed(this.value)"></label></div><div class="sd">الحد الأقصى «سقف» مش مدة. على أيام المدرسة الحد الفعلي أقل (حوالي ٤٠–٥٥ دقيقة) عشان الوقت لحد النوم والاستراحات (٢٥ دقيقة بين كل جلسة).</div></details>`;
- h+=ckStats();el.innerHTML=h;if($('ckT')){$('ckT').value=catAdd.t||'';$('ckE').value=catAdd.e||'';try{if(catAdd.r)$('ckR').value=catAdd.r}catch(e){}}const sum=$('catSum');if(sum)sum.textContent='📂 التصنيفات والجلسات';sesTick()}
-function ckSetCap(c,v){ckInit();const m=parseClock(v);if(m>=5&&m<=600){S.sw.cap[c]=m;save()}catRender()}
-function ckSetBed(v){ckInit();const m=parseClock(v);if(m>=600&&m<=1439){S.sw.bed=fmtHM(m).padStart(5,'0');save()}catRender()}
-
-__ckR=1;sf(catRender);
 </script></body></html>
