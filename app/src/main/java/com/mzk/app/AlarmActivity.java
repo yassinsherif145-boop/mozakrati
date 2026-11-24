@@ -126,12 +126,20 @@ public class AlarmActivity extends Activity {
     protected void onResume() {
         super.onResume();
         visible = true;
+        try {
+            if (OverlayUi.bubbleView != null) OverlayUi.bubbleView.setVisibility(android.view.View.GONE);
+        } catch (Exception e) {
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         visible = false;
+        try {
+            if (OverlayUi.bubbleView != null) OverlayUi.bubbleView.setVisibility(android.view.View.VISIBLE);
+        } catch (Exception e) {
+        }
     }
 
     @Override

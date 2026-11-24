@@ -310,21 +310,37 @@ public class OverlayUi {
             };
             if (needGate) {
                 final java.util.List<String> pool = new java.util.ArrayList<String>();
+                final java.util.Map<String, String> authOf = new java.util.HashMap<String, String>();
                 try {
                     org.json.JSONArray ja = new org.json.JSONArray(wp.getString("sn", "[]"));
                     for (int q = 0; q < ja.length(); q++) {
                         String x = ja.optString(q).trim();
-                        if (x.length() > 8) pool.add(x);
+                        String au = "";
+                        int ci = x.indexOf((char) 1);
+                        if (ci >= 0) {
+                            au = x.substring(ci + 1).trim();
+                            x = x.substring(0, ci).trim();
+                        }
+                        if (x.length() > 8) {
+                            pool.add(x);
+                            authOf.put(x, au);
+                        }
                     }
                 } catch (Exception ex) {
                 }
                 if (pool.isEmpty()) {
-                    pool.add("Success isn't owned; it's leased, and rent is due every single day.");
-                    pool.add("Well, well... if it isn't the 'one more minute' excuse, again!");
-                    pool.add("Discipline is choosing between what you want now, and what you want most.");
-                    pool.add("Don't watch the clock; do what it does: keep going, tick by tick.");
-                    pool.add("Focus (n.): saying no to 100 good ideas, to say yes to one - right now!");
-                    pool.add("It's 3:15, the tea is cold, and the exam is still coming: choose wisely.");
+                    pool.add("Efficiency is doing things right; effectiveness is doing the right things.");
+                    authOf.put("Efficiency is doing things right; effectiveness is doing the right things.", "Peter Drucker");
+                    pool.add("Well done is better than well said.");
+                    authOf.put("Well done is better than well said.", "Benjamin Franklin");
+                    pool.add("We are what we repeatedly do. Excellence, then, is not an act, but a habit.");
+                    authOf.put("We are what we repeatedly do. Excellence, then, is not an act, but a habit.", "Will Durant");
+                    pool.add("Nothing is particularly hard if you divide it into small jobs.");
+                    authOf.put("Nothing is particularly hard if you divide it into small jobs.", "Henry Ford");
+                    pool.add("Chance favors only the prepared mind.");
+                    authOf.put("Chance favors only the prepared mind.", "Louis Pasteur");
+                    pool.add("The main thing is to keep the main thing the main thing.");
+                    authOf.put("The main thing is to keep the main thing the main thing.", "Stephen Covey");
                 }
                 java.util.Collections.shuffle(pool);
                 String ctS = wp.getString("ct", "copy,upper,rev,ini");
@@ -336,7 +352,7 @@ public class OverlayUi {
                 final int[] ix = new int[]{0};
                 final TextView st = label(ctx, "خلصت وقتك. " + chs[0][0], 16, true);
                 col.addView(st, lp(ctx, 18));
-                final TextView sl = label(ctx, chs[0][2], 18, false);
+                final TextView sl = label(ctx, chs[0][2] + auOf(authOf, chs[0][2]), 18, false);
                 sl.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
                 sl.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
                 col.addView(sl, lp(ctx, 8));
@@ -357,6 +373,7 @@ public class OverlayUi {
 
                     @Override
                     public void afterTextChanged(Editable s) {
+                        hushRing(ctx, 20000);
                         String[] cur = chs[ix[0]];
                         String typed = s.toString().trim();
                         boolean hit = "ini".equals(cur[3]) ? typed.equalsIgnoreCase(cur[1]) : typed.equals(cur[1]);
@@ -368,28 +385,13 @@ public class OverlayUi {
                             upd.run();
                         } else {
                             st.setText("تحدي " + (ix[0] + 1) + "/" + chn + ": " + chs[ix[0]][0]);
-                            sl.setText(chs[ix[0]][2]);
+                            sl.setText(chs[ix[0]][2] + auOf(authOf, chs[ix[0]][2]));
                             es.setText("");
                         }
                     }
                 });
             }
             col.addView(ok, lp(ctx, 22));
-            Button close = btn(ctx, "اقفل التطبيق");
-            col.addView(close, lp(ctx, 10));
-            close.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    try {
-                        Intent h = new Intent(Intent.ACTION_MAIN);
-                        h.addCategory(Intent.CATEGORY_HOME);
-                        h.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        ctx.startActivity(h);
-                    } catch (Exception e) {
-                    }
-                    dismissCheck(ctx);
-                }
-            });
             if (wait > 0) {
                 ok.setEnabled(false);
                 ok.setAlpha(0.5f);
@@ -528,6 +530,11 @@ public class OverlayUi {
         pauseShown = false;
     }
 
+    static String auOf(java.util.Map<String, String> m, String s) {
+        String a = m.get(s);
+        return (a == null || a.isEmpty()) ? "" : "\n\u2014 " + a;
+    }
+
     // [instruction, expected answer, text to show, type]
     static String[] chal(String sent, String type) {
         String[] w = sent.trim().split("\\s+");
@@ -562,9 +569,24 @@ public class OverlayUi {
     static Ringtone ring = null;
     static boolean ringing = false;
 
+    static boolean ringWanted = false;
+    static int ringTok = 0;
+
+    static void hushRing(final Context c, long ms) {
+        final int t = ++ringTok;
+        stopRingNow();
+        H.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (t == ringTok && ringWanted) startRing(c);
+            }
+        }, ms);
+    }
+
     static void startRing(final Context c) {
         try {
-            stopRing();
+            stopRingNow();
+            ringWanted = true;
             Uri u = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
             if (u == null) u = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
             ring = RingtoneManager.getRingtone(c, u);
@@ -594,6 +616,12 @@ public class OverlayUi {
     }
 
     static void stopRing() {
+        ringWanted = false;
+        ringTok++;
+        stopRingNow();
+    }
+
+    static void stopRingNow() {
         ringing = false;
         try {
             if (ring != null) ring.stop();
@@ -622,7 +650,7 @@ public class OverlayUi {
         @Override
         protected void onDraw(Canvas cv) {
             int w = getWidth(), h = getHeight();
-            float st = dp(getContext(), 6);
+            float st = dp(getContext(), 4);
             RectF r = new RectF(st, st, w - st, h - st);
             p.setStyle(Paint.Style.FILL);
             p.setColor(0xE6212121);
@@ -650,13 +678,90 @@ public class OverlayUi {
             p.setStyle(Paint.Style.FILL);
             p.setColor(Color.WHITE);
             p.setTextAlign(Paint.Align.CENTER);
-            p.setTextSize(dp(getContext(), 15));
+            p.setTextSize(dp(getContext(), 11));
             p.setTypeface(Typeface.DEFAULT_BOLD);
             cv.drawText(txt, w / 2f, h / 2f + dp(getContext(), 5), p);
         }
     }
 
+    static View panelView = null;
+    static boolean bubbleHidden = false;
+    static long hiddenS = 0L;
+
+    static void hidePanel(Context ctx) {
+        try {
+            WindowManager wm = (WindowManager) ctx.getSystemService(Context.WINDOW_SERVICE);
+            if (panelView != null) wm.removeView(panelView);
+        } catch (Exception e) {
+        }
+        panelView = null;
+    }
+
+    static void showBubblePanel(final Context ctx, final RingView bv) {
+        try {
+            if (panelView != null) {
+                hidePanel(ctx);
+                return;
+            }
+            final WindowManager wm = (WindowManager) ctx.getSystemService(Context.WINDOW_SERVICE);
+            LinearLayout col = new LinearLayout(ctx);
+            col.setOrientation(LinearLayout.VERTICAL);
+            col.setBackgroundColor(0xF2212121);
+            col.setPadding(dp(ctx, 8), dp(ctx, 8), dp(ctx, 8), dp(ctx, 8));
+            String[] names = new String[]{"استراحة", "فتح التطبيق", "إخفاء العداد", "إنهاء العداد"};
+            for (int q = 0; q < names.length; q++) {
+                final int id = q;
+                Button b = btn(ctx, names[q]);
+                col.addView(b, lp(ctx, 6));
+                b.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        hidePanel(ctx);
+                        try {
+                            if (id == 0) {
+                                Intent i = new Intent(ctx, TimerReceiver.class);
+                                i.setAction("PAUSE");
+                                ctx.sendBroadcast(i);
+                            } else if (id == 1) {
+                                Intent in = new Intent(ctx, MainActivity.class);
+                                in.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                                ctx.startActivity(in);
+                            } else if (id == 2) {
+                                bubbleHidden = true;
+                                hiddenS = bv.s;
+                                hideBubble(ctx);
+                            } else {
+                                Util.openAlarm(ctx, "#stop");
+                            }
+                        } catch (Exception e) {
+                        }
+                    }
+                });
+            }
+            int type = Build.VERSION.SDK_INT >= 26
+                    ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+                    : WindowManager.LayoutParams.TYPE_PHONE;
+            WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
+                    dp(ctx, 170), WindowManager.LayoutParams.WRAP_CONTENT, type,
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+                    PixelFormat.TRANSLUCENT);
+            lp.gravity = Gravity.TOP | Gravity.END;
+            lp.x = dp(ctx, 12);
+            lp.y = dp(ctx, 190);
+            wm.addView(col, lp);
+            panelView = col;
+            H.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    hidePanel(ctx);
+                }
+            }, 8000);
+        } catch (Exception e) {
+        }
+    }
+
     static void hideBubble(Context ctx) {
+        hidePanel(ctx);
         try {
             WindowManager wm = (WindowManager) ctx.getSystemService(Context.WINDOW_SERVICE);
             if (bubbleView != null) wm.removeView(bubbleView);
@@ -675,6 +780,12 @@ public class OverlayUi {
                         return;
                     }
                     JSONObject o = new JSONObject(json);
+                    long sNew = o.optLong("s", 0L);
+                    if (bubbleHidden && sNew == hiddenS) {
+                        hideBubble(ctx);
+                        return;
+                    }
+                    if (sNew != hiddenS) bubbleHidden = false;
                     if (!o.optBoolean("bub", true) || !can(ctx)) {
                         hideBubble(ctx);
                         return;
@@ -687,7 +798,7 @@ public class OverlayUi {
                                 ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
                                 : WindowManager.LayoutParams.TYPE_PHONE;
                         final WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
-                                dp(ctx, 84), dp(ctx, 84), type,
+                                dp(ctx, 58), dp(ctx, 58), type,
                                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
                                 PixelFormat.TRANSLUCENT);
                         lp.gravity = Gravity.TOP | Gravity.END;
@@ -714,12 +825,7 @@ public class OverlayUi {
                                         return true;
                                     case android.view.MotionEvent.ACTION_UP:
                                         if (Math.abs(ev.getRawX() - d[0]) < 12 && Math.abs(ev.getRawY() - d[1]) < 12) {
-                                            try {
-                                                Intent in = new Intent(ctx, MainActivity.class);
-                                                in.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                                                ctx.startActivity(in);
-                                            } catch (Exception e) {
-                                            }
+                                            showBubblePanel(ctx, (RingView) view);
                                         }
                                         return true;
                                 }

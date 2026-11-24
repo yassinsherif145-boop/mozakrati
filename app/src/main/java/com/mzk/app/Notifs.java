@@ -17,7 +17,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class Notifs {
-    static final String CH = "tasks";
+    static final String CH = "tasks2";
     static final int FLAGS = PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE;
     static final int RED = 0xFFD32F2F;
     static final int BLUE = 0xFF1976D2;
@@ -25,7 +25,11 @@ public class Notifs {
     static void ensure(Context c) {
         if (Build.VERSION.SDK_INT >= 26) {
             NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
-            nm.createNotificationChannel(new NotificationChannel(CH, "مهام اليوم", NotificationManager.IMPORTANCE_LOW));
+            nm.createNotificationChannel(new NotificationChannel(CH, "مهام اليوم", NotificationManager.IMPORTANCE_MIN));
+            try {
+                nm.deleteNotificationChannel("tasks");
+            } catch (Exception e) {
+            }
             nm.createNotificationChannel(new NotificationChannel("alarm", "المنبه", NotificationManager.IMPORTANCE_HIGH));
             nm.createNotificationChannel(new NotificationChannel("idle", "إشعار الخلفية (صامت)", NotificationManager.IMPORTANCE_MIN));
         }
