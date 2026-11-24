@@ -537,6 +537,10 @@ public class OverlayUi {
 
     // [instruction, expected answer, text to show, type]
     static String[] chal(String sent, String type) {
+        if ("calc".equals(type)) {
+            int a = 3 + (int) (Math.random() * 17), b = 3 + (int) (Math.random() * 8), c = 1 + (int) (Math.random() * 30);
+            return new String[]{"احسب الناتج واكتبه:", String.valueOf(a * b + c), a + " × " + b + " + " + c, "calc"};
+        }
         String[] w = sent.trim().split("\\s+");
         if ("upper".equals(type)) {
             return new String[]{"اكتب الجملة دي كلها بحروف كبيرة (CAPITAL):", sent.trim().toUpperCase(java.util.Locale.US), sent.trim(), "upper"};
@@ -635,6 +639,7 @@ public class OverlayUi {
 
     static String clk(long ms) {
         long t = Math.max(0L, ms) / 1000L;
+        if (t >= 3600L) return String.format(java.util.Locale.US, "%d:%02d:%02d", t / 3600, (t % 3600) / 60, t % 60);
         return String.format(java.util.Locale.US, "%d:%02d", t / 60, t % 60);
     }
 
@@ -642,6 +647,7 @@ public class OverlayUi {
         final Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
         long s = 0, e = 0;
         boolean brk = false;
+        long fz = -1;
 
         RingView(Context c) {
             super(c);
@@ -662,7 +668,10 @@ public class OverlayUi {
             long now = System.currentTimeMillis();
             float frac;
             String txt;
-            if (e > now) {
+            if (fz >= 0) {
+                frac = 1f;
+                txt = clk(fz);
+            } else if (e > now) {
                 frac = Math.max(0f, Math.min(1f, (float) (e - now) / (float) Math.max(1L, e - s)));
                 txt = clk(e - now);
             } else if (e > 0) {
@@ -678,7 +687,7 @@ public class OverlayUi {
             p.setStyle(Paint.Style.FILL);
             p.setColor(Color.WHITE);
             p.setTextAlign(Paint.Align.CENTER);
-            p.setTextSize(w * 0.2f);
+            p.setTextSize(txt.length() > 5 ? w * 0.15f : w * 0.2f);
             p.setTypeface(Typeface.DEFAULT_BOLD);
             cv.drawText(txt, w / 2f, h / 2f + w * 0.075f, p);
         }
@@ -908,6 +917,7 @@ public class OverlayUi {
                     v.s = o.optLong("s", System.currentTimeMillis());
                     v.e = o.optLong("e", 0);
                     v.brk = "break".equals(o.optString("k"));
+                    v.fz = o.optLong("fz", -1L);
                     v.invalidate();
                 } catch (Exception e) {
                 }

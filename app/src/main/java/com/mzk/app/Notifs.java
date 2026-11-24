@@ -131,22 +131,30 @@ public class Notifs {
                     NotificationManager nmh = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
                     nmh.cancel(1000);
                     nmh.cancel(900);
-                    p.edit().putString("nids", "").putString("lastjson", "").apply();
+                    p.edit().putString("nids", "").putString("lastjson", "").putString("lastTasks", "").apply();
                     if (AppWatch.running) idle(c, "مفيش مهام دلوقتي");
                     return;
                 }
                 if (new JSONObject(json).optBoolean("rest", false)) {
+                    p.edit().putString("lastTasks", "").apply();
                     clear(c);
                     return;
                 }
             } catch (Exception e) {
             }
+            p.edit().putString("lastTasks", json).apply();
             boolean present = false;
+            boolean tmr = false;
             try {
                 for (StatusBarNotification sbn : nm.getActiveNotifications()) {
                     if (sbn.getId() == 1000) present = true;
+                    if (sbn.getId() == 1001) tmr = true;
                 }
             } catch (Exception e) {
+            }
+            if (tmr) {
+                holdForTimer(c);
+                return;
             }
             if (present && json.equals(p.getString("lastjson", ""))) return;
             clear(c);
@@ -178,16 +186,22 @@ public class Notifs {
                 fillRow(row, a.getJSONObject(i));
                 big.addView(R.id.list, row);
             }
+            boolean openBig = false;
+            try {
+                openBig = jt.startsWith("{") && new JSONObject(jt).optBoolean("open", false);
+            } catch (Exception e) {
+            }
             PendingIntent open = PendingIntent.getActivity(c, 1, new Intent(c, MainActivity.class), FLAGS);
             Notification.Builder b = new Notification.Builder(c, CH)
                     .setSmallIcon(R.drawable.ic_stat)
                     .setStyle(new Notification.DecoratedCustomViewStyle())
                     .setCustomContentView(small)
-                    .setCustomBigContentView(big)
+                    .setNumber(a.length())
                     .setOngoing(true)
                     .setOnlyAlertOnce(true)
                     .setVisibility(Notification.VISIBILITY_PUBLIC)
                     .setContentIntent(open);
+            if (openBig) b.setCustomBigContentView(big);
             nm.notify(1000, b.build());
             p.edit().putString("nids", "1000,").putString("lastjson", json).apply();
         } catch (Exception e) {
@@ -200,6 +214,10 @@ public class Notifs {
             NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
             if (json == null || json.isEmpty()) {
                 nm.cancel(1001);
+                // رجّع إشعار المهام اللي كان مستخبي وقت العداد
+                SharedPreferences sp = c.getSharedPreferences("mzk", Context.MODE_PRIVATE);
+                String lt = sp.getString("lastTasks", "");
+                if (!lt.isEmpty()) show(c, lt);
                 return;
             }
             ensure(c);
@@ -208,16 +226,17 @@ public class Notifs {
             String l = o.optString("l");
             long s = o.optLong("s", System.currentTimeMillis());
             long e = o.optLong("e", 0);
+            long fz = o.optLong("fz", -1L);
             Notification.Builder b = new Notification.Builder(c, CH)
                     .setSmallIcon(R.drawable.ic_stat)
                     .setContentTitle(l.isEmpty() ? "عداد" : l)
-                    .setContentText("break".equals(k) ? "استراحة" : "مذاكرة")
+                    .setContentText(fz >= 0 ? "متوقفة مؤقتًا · " + OverlayUi.clk(fz) : ("break".equals(k) ? "استراحة" : "مذاكرة"))
                     .setOngoing(true)
                     .setOnlyAlertOnce(true)
                     .setShowWhen(true)
-                    .setUsesChronometer(true)
+                    .setUsesChronometer(fz < 0)
                     .setWhen(e > System.currentTimeMillis() ? e : s)
-                    .setChronometerCountDown(e > System.currentTimeMillis())
+                    .setChronometerCountDown(fz < 0 && e > System.currentTimeMillis())
                     .setVisibility(Notification.VISIBILITY_PUBLIC)
                     .setContentIntent(PendingIntent.getActivity(c, 1, new Intent(c, MainActivity.class), FLAGS));
             if ("break".equals(k)) {
@@ -233,6 +252,19 @@ public class Notifs {
                         "إيقاف مؤقت", PendingIntent.getBroadcast(c, 1102, in, FLAGS)).build());
             }
             nm.notify(1001, b.build());
+            holdForTimer(c);
+        } catch (Exception e) {
+        }
+    }
+
+    // لما العداد شغال: شريط المهام بيختفي (وبيرجع لما العداد يخلص)
+    static void holdForTimer(Context c) {
+        try {
+            NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
+            c.getSharedPreferences("mzk", Context.MODE_PRIVATE).edit().putString("lastjson", "").putString("nids", "").apply();
+            nm.cancel(900);
+            if (AppWatch.running) idle(c, "العداد شغال");
+            else nm.cancel(1000);
         } catch (Exception e) {
         }
     }

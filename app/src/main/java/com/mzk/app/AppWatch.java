@@ -42,6 +42,7 @@ public class AppWatch extends Service {
     int away = 0;
     Set<String> tracked = new HashSet<String>();
     Map<String, Long> until = new HashMap<String, Long>();
+    Set<String> fresh = new HashSet<String>();
     Map<String, Long> lastCommit = new HashMap<String, Long>();
 
     SharedPreferences sp() {
@@ -172,7 +173,7 @@ public class AppWatch extends Service {
                 step();
             } catch (Exception e) {
             }
-            h.postDelayed(this, 2000);
+            h.postDelayed(this, OverlayUi.checkShown ? 500 : 2000);
         }
     };
 
@@ -213,6 +214,7 @@ public class AppWatch extends Service {
                 away++;
                 if (away >= 2) {
                     away = 0;
+                    fresh.add(cp);
                     OverlayUi.dismissCheck(this);
                 }
             } else {
@@ -242,7 +244,7 @@ public class AppWatch extends Service {
     void prompt(String p, long now) {
         try {
             Long lc = lastCommit.get(p);
-            boolean again = lc != null && dayKey(lc.longValue()).equals(dayKey(now));
+            boolean again = !fresh.contains(p) && lc != null && dayKey(lc.longValue()).equals(dayKey(now));
             OverlayUi.showCheck(getApplicationContext(), p, nameOf(p), again ? wait : 0);
         } catch (Exception e) {
         }
@@ -267,6 +269,7 @@ public class AppWatch extends Service {
                 sp().edit().putString("commits", commits.toString()).apply();
                 until.put(p, Long.valueOf(u));
                 lastCommit.put(p, Long.valueOf(now));
+                fresh.remove(p);
             } catch (Exception e) {
             }
         }
