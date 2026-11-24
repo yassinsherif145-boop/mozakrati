@@ -206,6 +206,21 @@ public class Bridge {
     }
 
     @JavascriptInterface
+    public void apkCheck() {
+        Updater.check(c);
+    }
+
+    @JavascriptInterface
+    public String apkStatus() {
+        return Updater.json();
+    }
+
+    @JavascriptInterface
+    public void apkInstall() {
+        Updater.install(c);
+    }
+
+    @JavascriptInterface
     public void openDndSettings() {
         try {
             Intent i = new Intent("android.settings.NOTIFICATION_POLICY_ACCESS_SETTINGS");

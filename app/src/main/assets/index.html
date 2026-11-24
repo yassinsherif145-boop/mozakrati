@@ -888,6 +888,7 @@ function stDraw(){const p=$('stPanel');if(!p)return;const a=S.al,T=ymd(mid(NOW()
   b+=sRow('نسخة الواجهة الحالية','رقم نسخة واجهة التطبيق (مش نسخة الـAPK).','<b>'+APP_VER+'</b>');
   if(!A)b+='<div class="sd">التحديث من جوه التطبيق شغال على الموبايل بس.</div>';
   else{
+   if(Android.apkCheck)b+=sRow('تحديث التطبيق (APK)','بينزّل آخر نسخة من GitHub ويثبّتها فوق القديمة من غير ما تمسح بياناتك. أول مرة الموبايل هيطلب «السماح بالتثبيت من هذا المصدر».','<div style="text-align:end"><div class="sd" id="apkSt"></div><button class="ch" id="apkBt" onclick="apkAct()">شيّك على تحديث</button></div>');
    b+=sRow('تحديث من ملف','اختار ملف index.html اللي بعتهولك Claude، وهيتطبّق فورًا من غير APK ومن غير GitHub.','<label class="ch">اختار الملف<input type="file" accept=".html,text/html" hidden onchange="updFile(this.files[0])"></label>');
    b+=`<div class="sr"><div>رابط التحديث (GitHub)</div><input type="text" style="width:100%;direction:ltr" value="${esc(S.updUrl||'')}" onchange="S.updUrl=this.value.trim();save()"><div class="sd">رابط ملف index.html الخام. التطبيق بيفحصه لوحده ويتحدّث. محتاج المستودع يكون Public.</div><div class="row" style="margin-top:6px"><button class="ch" onclick="updCheck(true)">افحص دلوقتي</button></div></div>`;
    b+=sRow('فحص تلقائي','بيفحص كل ما تفتح التطبيق (لو فيه نت ورابط).',tgl('updAuto',a.updAuto!==false));
@@ -1011,7 +1012,7 @@ function exSetDue(id,k){const it=find(id);if(!it)return;const n0=Math.max(1,exSt
  if(!exFit(it)){Object.assign(it,old);toast('فيه أجزاء مكتوبة أكتر من الأيام. امسح الأجزاء الأقدم الأول');return}
  const n=exStudyDays(it).length;while(it.subs.length&&it.subs.length<n)it.subs.unshift({t:'',d:false,on:null,a:1});
  actMark();save();tmSync();draw();eiDraw(id)}
-const APP_VER=33;
+const APP_VER=34;
 function updApply(html){const m=/APP_VER\s*=\s*(\d+)/.exec(html),v=m?+m[1]:0,sm=/<script>([\s\S]*)<\/script>/.exec(html);
  try{if(!sm||!v)throw 0;new Function(sm[1])}catch(e){toast('الملف ده مش تحديث صالح');return 0}
  return v}
@@ -1491,4 +1492,18 @@ sf(draw);
 sf(route);
 try{if(window.Android&&Android.pageOk)Android.pageOk()}catch(e){}
 let lastDay=ymd(NOW());setInterval(()=>{const d=ymd(NOW());if(d!==lastDay){lastDay=d;draw()}},30000);
+
+/* ===== v34: تحديث الـAPK من جوه التطبيق (GitHub Releases) ===== */
+var apkPoll=null;
+function apkJ(){try{return JSON.parse(Android.apkStatus())}catch(e){return {}}}
+function apkTxt(j){return j.st==='checking'?'بيشيّك…':j.st==='new'?'فيه نسخة جديدة (build '+(j.nw-100)+')':j.st==='none'?'أنت على آخر نسخة ✓':j.st==='dl'?'بيحمّل '+j.pct+'%':j.st==='ready'?'اتحمّل. كمّل التثبيت من الشاشة اللي فتحت':(j.st==='perm'||j.st==='err')?(j.msg||''):''}
+function apkWatch(auto){clearInterval(apkPoll);let n=0;apkPoll=setInterval(()=>{const j=apkJ(),e=$('apkSt'),b=$('apkBt');if(e)e.textContent=apkTxt(j);if(b)b.textContent=(j.st==='new'||j.st==='perm')?'تحديث الآن':'شيّك على تحديث';
+ if(j.st==='new'&&auto&&!$('apkBn')&&S.apkSkip!==j.tag)apkBanner(j);
+ if(++n>600||['none','err','ready','perm','idle','new'].includes(j.st))clearInterval(apkPoll)},800)}
+function apkCheck(auto){try{if(!window.Android||!Android.apkCheck)return;Android.apkCheck();apkWatch(auto)}catch(e){}}
+function apkAct(){const j=apkJ();if(j.st==='new'||j.st==='perm'){Android.apkInstall();apkWatch(false)}else apkCheck(false)}
+function apkBanner(j){const d=document.createElement('div');d.id='apkBn';d.style.cssText='position:fixed;left:12px;right:12px;bottom:14px;z-index:90;background:#1b1f2a;color:#fff;border-radius:14px;padding:12px 14px;box-shadow:0 6px 24px rgba(0,0,0,.4);display:flex;align-items:center;gap:10px;flex-wrap:wrap';
+ d.innerHTML='<div style="flex:1 1 140px;font-weight:700">فيه نسخة جديدة من التطبيق</div><button class="go" id="apkGo">تحديث الآن</button><button class="ch" id="apkLater">بعدين</button>';document.body.appendChild(d);
+ $('apkGo').onclick=()=>{d.remove();Android.apkInstall();apkWatch(false);toast('بيحمّل التحديث…')};$('apkLater').onclick=()=>{S.apkSkip=j.tag;save();d.remove()}}
+setTimeout(()=>{if(S.al&&S.al.updAuto!==false&&!location.hash)apkCheck(true)},6000);
 </script></body></html>
