@@ -23,6 +23,7 @@ public class AlarmService extends Service {
     long endAt = 0;
     long hiddenSince = 0;
     String route = "#alarm";
+    boolean silent = false;
     final Handler h = new Handler(Looper.getMainLooper());
 
     // كل ثانيتين: لو الشاشة اتقفلت ترجّعها ويرن الصوت، ولو فترة الهدوء خلصت يرن تاني
@@ -40,11 +41,11 @@ public class AlarmService extends Service {
                 if (hiddenSince == 0) hiddenSince = nw;
                 Util.openAlarm(AlarmService.this, route);
                 if (nw - hiddenSince > 5000) OverlayUi.showReopen(AlarmService.this, route);
-                if (mp == null && System.currentTimeMillis() > grace) startSound();
+                if (!silent && mp == null && System.currentTimeMillis() > grace) startSound();
             } else if (hiddenSince != 0 && resetHidden()) {
                 // الشاشة رجعت
             } else if (quietUntil > 0 && quietUntil != Long.MAX_VALUE
-                    && System.currentTimeMillis() >= quietUntil && mp == null) {
+                    && System.currentTimeMillis() >= quietUntil && mp == null && !silent) {
                 quietUntil = 0;
                 startSound();
             }
@@ -91,6 +92,7 @@ public class AlarmService extends Service {
         boolean weekly = "weekly".equals(mode);
         boolean reason = "reason".equals(mode) || weekly;
         route = weekly ? "#wk" : (reason ? "#pend" : "#alarm");
+        silent = "reason".equals(mode);
         Intent ai = new Intent(this, AlarmActivity.class);
         ai.putExtra("route", route);
         ai.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

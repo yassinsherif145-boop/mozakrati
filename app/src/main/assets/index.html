@@ -866,10 +866,10 @@ function stDraw(){const p=$('stPanel');if(!p)return;const a=S.al,T=ymd(mid(NOW()
   b+=sRow('وقت النوم (إشعار المهام بيشتغل لحد ده)','',`<input type="time" value="${a.bed||'22:00'}" onchange="setAl('bed',this.value||'22:00')">`);
   b+=sRow('تخطي وضع عدم الإزعاج','عشان المنبه وإشعار المهام يطلعوا حتى لو الموبايل صامت/عدم إزعاج: دوس الزرار وفعّل «مذاكرتي» في القايمة. '+((window.Android&&Android.dndOk&&Android.dndOk())?'✓ مفعّل':'(لسه مش مفعّل)'),'<button class="ch" onclick="try{Android.openDndSettings()}catch(e){toast(\'محتاج نسخة APK الجديدة\')}">فتح</button>');
   b+=sRow('منبه صوت لما تلغي العداد','بيرن بصوت عالي لحد ما تنسخ الجمل (أو ترجع).',`<input type="checkbox" ${a.ringStop===false?'':'checked'} onchange="setAl('ringStop',this.checked)">`);
-  b+=`<div class="sr"><div class="srt"><span>أنواع التحديات (للعداد والتطبيقات)</span></div><div class="row" style="flex-wrap:wrap">${CHT.map(x=>`<label class="ch"><input type="checkbox" ${chTypes().includes(x[0])?'checked':''} onchange="chTog('${x[0]}',this.checked)"> ${x[1]}</label>`).join('')}</div><div class="sd">لازم نوع واحد على الأقل.</div></div>`;
   b+=`<div class="sr"><div class="srt"><span>جمل التحدي</span></div><textarea id="sentBox" dir="ltr" rows="5" style="width:100%;font-size:14px" onchange="sentSet(this.value)" placeholder="جملة في كل سطر (إنجليزي بترقيم). سيبها فاضية للجمل الافتراضية.">${esc((S.al.sents||[]).join('\n'))}</textarea></div>`;
   b+=sRow('إلغاء العداد بجمل إنجليزي','لما تدوس ⏹ لازم تنسخ جمل بالظبط. قفله بيخليه يلغي مباشرة.',`<input type="checkbox" ${a.stopGate===false?'':'checked'} onchange="setAl('stopGate',this.checked)">`);
   b+=sRow('عدد الجمل','',selH('stopN',[[1,'جملة'],[2,'جملتين'],[3,'3 جمل'],[4,'4 جمل']],a.stopN||2));
+  b+=chRow('s');
   b+=sRow('المنبه يشتغل على','بيحدد أنهي مهام تظهر على شاشة المنبه.',selH('scope',[['all','كل المهام'],['exam','الامتحانات بس'],['hw','الواجبات بس'],['pick','مهام اخترتها']],a.scope));
   if(a.scope==='pick')b+=`<div style="padding:6px 0">${S.items.filter(i=>!i.done&&!i.m).map(i=>`<label style="display:block"><input type="checkbox" ${a.pick.includes(i.id)?'checked':''} onchange="togPick('${i.id}')"> ${esc(i.title)}</label>`).join('')||'<div class="tg">مفيش مهام</div>'}</div>`;
   b+=sRow('تحذير الامتحانات','بيظهر بالليل لو عليك أجزاء امتحان متأخرة.',tgl('warn',a.warn!==false));
@@ -878,7 +878,7 @@ function stDraw(){const p=$('stPanel');if(!p)return;const a=S.al,T=ymd(mid(NOW()
   b+=sRow('الإشعارات تختفي والمهام تتأجل الساعة','بعد الساعة دي أي جزء ما اتعملش بيتحسب متأخر.',selH('cut',[[19,'7 م'],[20,'8 م'],[21,'9 م'],[22,'10 م']],a.cut));
   if(window.Android&&Android.pickTone){let tn='';try{tn=Android.toneName()}catch(e){}b+=sRow('نغمة المنبه','الصوت بيتعلى لأقصى درجة لوحده حتى لو نزّلته أو كان مقفول.',`<button class="ch" onclick="Android.pickTone()">${esc(tn||'الافتراضية')} ✎</button>`)}
   b+='<div class="row" style="margin-top:10px"><button class="ch" onclick="setClose();showAlarm(true)">معاينة المنبه</button><button class="ch" onclick="setClose();showWarn()">معاينة تحذير الامتحانات</button></div>';
- }else if(stTab==='p'){b+=stPat(a)}else if(stTab==='w'){b+=sRow('تحدي الوقت الطويل في التطبيقات','لما تحدد وقت أكتر من ١٥ دقيقة (من «مخصص»): منبه + تحديات قبل ما تفتح. أقل من كده بتكتب السبب وتفتح عادي من غير تحدي. نوع التحديات من «أنواع التحديات» تحت.',`<input type="checkbox" ${(S.watch||{}).ch===false?'':'checked'} onchange="wSet('ch',this.checked)">`)+sRow('عدد التحديات','',selW('chn',[[1,'تحدي'],[2,'تحديين'],[3,'3 تحديات'],[4,'4 تحديات']],(S.watch||{}).chn||1))+stWatch(a)}else if(stTab==='s'){
+ }else if(stTab==='p'){b+=stPat(a)}else if(stTab==='w'){b+=sRow('تحدي الوقت الطويل في التطبيقات','لما تحدد وقت أكتر من ١٥ دقيقة (من «مخصص»): منبه + تحديات قبل ما تفتح. أقل من كده بتكتب السبب وتفتح عادي من غير تحدي.',`<input type="checkbox" ${(S.watch||{}).ch===false?'':'checked'} onchange="wSet('ch',this.checked)">`)+sRow('عدد التحديات','',selW('chn',[[1,'تحدي'],[2,'تحديين'],[3,'3 تحديات'],[4,'4 تحديات']],(S.watch||{}).chn||1))+chRow('w')+stWatch(a)}else if(stTab==='s'){
   b+=`<h4 style="margin:14px 0 0">كلمات خاصة (زي presentazione)</h4><div class="sd">لو بدأت اسم الامتحان بالكلمة دي بتظهرلك كاختيار في verifica، تقدر تقفلها أو تغيّرها أو تضيف كلمات.</div>`;
   (S.kw||[]).forEach((k,i)=>{b+=`<div class="sr"><div class="srt"><input type="text" value="${esc(k.w)}" style="flex:1;min-width:0;direction:ltr" onchange="kwSet(${i},'w',this.value)"><input type="checkbox" ${k.on?'checked':''} onchange="kwSet(${i},'on',this.checked)"><button class="del" onclick="kwDel(${i})" aria-label="احذف">×</button></div></div>`});
   b+=`<div class="row" style="margin-top:8px"><input type="text" id="kwNew" placeholder="كلمة جديدة" style="flex:1;min-width:0;direction:ltr"><button class="ch" onclick="kwAdd()">＋ إضافة</button></div>`;
@@ -1012,7 +1012,7 @@ function exSetDue(id,k){const it=find(id);if(!it)return;const n0=Math.max(1,exSt
  if(!exFit(it)){Object.assign(it,old);toast('فيه أجزاء مكتوبة أكتر من الأيام. امسح الأجزاء الأقدم الأول');return}
  const n=exStudyDays(it).length;while(it.subs.length&&it.subs.length<n)it.subs.unshift({t:'',d:false,on:null,a:1});
  actMark();save();tmSync();draw();eiDraw(id)}
-const APP_VER=45;
+const APP_VER=46;
 function updApply(html){const m=/APP_VER\s*=\s*(\d+)/.exec(html),v=m?+m[1]:0,sm=/<script>([\s\S]*)<\/script>/.exec(html);
  try{if(!sm||!v)throw 0;new Function(sm[1])}catch(e){toast('الملف ده مش تحديث صالح');return 0}
  return v}
@@ -1326,7 +1326,8 @@ function tmEndBreak(){const b=S.brk;if(!b)return;const it=find(b.id),o=tmGet(b.i
 const ENS_DEF=["Success isn't owned; it's leased, and rent is due every single day.","Well, well... if it isn't the 'one more minute' excuse, again!","Discipline is choosing between what you want now, and what you want most.","\"I'll start later,\" said the student; later never came, did it?","Don't watch the clock; do what it does: keep going, tick by tick.","Focus (n.): saying no to 100 good ideas, to say yes to one - right now!","Small steps, taken daily, beat giant leaps taken rarely; so, sit down.","It's 3:15, the tea is cold, and the exam is still coming: choose wisely."];
 function ringOn(v){window.__ringing=!!v;try{if(window.Android&&Android.ring&&S.al.ringStop!==false)Android.ring(!!v)}catch(e){}}
 const CHT=[['copy','نسخ الجملة'],['upper','حروف كبيرة'],['rev','الكلمات بالعكس'],['ini','أول حرف من كل كلمة'],['calc','مسألة حساب']];
-const chTypes=()=>{const t=(S.al.chTypes||CHT.slice(0,4).map(x=>x[0])).filter(k=>CHT.some(x=>x[0]===k));return t.length?t:['copy']};
+const chTypes=(c)=>{const o=c==='w'?(S.watch||{}).cts:c==='s'?S.al.stT:null,d=(S.al.chTypes||CHT.slice(0,4).map(x=>x[0])),t=(o||d).filter(k=>CHT.some(x=>x[0]===k));return t.length?t:['copy']};
+const chRow=c=>`<div class="sr"><div class="srt"><span>أنواع التحدي</span></div><div class="row" style="flex-wrap:wrap">${CHT.map(x=>`<label class="ch"><input type="checkbox" ${chTypes(c).includes(x[0])?'checked':''} onchange="chTog('${c}','${x[0]}',this.checked)"> ${x[1]}</label>`).join('')}</div><div class="sd">لازم نوع واحد على الأقل. منفصل عن باقي الأماكن.</div></div>`;
 const ensList=()=>{try{return qSel(20).map(x=>x.t+'\u0001'+(x.a||''))}catch(e){return ENS_DEF}};
 function mkChal(sent,type,au){const w=sent.trim().split(/\s+/);
  if(type==='calc'){const a=3+Math.floor(Math.random()*17),b=3+Math.floor(Math.random()*8),c=1+Math.floor(Math.random()*30);return{ins:'احسب الناتج واكتبه:',ans:String(a*b+c),show:a+' × '+b+' + '+c,au:'',ci:false}}
@@ -1335,7 +1336,7 @@ function mkChal(sent,type,au){const w=sent.trim().split(/\s+/);
  if(type==='ini')return{ins:'اكتب أول حرف من كل كلمة ورا بعض:',ans:w.map(x=>(x.match(/[A-Za-z0-9]/)||[''])[0]).join('').toUpperCase(),show:sent.trim(),au:au||'',ci:true};
  return{ins:'انسخ الجملة دي بالظبط:',ans:sent.trim(),show:sent.trim(),au:au||'',ci:false}}
 function tmStop(){if(!S.run&&!S.brk&&!S.pz){S.stopPend=0;return}if(S.al.stopGate===false){tmStopDo();return}if($('tsOv'))return;ringOn(true);S.stopPend=1;save();
- const n=Math.max(1,S.al.stopN||2),L=pickFrom(qShort(),'q6',Math.max(1,n)),T=chTypes(),qs=[];for(let q=0;q<n;q++)qs.push(mkChal(L[q%L.length].t,T[Math.floor(Math.random()*T.length)],L[q%L.length].a));let i=0;
+ const n=Math.max(1,S.al.stopN||2),L=pickFrom(qShort(),'q6',Math.max(1,n)),T=chTypes('s'),qs=[];for(let q=0;q<n;q++)qs.push(mkChal(L[q%L.length].t,T[Math.floor(Math.random()*T.length)],L[q%L.length].a));let i=0;
  const o=document.createElement('div');o.id='tsOv';o.style.cssText='position:fixed;inset:0;z-index:99;background:#1e1b4b;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px';document.body.appendChild(o);
  const ok1=(v,q)=>q.ci?v.trim().toUpperCase()===q.ans:v.trim()===q.ans;
  const draw1=()=>{const q=qs[i];o.innerHTML=`<div style="font-size:20px;font-weight:800">عشان تلغي العداد (${i+1}/${n})</div><div style="font-size:17px">${q.ins}</div><div dir="ltr" style="font-size:20px;background:rgba(255,255,255,.12);padding:12px;border-radius:10px;max-width:520px;text-align:left;user-select:none">${esc(q.show)}${qAu(q.au)}</div><textarea id="tsIn" dir="ltr" rows="3" style="width:100%;max-width:520px;font-size:18px;padding:10px;border-radius:10px;color:#111" autocapitalize="off" autocomplete="off" spellcheck="false"></textarea><button class="go" id="tsOk" disabled>تأكيد</button>`;
@@ -1404,10 +1405,10 @@ function appsInline(k){const d=usageData();if(!window.Android)return'';const we=
 /* ===================== settings: apps tracking ===================== */
 let APPS=null,appQ='';
 function appsLoad(){if(APPS||!window.Android||!Android.appsList)return;try{APPS=JSON.parse(Android.appsList()||'[]')}catch(e){APPS=[]}}
-function chTog(k,on){let t=chTypes().slice();if(on){if(!t.includes(k))t.push(k)}else t=t.filter(x=>x!==k);if(!t.length)t=['copy'];S.al.chTypes=t;save();wtSync();stDraw()}
+function chTog(c,k,on){let t=chTypes(c).slice();if(on){if(!t.includes(k))t.push(k)}else t=t.filter(x=>x!==k);if(!t.length)t=['copy'];if(c==='w'){S.watch=S.watch||{apps:[],wait:30,on:true};S.watch.cts=t}else S.al.stT=t;save();wtSync();stDraw()}
 function sentSet(v){S.al.sents=String(v||'').split('\n').map(x=>x.trim()).filter(Boolean);save();wtSync();stDraw()}
 const selW=(k,o,cur)=>`<select class="ch" onchange="wSet('${k}',+this.value)">${o.map(x=>`<option value="${x[0]}" ${x[0]===cur?'selected':''}>${x[1]}</option>`).join('')}</select>`;
-function wtSync(){try{if(!window.Android||!Android.setTracked)return;const w=S.watch||{};Android.setTracked(JSON.stringify({a:w.on===false?[]:(w.apps||[]),w:w.wait||30,ch:w.ch!==false,chn:w.chn||1,ct:chTypes().join(','),sn:JSON.stringify(ensList())}))}catch(e){}}
+function wtSync(){try{if(!window.Android||!Android.setTracked)return;const w=S.watch||{};Android.setTracked(JSON.stringify({a:w.on===false?[]:(w.apps||[]),w:w.wait||30,ch:w.ch!==false,chn:w.chn||1,ct:chTypes('w').join(','),sn:JSON.stringify(ensList())}))}catch(e){}}
 function wSet(k,v){S.watch=S.watch||{apps:[],wait:30,on:true};S.watch[k]=v;save();wtSync();stDraw()}
 function wApp(p,on){const w=S.watch=S.watch||{apps:[],wait:30,on:true},a=w.apps||(w.apps=[]),i=a.indexOf(p);if(on&&i<0)a.push(p);if(!on&&i>=0)a.splice(i,1);save();wtSync()}
 function wList(){const e=$('wList');if(!e)return;const sel=(S.watch&&S.watch.apps)||[],q=appQ.trim().toLowerCase();
