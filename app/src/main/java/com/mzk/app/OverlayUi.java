@@ -347,7 +347,7 @@ public class OverlayUi {
                     authOf.put("The main thing is to keep the main thing the main thing.", "Stephen Covey");
                 }
                 java.util.Collections.shuffle(pool);
-                String ctS = wp.getString("ct", "copy,upper,rev,ini");
+                String ctS = wp.getString("ct", "copy");
                 final String[] types = ctS.trim().isEmpty() ? new String[]{"copy"} : ctS.split(",");
                 final String[][] chs = new String[chn][];
                 for (int q = 0; q < chn; q++) {

@@ -856,20 +856,26 @@ function stDraw(){const p=$('stPanel');if(!p)return;const a=S.al,T=ymd(mid(NOW()
   b+=sRow('عدد التوقيفات قبل كتابة السبب','بعد العدد ده بتفتح شاشة لازم تكتب فيها سبب التأجيل.',selH('max',[[2,'2'],[3,'3'],[4,'4'],[5,'5'],[6,'6'],[8,'8'],[10,'10'],[15,'15'],[20,'20']],a.max));
   b+='<div class="sd" style="margin-top:10px">مواعيد الرنة الأسبوعية (بتتعدل لوحدها مع الجدول):</div><div>'+ORD.map(d=>`<span class="stc" style="margin-left:10px">${DN[d]} <b>${fmt12(alarmMinD(d))}</b>${lastEnd(d)==null?' (إجازة)':''}</span>`).join('')+'</div>';
  }else if(stTab==='c'){
+  b+='<h4 style="margin:4px 0 2px">⏰ المنبه</h4>';
   b+=`<div class="sr"><div>أنواع التحدي <span class="tg">(${a.types.length} من ${a.nq})</span></div><div class="row">${[['m','مسائل حساب'],['t','كتابة جملة'],['n','ترتيب أرقام'],['s','تذكّر رقم'],['r','رقم بالعكس']].map(([k,l])=>`<label class="ch ${a.types.includes(k)?'on':''}"><input type="checkbox" ${a.types.includes(k)?'checked':''} onchange="togType('${k}')"> ${l}</label>`).join('')}</div><div class="sd">كل نوع بتختاره بيظهر مرة على الأقل، وعدد الأنواع مينفعش يزيد عن عدد التحديات. المسائل والجمل بتتغير كل مرة.</div></div>`;
   b+=sRow('عدد التحديات','كام تحدي لازم تحله قبل ما يظهر زرار «ابتديت شغل».',selH('nq',[[1,'1'],[2,'2'],[3,'3'],[4,'4'],[5,'5']],a.nq));
   b+=sRow('الصعوبة','بتأثر على حجم الأرقام وطول الجمل. ابدأ بسهل.',selH('lvl',[[1,'سهل'],[2,'متوسط'],[3,'صعب']],a.lvl));
   b+=sRow('عدد الجمل بعد «ابتديت شغل»','لازم تكتب الجمل دي (مقولة مختلفة كل مرة) قبل ما المنبه يقفل.',selH('wn',[[1,'1'],[2,'2'],[3,'3'],[4,'4'],[5,'5']],a.wn));
+  b+='<h4 style="margin:16px 0 2px">⏹ إيقاف العداد (الوقت التقديري)</h4>';
+  b+=sRow('تحدي عند الإيقاف','لما تدوس ⏹ لازم تحل التحدي. قفله بيخليه يوقف مباشرة.',`<input type="checkbox" ${a.stopGate===false?'':'checked'} onchange="setAl('stopGate',this.checked)">`);
+  b+=sRow('عدد التحديات','',selH('stopN',[[1,'1'],[2,'2'],[3,'3'],[4,'4']],a.stopN||2));
+  b+=chRow('s');
+  b+=sRow('منبه صوت لما تلغي العداد','بيرن بصوت عالي لحد ما تحل التحدي (أو ترجع).',`<input type="checkbox" ${a.ringStop===false?'':'checked'} onchange="setAl('ringStop',this.checked)">`);
+  b+=`<div class="sr"><div class="srt"><span>جمل النسخ</span></div><textarea id="sentBox" dir="ltr" rows="4" style="width:100%;font-size:14px" onchange="sentSet(this.value)" placeholder="جملة في كل سطر (إنجليزي). سيبها فاضية للجمل الافتراضية.">${esc((S.al.sents||[]).join('\n'))}</textarea></div>`;
+  b+='<h4 style="margin:16px 0 2px">📱 عداد التطبيقات (أكتر من ١٥ دقيقة)</h4>';
+  b+=sRow('تحدي الوقت الطويل','لما تحدد وقت أكتر من ١٥ دقيقة (من «مخصص»): منبه + تحديات قبل ما تفتح. أقل من كده بتكتب السبب وتفتح عادي.',`<input type="checkbox" ${(S.watch||{}).ch===false?'':'checked'} onchange="wSet('ch',this.checked)">`);
+  b+=sRow('عدد التحديات','',selW('chn',[[1,'1'],[2,'2'],[3,'3'],[4,'4']],(S.watch||{}).chn||1));
+  b+=chRow('w');
  }else if(stTab==='n'){
   b+=sRow('وقّف إشعار المهام النهارده بس','بيرجع لوحده من بكرة. وبيتخفي تلقائي وقت المدرسة ووقت عداد المذاكرة/الاستراحة.',`<input type="checkbox" ${a.ntOff===T?'checked':''} onchange="setAl('ntOff',this.checked?'${T}':null)">`);
   b+=sRow('شكل إشعار المهام','مجمّع: مهمة قدّام والباقي تسحب الإشعار لتحت تشوفه. إشعار واحد: بيتوسّع بالسحب (بعض الموبايلات بتفتحه لوحدها). سطر واحد: مهمة + باقي الأسماء ومش بيتوسّع.',`<select onchange="setAl('ntMode',this.value)" class="stsel" style="flex:none;min-width:0"><option value="g" ${(a.ntMode||'g')==='g'?'selected':''}>مجمّع</option><option value="o" ${a.ntMode==='o'?'selected':''}>إشعار واحد</option><option value="s" ${a.ntMode==='s'?'selected':''}>سطر واحد</option></select>`);
   b+=sRow('وقت النوم (إشعار المهام بيشتغل لحد ده)','',`<input type="time" value="${a.bed||'22:00'}" onchange="setAl('bed',this.value||'22:00')">`);
   b+=sRow('تخطي وضع عدم الإزعاج','عشان المنبه وإشعار المهام يطلعوا حتى لو الموبايل صامت/عدم إزعاج: دوس الزرار وفعّل «مذاكرتي» في القايمة. '+((window.Android&&Android.dndOk&&Android.dndOk())?'✓ مفعّل':'(لسه مش مفعّل)'),'<button class="ch" onclick="try{Android.openDndSettings()}catch(e){toast(\'محتاج نسخة APK الجديدة\')}">فتح</button>');
-  b+=sRow('منبه صوت لما تلغي العداد','بيرن بصوت عالي لحد ما تنسخ الجمل (أو ترجع).',`<input type="checkbox" ${a.ringStop===false?'':'checked'} onchange="setAl('ringStop',this.checked)">`);
-  b+=`<div class="sr"><div class="srt"><span>جمل التحدي</span></div><textarea id="sentBox" dir="ltr" rows="5" style="width:100%;font-size:14px" onchange="sentSet(this.value)" placeholder="جملة في كل سطر (إنجليزي بترقيم). سيبها فاضية للجمل الافتراضية.">${esc((S.al.sents||[]).join('\n'))}</textarea></div>`;
-  b+=sRow('إلغاء العداد بجمل إنجليزي','لما تدوس ⏹ لازم تنسخ جمل بالظبط. قفله بيخليه يلغي مباشرة.',`<input type="checkbox" ${a.stopGate===false?'':'checked'} onchange="setAl('stopGate',this.checked)">`);
-  b+=sRow('عدد الجمل','',selH('stopN',[[1,'جملة'],[2,'جملتين'],[3,'3 جمل'],[4,'4 جمل']],a.stopN||2));
-  b+=chRow('s');
   b+=sRow('المنبه يشتغل على','بيحدد أنهي مهام تظهر على شاشة المنبه.',selH('scope',[['all','كل المهام'],['exam','الامتحانات بس'],['hw','الواجبات بس'],['pick','مهام اخترتها']],a.scope));
   if(a.scope==='pick')b+=`<div style="padding:6px 0">${S.items.filter(i=>!i.done&&!i.m).map(i=>`<label style="display:block"><input type="checkbox" ${a.pick.includes(i.id)?'checked':''} onchange="togPick('${i.id}')"> ${esc(i.title)}</label>`).join('')||'<div class="tg">مفيش مهام</div>'}</div>`;
   b+=sRow('تحذير الامتحانات','بيظهر بالليل لو عليك أجزاء امتحان متأخرة.',tgl('warn',a.warn!==false));
@@ -878,7 +884,7 @@ function stDraw(){const p=$('stPanel');if(!p)return;const a=S.al,T=ymd(mid(NOW()
   b+=sRow('الإشعارات تختفي والمهام تتأجل الساعة','بعد الساعة دي أي جزء ما اتعملش بيتحسب متأخر.',selH('cut',[[19,'7 م'],[20,'8 م'],[21,'9 م'],[22,'10 م']],a.cut));
   if(window.Android&&Android.pickTone){let tn='';try{tn=Android.toneName()}catch(e){}b+=sRow('نغمة المنبه','الصوت بيتعلى لأقصى درجة لوحده حتى لو نزّلته أو كان مقفول.',`<button class="ch" onclick="Android.pickTone()">${esc(tn||'الافتراضية')} ✎</button>`)}
   b+='<div class="row" style="margin-top:10px"><button class="ch" onclick="setClose();showAlarm(true)">معاينة المنبه</button><button class="ch" onclick="setClose();showWarn()">معاينة تحذير الامتحانات</button></div>';
- }else if(stTab==='p'){b+=stPat(a)}else if(stTab==='w'){b+=sRow('تحدي الوقت الطويل في التطبيقات','لما تحدد وقت أكتر من ١٥ دقيقة (من «مخصص»): منبه + تحديات قبل ما تفتح. أقل من كده بتكتب السبب وتفتح عادي من غير تحدي.',`<input type="checkbox" ${(S.watch||{}).ch===false?'':'checked'} onchange="wSet('ch',this.checked)">`)+sRow('عدد التحديات','',selW('chn',[[1,'تحدي'],[2,'تحديين'],[3,'3 تحديات'],[4,'4 تحديات']],(S.watch||{}).chn||1))+chRow('w')+stWatch(a)}else if(stTab==='s'){
+ }else if(stTab==='p'){b+=stPat(a)}else if(stTab==='w'){b+='<div class="sd">تحدي الأكتر من ١٥ دقيقة وعدده وأنواعه من «التحديات».</div>'+stWatch(a)}else if(stTab==='s'){
   b+=`<h4 style="margin:14px 0 0">كلمات خاصة (زي presentazione)</h4><div class="sd">لو بدأت اسم الامتحان بالكلمة دي بتظهرلك كاختيار في verifica، تقدر تقفلها أو تغيّرها أو تضيف كلمات.</div>`;
   (S.kw||[]).forEach((k,i)=>{b+=`<div class="sr"><div class="srt"><input type="text" value="${esc(k.w)}" style="flex:1;min-width:0;direction:ltr" onchange="kwSet(${i},'w',this.value)"><input type="checkbox" ${k.on?'checked':''} onchange="kwSet(${i},'on',this.checked)"><button class="del" onclick="kwDel(${i})" aria-label="احذف">×</button></div></div>`});
   b+=`<div class="row" style="margin-top:8px"><input type="text" id="kwNew" placeholder="كلمة جديدة" style="flex:1;min-width:0;direction:ltr"><button class="ch" onclick="kwAdd()">＋ إضافة</button></div>`;
@@ -1012,7 +1018,7 @@ function exSetDue(id,k){const it=find(id);if(!it)return;const n0=Math.max(1,exSt
  if(!exFit(it)){Object.assign(it,old);toast('فيه أجزاء مكتوبة أكتر من الأيام. امسح الأجزاء الأقدم الأول');return}
  const n=exStudyDays(it).length;while(it.subs.length&&it.subs.length<n)it.subs.unshift({t:'',d:false,on:null,a:1});
  actMark();save();tmSync();draw();eiDraw(id)}
-const APP_VER=46;
+const APP_VER=47;
 function updApply(html){const m=/APP_VER\s*=\s*(\d+)/.exec(html),v=m?+m[1]:0,sm=/<script>([\s\S]*)<\/script>/.exec(html);
  try{if(!sm||!v)throw 0;new Function(sm[1])}catch(e){toast('الملف ده مش تحديث صالح');return 0}
  return v}
@@ -1325,8 +1331,8 @@ function tmEndBreak(){const b=S.brk;if(!b)return;const it=find(b.id),o=tmGet(b.i
  S.brl=S.brl||[];S.brl.push({id:String(b.t0),t0:b.t0,d:ymd(NOW()),what:b.what,ms:Math.max(0,brkMs(b)),task:it?it.title:'',part:(o&&o!==it&&o.t)?o.t:''});if(S.brl.length>400)S.brl.shift();S.brk=null}
 const ENS_DEF=["Success isn't owned; it's leased, and rent is due every single day.","Well, well... if it isn't the 'one more minute' excuse, again!","Discipline is choosing between what you want now, and what you want most.","\"I'll start later,\" said the student; later never came, did it?","Don't watch the clock; do what it does: keep going, tick by tick.","Focus (n.): saying no to 100 good ideas, to say yes to one - right now!","Small steps, taken daily, beat giant leaps taken rarely; so, sit down.","It's 3:15, the tea is cold, and the exam is still coming: choose wisely."];
 function ringOn(v){window.__ringing=!!v;try{if(window.Android&&Android.ring&&S.al.ringStop!==false)Android.ring(!!v)}catch(e){}}
-const CHT=[['copy','نسخ الجملة'],['upper','حروف كبيرة'],['rev','الكلمات بالعكس'],['ini','أول حرف من كل كلمة'],['calc','مسألة حساب']];
-const chTypes=(c)=>{const o=c==='w'?(S.watch||{}).cts:c==='s'?S.al.stT:null,d=(S.al.chTypes||CHT.slice(0,4).map(x=>x[0])),t=(o||d).filter(k=>CHT.some(x=>x[0]===k));return t.length?t:['copy']};
+const CHT=[['copy','نسخ جملة'],['calc','مسألة حساب']];
+const chTypes=(c)=>{const o=c==='w'?(S.watch||{}).cts:c==='s'?S.al.stT:null,d=['copy'],t=(o||d).filter(k=>CHT.some(x=>x[0]===k));return t.length?t:['copy']};
 const chRow=c=>`<div class="sr"><div class="srt"><span>أنواع التحدي</span></div><div class="row" style="flex-wrap:wrap">${CHT.map(x=>`<label class="ch"><input type="checkbox" ${chTypes(c).includes(x[0])?'checked':''} onchange="chTog('${c}','${x[0]}',this.checked)"> ${x[1]}</label>`).join('')}</div><div class="sd">لازم نوع واحد على الأقل. منفصل عن باقي الأماكن.</div></div>`;
 const ensList=()=>{try{return qSel(20).map(x=>x.t+'\u0001'+(x.a||''))}catch(e){return ENS_DEF}};
 function mkChal(sent,type,au){const w=sent.trim().split(/\s+/);
