@@ -1,5 +1,5 @@
 # START_HERE — "مذاكرتي" (My Studying Session) Android app
-Guide for editing the app. The project is in `app/` (real files, ready to upload to GitHub). Do NOT read everything: read this guide, then open only the files the task needs (section 5 map for index.html; section 3 for Java). Current page version: **APP_VER=34** (next release = 35).
+Guide for editing the app. The project is in `app/` (real files, ready to upload to GitHub). Do NOT read everything: read this guide, then open only the files the task needs (section 5 map for index.html; section 3 for Java). Current page version: **APP_VER=38** (next release = 39).
 
 ## 0a. HOW TO DELIVER (current flow) - READ FIRST
 The code is in the PUBLIC GitHub repo `yassinsherif145-boop/mozakrati` (branch main). Every push to main builds the APK on GitHub Actions and publishes a Release; the app has a "تحديث التطبيق" button / banner that downloads and installs it. So the user never moves an APK by hand.
@@ -13,6 +13,13 @@ The code is in the PUBLIC GitHub repo `yassinsherif145-boop/mozakrati` (branch m
   Page-only change (index.html only): same steps, or ⚙ ← 🔄 التحديثات ← اختار الملف (instant, no APK).
 - Always bump `const APP_VER=N;` in index.html on every change. Ask the user at most ONE batched question, only if truly blocked.
 - Java in this repo IS compiled by Actions: if it fails the user sends the error; fix and re-send only the broken file.
+
+## 0b. HANDOFF CHAIN (mandatory, every AI repeats it)
+The user moves work between AIs because each has a small free limit. So when you finish (or are about to run out):
+1. Send the changed files (only those), each with its exact repo path, plus the Arabic GitHub upload steps from 0a. The user uploads Java/XML/HTML files himself through the GitHub website (Add file > Upload files); he does NOT have push access like some AIs do. Never assume he can run git.
+2. ALSO create a tiny handoff package for the NEXT AI: this START_HERE.md (updated with what you changed, new APP_VER, known open problems) + PROMPT_FOR_AI.txt + only the files the open task touches (not the whole project). If you have code tools, zip it (target < 150KB) and send it.
+3. In that package, KEEP this 0b section and tell the next AI to do exactly the same at the end, so the chain continues AI after AI.
+4. Update the notes in this file (version history + open issues) before packaging.
 
 ## 0. Rules for you (the AI)
 1. User = student, ADHD, **free plan with tiny limits**. Be efficient: deliver working files, no essays, no recap of what you read.
