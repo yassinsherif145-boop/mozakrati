@@ -79,6 +79,7 @@ public class Notifs {
 
     static void idle(Context c, String text) {
         try {
+            if (c.getSharedPreferences("mzk", Context.MODE_PRIVATE).getBoolean("tmrOn", false)) return;
             ensure(c);
             NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
             nm.notify(1000, idleNote(c, text));
@@ -158,6 +159,7 @@ public class Notifs {
                 }
             } catch (Exception e) {
             }
+            if (p.getBoolean("tmrOn", false)) tmr = true;
             if (tmr) {
                 holdForTimer(c);
                 return;
@@ -265,8 +267,11 @@ public class Notifs {
                 nm.cancel(1001);
                 // رجّع إشعار المهام اللي كان مستخبي وقت العداد
                 SharedPreferences sp = c.getSharedPreferences("mzk", Context.MODE_PRIVATE);
+                sp.edit().putBoolean("tmrOn", false).apply();
                 String lt = sp.getString("lastTasks", "");
                 if (!lt.isEmpty()) show(c, lt);
+                else if (AppWatch.running) idle(c, "مفيش مهام دلوقتي");
+                else nm.cancel(1000);
                 return;
             }
             ensure(c);
@@ -276,10 +281,12 @@ public class Notifs {
             long s = o.optLong("s", System.currentTimeMillis());
             long e = o.optLong("e", 0);
             long fz = o.optLong("fz", -1L);
+            String mt = o.optString("m");
+            c.getSharedPreferences("mzk", Context.MODE_PRIVATE).edit().putBoolean("tmrOn", true).apply();
             Notification.Builder b = new Notification.Builder(c, CH)
                     .setSmallIcon(R.drawable.ic_stat)
                     .setContentTitle(l.isEmpty() ? "عداد" : l)
-                    .setContentText(fz >= 0 ? "متوقفة مؤقتًا · " + OverlayUi.clk(fz) : ("break".equals(k) ? "استراحة" : "مذاكرة"))
+                    .setContentText(fz >= 0 ? "متوقفة مؤقتًا · " + OverlayUi.clk(fz) : mt)
                     .setOngoing(true)
                     .setOnlyAlertOnce(true)
                     .setShowWhen(true)
@@ -300,7 +307,12 @@ public class Notifs {
                 b.addAction(new Notification.Action.Builder(Icon.createWithResource(c, android.R.drawable.ic_media_pause),
                         "إيقاف مؤقت", PendingIntent.getBroadcast(c, 1102, in, FLAGS)).build());
             }
-            nm.notify(1001, b.build());
+            if (AppWatch.running) {
+                nm.cancel(1001);
+                nm.notify(1000, b.build());
+            } else {
+                nm.notify(1001, b.build());
+            }
             holdForTimer(c);
         } catch (Exception e) {
         }
@@ -313,8 +325,7 @@ public class Notifs {
             c.getSharedPreferences("mzk", Context.MODE_PRIVATE).edit().putString("lastjson", "").putString("nids", "").apply();
             nm.cancel(900);
             cancelKids(nm);
-            if (AppWatch.running) idle(c, "العداد شغال");
-            else nm.cancel(1000);
+            if (!AppWatch.running) nm.cancel(1000);
         } catch (Exception e) {
         }
     }

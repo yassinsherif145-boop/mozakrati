@@ -97,11 +97,13 @@ public class AppWatch extends Service {
             try {
                 for (StatusBarNotification sbn : nm.getActiveNotifications()) {
                     if (sbn.getId() == 1000) n = sbn.getNotification();
+                    else if (sbn.getId() == 1001 && n == null) n = sbn.getNotification();
                 }
             } catch (Exception e) {
             }
             if (n == null) n = Notifs.idleNote(this, "مفيش مهام دلوقتي");
             startForeground(1000, n);
+            if (getSharedPreferences("mzk", Context.MODE_PRIVATE).getBoolean("tmrOn", false)) nm.cancel(1001);
             try {
                 nm.cancel(56);
             } catch (Exception e) {
