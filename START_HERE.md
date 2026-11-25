@@ -1,5 +1,5 @@
 # START_HERE — "مذاكرتي" (My Studying Session) Android app
-Guide for editing the app. The project is in `app/` (real files, ready to upload to GitHub). Do NOT read everything: read this guide, then open only the files the task needs (section 5 map for index.html; section 3 for Java). Current page version: **APP_VER=44** (next release = 45).
+Guide for editing the app. The project is in `app/` (real files, ready to upload to GitHub). Do NOT read everything: read this guide, then open only the files the task needs (section 5 map for index.html; section 3 for Java). Current page version: **APP_VER=45** (next release = 46).
 
 ## 0a. HOW TO DELIVER (current flow) - READ FIRST
 The code is in the PUBLIC GitHub repo `yassinsherif145-boop/mozakrati` (branch main). Every push to main builds the APK on GitHub Actions and publishes a Release; the app has a "تحديث التطبيق" button / banner that downloads and installs it. So the user never moves an APK by hand.
@@ -169,3 +169,4 @@ Cards/parts/sub-parts, big hw split, exam auto slots, keywords, per-subject exam
 - v42: reverted flat rows; old blue boxes + separators kept per day, but accumulated parts + today's part are grouped in ONE blue block (.tgrp, built in card()), each with own checkbox and red 'متراكم' tag.
 - v43: in the accumulated+today block (.tgrp) the day name is written once as the block header (today), rows inside have no per-row day tag; accumulated rows only show red 'متراكم'.
 - v44: timer notification: title = running sub-task (or main task if none), small text = main task name (JS payload field m), no 'مذاكرة' word; when AppWatch runs, the timer notification REPLACES the foreground note id 1000 (no separate 'مذاكرتي / العداد شغال' note); pref tmrOn marks timer active (Notifs.timer/show/idle).
+- v45: pattern fixes: patRate uses real finished parts (main checkbox alone no longer counts as 100%); patterns remember which task id gave each sample (p.ids) and deleting a task removes its sample (patUnlearn); settings button to clear all patterns (patClear).

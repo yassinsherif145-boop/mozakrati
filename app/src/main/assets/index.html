@@ -414,7 +414,7 @@ function subjBtn(){const s=S.subjects.find(x=>x.id===subj),b=$('sqb');if(!b)retu
 function msg(m){$('msg').textContent=m}
 function find(id){return S.items.find(x=>x.id===id)}
 function toggle(id){const it=find(id);it.done=it.done?null:ymd(NOW());if(it.done){tmFin(it);patEval(it)}actMark();save();draw()}
-function delItem(id){const it0=find(id);if(it0){tmStopFor(id,null,null);it0.subs.forEach((s,i)=>{tmStopFor(id,i,null);(s.c||[]).forEach((q,j)=>tmStopFor(id,i,j))})}S.items=S.items.filter(x=>x.id!==id);save();tmSync();draw()}
+function delItem(id){const it0=find(id);if(it0){tmStopFor(id,null,null);it0.subs.forEach((s,i)=>{tmStopFor(id,i,null);(s.c||[]).forEach((q,j)=>tmStopFor(id,i,j))})}S.items=S.items.filter(x=>x.id!==id);patUnlearn(id);save();tmSync();draw()}
 function addSub(id,el,soft){const v=el.value.trim();if(!v||el.dataset.busy)return;el.dataset.busy=1;find(id).subs.push({t:v,d:false,on:null,ad:ymd(NOW())});OP['t'+kpath(id,find(id).subs.length-1,null)]=true;delete DR[el.dataset.dr];actMark();save();if(soft){nativeSync();setTimeout(softDraw,250);return}draw();setTimeout(()=>{const e=document.querySelector('[data-i="'+id+'"]');if(e)e.focus()},0)}
 function setSub(id,i,el,soft){const v=el.value.trim();if(!v||el.dataset.busy)return;el.dataset.busy=1;find(id).subs[i].t=v;OP['t'+kpath(id,i,null)]=true;delete DR[el.dataset.dr];actMark();save();if(soft){nativeSync();setTimeout(softDraw,250)}else draw()}
 function chkDone(it){const nm=it.subs.filter(x=>x.t),T0=mid(NOW()),n0=diff(prs(it.due),T0),ok=it.big?(it.subs.length&&it.subs.every(x=>x.t&&x.d)):it.type==='exam'?(nm.length&&nm.every(x=>x.d)&&!it.subs.some((q,k)=>!q.t&&n0>=2&&planned(it,k)>=T0)):(nm.length&&nm.every(x=>x.d));if(ok){it.done=ymd(NOW());tmFin(it);patEval(it)}}
@@ -1012,7 +1012,7 @@ function exSetDue(id,k){const it=find(id);if(!it)return;const n0=Math.max(1,exSt
  if(!exFit(it)){Object.assign(it,old);toast('فيه أجزاء مكتوبة أكتر من الأيام. امسح الأجزاء الأقدم الأول');return}
  const n=exStudyDays(it).length;while(it.subs.length&&it.subs.length<n)it.subs.unshift({t:'',d:false,on:null,a:1});
  actMark();save();tmSync();draw();eiDraw(id)}
-const APP_VER=44;
+const APP_VER=45;
 function updApply(html){const m=/APP_VER\s*=\s*(\d+)/.exec(html),v=m?+m[1]:0,sm=/<script>([\s\S]*)<\/script>/.exec(html);
  try{if(!sm||!v)throw 0;new Function(sm[1])}catch(e){toast('الملف ده مش تحديث صالح');return 0}
  return v}
@@ -1142,16 +1142,17 @@ function patKeys(ty,title,sid,kw){const k=[];if(kw)k.push('k:'+String(kw).toLowe
  const w=String(title||'').trim().toLowerCase().split(/\s+/)[0].replace(/[.,;:!?()\[\]{}"'\-_\/\\]/g,'');
  if(w.length>=3)k.push(ty+'|w:'+w);if(sid)k.push(ty+'|s:'+sid);return k}
 function patFor(ty,title,sid,kw){const ks=patKeys(ty,title,sid,kw);for(let i=0;i<ks.length;i++){const p=S.pat[ks[i]];if(p&&p.samples&&p.samples.length)return{key:ks[i],p}}return null}
-function patLearn(ty,title,sid,kw,v){patKeys(ty,title,sid,kw).forEach(k=>{const p=S.pat[k]=S.pat[k]||{days:v,samples:[],stable:false};p.samples.push(v);if(p.samples.length>5)p.samples.shift();const l=p.samples.slice(-3);p.stable=l.length===3&&l.every(x=>x===l[0]);p.days=p.stable?l[0]:mdn(p.samples);p.ts=Date.now()})}
+function patLearn(ty,title,sid,kw,v,id){patKeys(ty,title,sid,kw).forEach(k=>{const p=S.pat[k]=S.pat[k]||{days:v,samples:[],stable:false};p.ids=p.ids||[];while(p.ids.length<p.samples.length)p.ids.unshift(null);p.samples.push(v);p.ids.push(id||null);if(p.samples.length>5){p.samples.shift();p.ids.shift()}const l=p.samples.slice(-3);p.stable=l.length===3&&l.every(x=>x===l[0]);p.days=p.stable?l[0]:mdn(p.samples);p.ts=Date.now()})}
 function patVal(it){const n=it.subs.length,ds={};it.subs.forEach(s=>{if(s.d&&s.on)ds[s.on]=1});const k=Object.keys(ds).length,v=k?Math.min(n,k):n;return it.type==='exam'?v:(it.big?v:0)}
-function patRate(it){if(it.done)return 1;const n=it.subs.length;return n?it.subs.filter(x=>x.t&&x.d).length/n:0}
+function patRate(it){const n=it.subs.length;if(n)return it.subs.filter(x=>x.t&&x.d).length/n;return it.done?1:0}
+function patUnlearn(id){try{Object.keys(S.pat||{}).forEach(k=>{const p=S.pat[k],ix=(p.ids||[]).indexOf(id);if(ix<0)return;p.samples.splice(ix,1);p.ids.splice(ix,1);if(!p.samples.length){delete S.pat[k];return}const l=p.samples.slice(-3);p.stable=l.length===3&&l.every(x=>x===l[0]);p.days=p.stable?l[0]:mdn(p.samples)})}catch(e){}}
 function patEval(it){try{if(TM||it.pe||S.al.learn===false)return;const thr=(S.al.patThr||90)/100,r=patRate(it);if(r<thr)return;it.pe=1;const v=patVal(it);if(it.type==='exam'&&v<1)return;const f=patFor(it.type,it.title,it.sid,it.kw);
- if(!f){patLearn(it.type,it.title,it.sid,it.kw,v);return}
- const sg0=f.p.stable?f.p.days:mdn(f.p.samples);if(sg0===v){patLearn(it.type,it.title,it.sid,it.kw,v);return}
- S.patQ=S.patQ||[];S.patQ.push({ty:it.type,t:it.title,sid:it.sid||null,kw:it.kw||null,v,old:sg0,r:Math.round(r*100)})}catch(e){}}
+ if(!f){patLearn(it.type,it.title,it.sid,it.kw,v,it.id);return}
+ const sg0=f.p.stable?f.p.days:mdn(f.p.samples);if(sg0===v){patLearn(it.type,it.title,it.sid,it.kw,v,it.id);return}
+ S.patQ=S.patQ||[];S.patQ.push({id:it.id,ty:it.type,t:it.title,sid:it.sid||null,kw:it.kw||null,v,old:sg0,r:Math.round(r*100)})}catch(e){}}
 function patAsk(){if(TM||$('a2Ov')||!S.patQ||!S.patQ.length)return;const q=S.patQ[0],nx=()=>{S.patQ.shift();save()};
- ask2('خلّصت "'+q.t+'" بنمط '+patLbl(q.ty,q.v)+' (نجاح '+q.r+'٪) والمحفوظ كان '+patLbl(q.ty,q.old)+'. تحفظ النمط الجديد؟','احفظ الجديد',()=>{const f=patFor(q.ty,q.t,q.sid,q.kw);patLearn(q.ty,q.t,q.sid,q.kw,q.v);if(f)patFix(f.key,q.v);nx()},'لأ',nx)}
-function patFix(key,v){const p=S.pat[key];if(!p)return;p.samples=[v];p.days=v;p.stable=true;p.ts=Date.now()}
+ ask2('خلّصت "'+q.t+'" بنمط '+patLbl(q.ty,q.v)+' (نجاح '+q.r+'٪) والمحفوظ كان '+patLbl(q.ty,q.old)+'. تحفظ النمط الجديد؟','احفظ الجديد',()=>{const f=patFor(q.ty,q.t,q.sid,q.kw);patLearn(q.ty,q.t,q.sid,q.kw,q.v,q.id);if(f)patFix(f.key,q.v);nx()},'لأ',nx)}
+function patFix(key,v){const p=S.pat[key];if(!p)return;p.samples=[v];p.ids=[];p.days=v;p.stable=true;p.ts=Date.now()}
 function patLbl(ty,v){return ty==='hw'?(v?'كبير '+v+' يوم':'صغير'):v+' أيام'}
 function patName(k){if(k.indexOf('k:')===0)return 'كلمة خاصة: '+k.slice(2);const i=k.indexOf('|'),ty=k.slice(0,i)==='exam'?'امتحان':'واجب',r=k.slice(i+1);if(r.indexOf('w:')===0)return ty+' · '+r.slice(2);if(r.indexOf('s:')===0)return ty+' · '+(sname(r.slice(2))||'مادة');return ty}
 function ask2(t,la,fa,lb,fb,note){const o=document.createElement('div');o.id='a2Ov';o.className='ov';o.style.cssText='align-items:center;z-index:99';o.innerHTML=`<div class="sheet" style="border-radius:16px;max-width:420px;margin:16px"><div style="font-size:16px;margin-bottom:12px">${esc(t)}</div>${note?`<div style="font-size:12px;color:var(--mu);margin:-6px 0 12px">${esc(note)}</div>`:''}<div class="row"><button class="go" id="a2a">${esc(la)}</button><button class="ch" id="a2b">${esc(lb)}</button></div></div>`;document.body.appendChild(o);$('a2a').onclick=()=>{o.remove();fa()};$('a2b').onclick=()=>{o.remove();fb()}}
@@ -1254,12 +1255,14 @@ function rrow(k,kind,id,t,s,old,extra,dn){
  return `<details class="li rr" data-k="${esc(key)}" ${OP[key]?'open':''} ontoggle="OP[this.dataset.k]=this.open"><summary><span class="lt">${t}</span>${dn?` <span class="tg">${dn}</span>`:''}${has?' <span class="tg">✎</span>':''}</summary><div class="ls">${s}</div>${(old||[]).map(r=>{const ix=S.pp.indexOf(r);return `<div class="rn">سبب (${DN[prs(r.d).getDay()]}) <button class="del" onclick="ppDel(${ix})" aria-label="مسح السبب">🗑 مسح</button></div><textarea class="ag" rows="2" oninput="ppEdit(${ix},this.value);agr(this)">${esc(r.r)}</textarea>`}).join('')}<textarea class="ag" rows="1" data-wk="${esc(wk_)}" placeholder="اكتب السبب هنا" oninput="wrSet(this);agr(this)">${esc(cur)}</textarea>${cur?`<button class="del" onclick="wrDel('${esc(wk_)}')" aria-label="مسح">🗑 مسح السبب</button>`:''}${extra||''}</details>`}
 /* ===================== settings ===================== */
 function patSet(k,v){const p=S.pat[k];if(!p)return;p.samples=[+v];p.days=+v;p.stable=true;save();stDraw()}
+function patClear(){ask2('تمسح كل الأنماط المحفوظة؟','امسح',()=>{S.pat={};save();stDraw()},'لأ',()=>{})}
 function patDel(k){delete S.pat[k];save();stDraw()}
 function patRun(p){const s=p.samples||[];let r=0;for(let i=s.length-1;i>=0&&s[i]===s[s.length-1];i--)r++;return r}
 function stPat(a){let b=sRow('الأنماط شغالة','لو قفلتها بيقف الاقتراح والتعلّم، وكل اللي اتحفظ بيفضل زي ما هو.',tgl('learn',a.learn!==false));
  b+=sRow('نسبة النجاح لحفظ النمط','النمط بيتحفظ بس لو خلّصت من المهمة النسبة دي أو أكتر (الافتراضي 90٪).',`<input type="number" min="50" max="100" value="${a.patThr||90}" style="width:64px" onchange="S.al.patThr=Math.min(100,Math.max(50,+this.value||90));save()">٪`);
  const ks=Object.keys(S.pat||{});
- if(!ks.length)return b+'<div class="sd">لسه مفيش أنماط. أول ما تضيف مهام بتتسجل هنا.</div>';
+ if(!ks.length)return b+'<div class="sd">لسه مفيش أنماط. بتتسجل لما تخلّص مهمة (٩٠٪ أو أكتر من أجزائها).</div>';
+ b+='<div class="sr"><div class="srt"><span>مسح كل الأنماط</span><button class="ch" onclick="patClear()">مسح</button></div><div class="sd">لو فيه أنماط قديمة غلط. بتبدأ تتعلم من جديد من المهام اللي هتخلّصها.</div></div>';
  const st=ks.filter(k=>S.pat[k].stable).sort(),ln=ks.filter(k=>!S.pat[k].stable).sort();
  const sel=(k,p)=>{const isHw=k.indexOf('hw|')===0,mx=isHw?14:30;let o='';for(let n=(isHw?0:1);n<=mx;n++)o+=`<option value="${n}" ${p.days===n?'selected':''}>${isHw?(n?'كبير '+n+' يوم':'صغير'):n+' أيام'}</option>`;return `<select class="ch" onchange="patSet('${esc(k)}',this.value)">${o}</select>`};
  const row=(k,tail)=>{const p=S.pat[k];return `<div class="sr"><div class="srt"><span>${esc(patName(k))}</span><span class="row" style="margin:0;flex-wrap:nowrap">${sel(k,p)}<button class="del" onclick="patDel('${esc(k)}')" aria-label="احذف">×</button></span></div><div class="sd">آخر المرات: <span class="pph">${(p.samples||[]).join(' · ')}</span>${tail||''}</div></div>`};
