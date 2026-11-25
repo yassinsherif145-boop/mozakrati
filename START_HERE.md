@@ -1,6 +1,19 @@
 # START_HERE — "مذاكرتي" (My Studying Session) Android app
 Guide for editing the app. The project is in `app/` (real files, ready to upload to GitHub). Do NOT read everything: read this guide, then open only the files the task needs (section 5 map for index.html; section 3 for Java). Current page version: **APP_VER=34** (next release = 35).
 
+## 0a. HOW TO DELIVER (current flow) - READ FIRST
+The code is in the PUBLIC GitHub repo `yassinsherif145-boop/mozakrati` (branch main). Every push to main builds the APK on GitHub Actions and publishes a Release; the app has a "تحديث التطبيق" button / banner that downloads and installs it. So the user never moves an APK by hand.
+- **If your session can push** (GitHub connected, see 8b): edit, commit, push to main. Done. Then check the build (section 8b).
+- **If you cannot push** (most chats): send ONLY the changed files, complete, each with its exact repo path (e.g. `app/src/main/java/com/mzk/app/Notifs.java`, `app/src/main/assets/index.html`). Tiny files, no zip of the whole project. Then tell him, in Egyptian Arabic, exactly these steps:
+  1. افتح github.com/yassinsherif145-boop/mozakrati وروح للفولدر اللي فيه الملف (مثلًا app ← src ← main ← java ← com ← mzk ← app).
+  2. دوس Add file ← Upload files، واسحب الملف المعدّل (لازم بنفس الاسم بالظبط).
+  3. انزل دوس Commit changes (على main).
+  4. استنى حوالي ٤ دقايق (تاب Actions لازم يبقى فيه علامة ✓ خضرا. لو طلع ✗ ابعتلي صورة الخطأ، أو دوس Re-run jobs لو الخطأ 429).
+  5. افتح التطبيق، هيظهر كارت «فيه نسخة جديدة»، دوس «تحديث الآن» وثبّت.
+  Page-only change (index.html only): same steps, or ⚙ ← 🔄 التحديثات ← اختار الملف (instant, no APK).
+- Always bump `const APP_VER=N;` in index.html on every change. Ask the user at most ONE batched question, only if truly blocked.
+- Java in this repo IS compiled by Actions: if it fails the user sends the error; fix and re-send only the broken file.
+
 ## 0. Rules for you (the AI)
 1. User = student, ADHD, **free plan with tiny limits**. Be efficient: deliver working files, no essays, no recap of what you read.
 2. Reply in **Egyptian Arabic, short, step by step**. Start every delivery with **"ده محتاج APK"** or **"ده ملف واحد بس (index.html)"**.
