@@ -4,9 +4,10 @@
     android:layout_height="wrap_content"
     android:gravity="center_vertical"
     android:layoutDirection="rtl"
+    android:minHeight="44dp"
     android:orientation="horizontal"
-    android:paddingTop="4dp"
-    android:paddingBottom="4dp">
+    android:paddingTop="3dp"
+    android:paddingBottom="3dp">
 
     <LinearLayout
         android:layout_width="0dp"
@@ -19,21 +20,22 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ellipsize="end"
-            android:maxLines="2"
+            android:maxLines="1"
             android:textAlignment="viewStart"
             android:textColor="#FF212121"
             android:textDirection="rtl"
-            android:textSize="17sp"
+            android:textSize="15sp"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/r2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="1dp"
             android:ellipsize="end"
             android:maxLines="1"
             android:textAlignment="viewStart"
-            android:textColor="#FF9E9E9E"
+            android:textColor="#FF8A8A8A"
             android:textDirection="rtl"
             android:textSize="12sp"
             android:visibility="gone" />
@@ -41,16 +43,16 @@
 
     <ImageView
         android:id="@+id/ic"
-        android:layout_width="16dp"
-        android:layout_height="16dp"
-        android:layout_marginStart="10dp" />
+        android:layout_width="14dp"
+        android:layout_height="14dp"
+        android:layout_marginStart="8dp" />
 
     <TextView
         android:id="@+id/rm"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
-        android:textColor="#FF757575"
+        android:maxLines="1"
         android:textDirection="rtl"
         android:textSize="12sp"
         android:textStyle="bold" />
@@ -60,8 +62,15 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
-        android:textColor="#66000000"
-        android:textSize="13sp"
+        android:background="@drawable/nc_badge"
+        android:gravity="center"
+        android:minWidth="20dp"
+        android:paddingStart="6dp"
+        android:paddingTop="1dp"
+        android:paddingEnd="6dp"
+        android:paddingBottom="1dp"
+        android:textColor="#FF616161"
+        android:textSize="12sp"
         android:textStyle="bold"
         android:visibility="gone" />
 </LinearLayout>

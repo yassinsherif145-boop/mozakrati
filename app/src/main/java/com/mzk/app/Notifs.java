@@ -54,8 +54,13 @@ public class Notifs {
             if (!s.isEmpty()) nm.cancel(Integer.parseInt(s));
         }
         nm.cancel(900);
+        cancelKids(nm);
         p.edit().putString("nids", "").putString("lastjson", "").apply();
         if (AppWatch.running) idle(c, "مفيش مهام دلوقتي");
+    }
+
+    static void cancelKids(NotificationManager nm) {
+        for (int i = 0; i < 10; i++) nm.cancel(1010 + i);
     }
 
     // إشعار بسيط. لما مراقبة التطبيقات شغالة بنستخدمه بدل إشعار «المراقبة» المنفصل (الأندرويد بيفرض إشعار مع أي خدمة شغالة في الخلفية)
@@ -131,6 +136,7 @@ public class Notifs {
                     NotificationManager nmh = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
                     nmh.cancel(1000);
                     nmh.cancel(900);
+                    cancelKids(nmh);
                     p.edit().putString("nids", "").putString("lastjson", "").putString("lastTasks", "").apply();
                     if (AppWatch.running) idle(c, "مفيش مهام دلوقتي");
                     return;
@@ -186,22 +192,65 @@ public class Notifs {
                 fillRow(row, a.getJSONObject(i));
                 big.addView(R.id.list, row);
             }
-            boolean openBig = false;
+            String mode = "g";
             try {
-                openBig = jt.startsWith("{") && new JSONObject(jt).optBoolean("open", false);
+                if (jt.startsWith("{")) mode = new JSONObject(jt).optString("nm", "g");
             } catch (Exception e) {
             }
             PendingIntent open = PendingIntent.getActivity(c, 1, new Intent(c, MainActivity.class), FLAGS);
+            int n = a.length();
+            if ("g".equals(mode) && n >= 2) {
+                // مجمّع: مهمة قدّام والباقي بالسحب لتحت (الأندرويد بيقفله لوحده)
+                long base = System.currentTimeMillis();
+                StringBuilder ids = new StringBuilder("1000,");
+                int kids = Math.min(n, 8);
+                for (int i = kids - 1; i >= 0; i--) {
+                    RemoteViews row = new RemoteViews(c.getPackageName(), R.layout.notif_row);
+                    fillRow(row, a.getJSONObject(i));
+                    Notification.Builder kb = new Notification.Builder(c, CH)
+                            .setSmallIcon(R.drawable.ic_stat)
+                            .setStyle(new Notification.DecoratedCustomViewStyle())
+                            .setCustomContentView(row)
+                            .setGroup("mzk_tasks")
+                            .setGroupAlertBehavior(Notification.GROUP_ALERT_SUMMARY)
+                            .setSortKey(String.format(java.util.Locale.US, "%02d", i))
+                            .setShowWhen(false)
+                            .setWhen(base - i * 1000L)
+                            .setOngoing(true)
+                            .setOnlyAlertOnce(true)
+                            .setVisibility(Notification.VISIBILITY_PUBLIC)
+                            .setContentIntent(open);
+                    nm.notify(1010 + i, kb.build());
+                    ids.append(1010 + i).append(",");
+                }
+                Notification.Builder sb = new Notification.Builder(c, CH)
+                        .setSmallIcon(R.drawable.ic_stat)
+                        .setStyle(new Notification.DecoratedCustomViewStyle())
+                        .setCustomContentView(small)
+                        .setGroup("mzk_tasks")
+                        .setGroupSummary(true)
+                        .setGroupAlertBehavior(Notification.GROUP_ALERT_SUMMARY)
+                        .setNumber(n)
+                        .setShowWhen(false)
+                        .setOngoing(true)
+                        .setOnlyAlertOnce(true)
+                        .setVisibility(Notification.VISIBILITY_PUBLIC)
+                        .setContentIntent(open);
+                nm.notify(1000, sb.build());
+                p.edit().putString("nids", ids.toString()).putString("lastjson", json).apply();
+                return;
+            }
             Notification.Builder b = new Notification.Builder(c, CH)
                     .setSmallIcon(R.drawable.ic_stat)
                     .setStyle(new Notification.DecoratedCustomViewStyle())
                     .setCustomContentView(small)
-                    .setNumber(a.length())
+                    .setNumber(n)
+                    .setShowWhen(false)
                     .setOngoing(true)
                     .setOnlyAlertOnce(true)
                     .setVisibility(Notification.VISIBILITY_PUBLIC)
                     .setContentIntent(open);
-            if (openBig) b.setCustomBigContentView(big);
+            if ("o".equals(mode) || "g".equals(mode)) b.setCustomBigContentView(big);
             nm.notify(1000, b.build());
             p.edit().putString("nids", "1000,").putString("lastjson", json).apply();
         } catch (Exception e) {
@@ -263,6 +312,7 @@ public class Notifs {
             NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
             c.getSharedPreferences("mzk", Context.MODE_PRIVATE).edit().putString("lastjson", "").putString("nids", "").apply();
             nm.cancel(900);
+            cancelKids(nm);
             if (AppWatch.running) idle(c, "العداد شغال");
             else nm.cancel(1000);
         } catch (Exception e) {
