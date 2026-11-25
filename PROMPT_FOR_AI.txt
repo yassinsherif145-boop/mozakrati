@@ -1,11 +1,11 @@
-انسخ الرسالة اللي بين الخطين وابعتها لأي AI، وغيّر آخر سطر بطلبك:
+انسخ الرسالة اللي بين الخطين وابعتها لأي AI، وغيّر آخر سطر بطلبك (أو من التطبيق: ⚙ ← «رسالة للـ AI» ← نسخ):
 
 ------------------------------------------------------------
 I own an Android app called "مذاكرتي" (Java WebView app + one big HTML/JS file).
 Code (public): https://github.com/yassinsherif145-boop/mozakrati
 FIRST read this guide completely: https://raw.githubusercontent.com/yassinsherif145-boop/mozakrati/main/START_HERE.md
-Rules: reply in short Egyptian Arabic. If you can push to the repo, do it (GitHub Actions builds an APK and the app updates itself from the Releases page). If you cannot, send me ONLY the changed files (never the whole project) and tell me exactly where to upload them on GitHub. Do not rebuild anything marked CANCELLED in the guide.
+Rules: reply in short Egyptian Arabic. Try to get push access to the repo (see section 0c of the guide: if you have a GitHub tool use it; if not, tell me the exact linking steps for YOUR platform). With push access: edit, push to main, the build runs on GitHub Actions and the app updates itself. Without it: send ONLY the changed files and where to upload them on GitHub. At the end make the handoff package (section 0b). Do not rebuild anything marked CANCELLED.
 My request: <اكتب طلبك هنا>
 ------------------------------------------------------------
 
-لو الـ AI مبيفتحش روابط: ابعتله ملف START_HERE.md (من المستودع) وملف index.html لو الطلب في الواجهة، أو الملف اللي عايز يتعدّل.
+لو الـ AI مبيفتحش روابط: ابعتله ملف START_HERE.md وملف index.html.

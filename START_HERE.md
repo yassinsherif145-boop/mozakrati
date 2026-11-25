@@ -1,5 +1,5 @@
 # START_HERE — "مذاكرتي" (My Studying Session) Android app
-Guide for editing the app. The project is in `app/` (real files, ready to upload to GitHub). Do NOT read everything: read this guide, then open only the files the task needs (section 5 map for index.html; section 3 for Java). Current page version: **APP_VER=38** (next release = 39).
+Guide for editing the app. The project is in `app/` (real files, ready to upload to GitHub). Do NOT read everything: read this guide, then open only the files the task needs (section 5 map for index.html; section 3 for Java). Current page version: **APP_VER=39** (next release = 40).
 
 ## 0a. HOW TO DELIVER (current flow) - READ FIRST
 The code is in the PUBLIC GitHub repo `yassinsherif145-boop/mozakrati` (branch main). Every push to main builds the APK on GitHub Actions and publishes a Release; the app has a "تحديث التطبيق" button / banner that downloads and installs it. So the user never moves an APK by hand.
@@ -20,6 +20,11 @@ The user moves work between AIs because each has a small free limit. So when you
 2. ALSO create a tiny handoff package for the NEXT AI: this START_HERE.md (updated with what you changed, new APP_VER, known open problems) + PROMPT_FOR_AI.txt + only the files the open task touches (not the whole project). If you have code tools, zip it (target < 150KB) and send it.
 3. In that package, KEEP this 0b section and tell the next AI to do exactly the same at the end, so the chain continues AI after AI.
 4. Update the notes in this file (version history + open issues) before packaging.
+
+## 0c. GET PUSH ACCESS (so you update the app directly, no manual upload)
+1. If you have GitHub/repo tools (e.g. an `add_repo` tool or a GitHub connector): call it for `yassinsherif145-boop/mozakrati` with push access, clone, edit, commit, push to `main`. Do not pre-check the repo with curl (private-style 404s mislead).
+2. If you have NO such tool, do not give up silently: tell the user, in Egyptian Arabic, the linking steps for YOUR platform. For Claude (claude.ai) they are: Settings > Connectors > GitHub > Connect; then github.com > Settings > Applications > install the "Claude" GitHub App on the repo `mozakrati` (Only select repositories); then open a NEW chat and ask again. For other platforms: say whether it supports a GitHub connector/plugin and where to enable it; if it cannot, fall back to 0a (send changed files).
+3. After the push, check the Actions run (green = ok; if a Maven 429 error, re-run / push an empty commit).
 
 ## 0. Rules for you (the AI)
 1. User = student, ADHD, **free plan with tiny limits**. Be efficient: deliver working files, no essays, no recap of what you read.
