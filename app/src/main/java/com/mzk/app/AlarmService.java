@@ -21,6 +21,7 @@ public class AlarmService extends Service {
     long grace = 0;
     long nextTry = 0;
     long endAt = 0;
+    long hiddenSince = 0;
     String route = "#alarm";
     final Handler h = new Handler(Looper.getMainLooper());
 
@@ -35,8 +36,13 @@ public class AlarmService extends Service {
                 return;
             }
             if (!AlarmActivity.visible) {
+                long nw = System.currentTimeMillis();
+                if (hiddenSince == 0) hiddenSince = nw;
                 Util.openAlarm(AlarmService.this, route);
+                if (nw - hiddenSince > 5000) OverlayUi.showReopen(AlarmService.this, route);
                 if (mp == null && System.currentTimeMillis() > grace) startSound();
+            } else if (hiddenSince != 0 && resetHidden()) {
+                // الشاشة رجعت
             } else if (quietUntil > 0 && quietUntil != Long.MAX_VALUE
                     && System.currentTimeMillis() >= quietUntil && mp == null) {
                 quietUntil = 0;
@@ -45,6 +51,12 @@ public class AlarmService extends Service {
             h.postDelayed(this, 2000);
         }
     };
+
+    boolean resetHidden() {
+        hiddenSince = 0;
+        OverlayUi.hideReopen(this);
+        return false;
+    }
 
     // كل 800 ملي: يرفع الصوت لأقصى درجة لو حد نزّله
     final Runnable vol = new Runnable() {
@@ -98,6 +110,7 @@ public class AlarmService extends Service {
         quietUntil = 0;
         grace = 0;
         nextTry = 0;
+        hiddenSince = 0;
         endAt = reason ? System.currentTimeMillis() + 10 * 60 * 1000L : 0;
         if (reason) {
             // هادي في الأول عشان لو مفيش حاجة تتكتب، وبيرن لو سبت الشاشة
@@ -194,6 +207,7 @@ public class AlarmService extends Service {
     @Override
     public void onDestroy() {
         running = false;
+        OverlayUi.hideReopen(this);
         h.removeCallbacks(loop);
         h.removeCallbacks(vol);
         stopSound();

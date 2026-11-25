@@ -43,6 +43,7 @@ public class OverlayUi {
     static volatile String checkPkg = null;
     static View checkView = null;
     static View pauseView = null;
+    static View reopenView = null;
     static final Handler H = new Handler(Looper.getMainLooper());
 
     static boolean can(Context c) {
@@ -474,6 +475,41 @@ public class OverlayUi {
             checkShown = true;
         } catch (Exception e) {
         }
+    }
+
+    // لما شاشة المنبه ما ترجعش لوحدها (الموبايل بيمنع فتح الشاشات من الخلفية): نافذة فوق أي حاجة وزرار يفتحه
+    static void showReopen(final Context ctx, final String route) {
+        try {
+            if (reopenView != null || !can(ctx)) return;
+            WindowManager wm = (WindowManager) ctx.getSystemService(Context.WINDOW_SERVICE);
+            LinearLayout col = column(ctx);
+            col.setGravity(Gravity.CENTER);
+            col.addView(label(ctx, "⏰ التنبيه لسه شغال", 24, true));
+            Button b = btn(ctx, "افتح التنبيه");
+            b.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    hideReopen(ctx);
+                    Util.openAlarm(ctx, route);
+                }
+            });
+            col.addView(b, lp(ctx, 24));
+            reopenView = col;
+            wm.addView(col, params());
+        } catch (Exception e) {
+            reopenView = null;
+        }
+    }
+
+    static void hideReopen(Context ctx) {
+        try {
+            if (reopenView != null) {
+                WindowManager wm = (WindowManager) ctx.getSystemService(Context.WINDOW_SERVICE);
+                wm.removeView(reopenView);
+            }
+        } catch (Exception e) {
+        }
+        reopenView = null;
     }
 
     static void dismissCheck(Context ctx) {

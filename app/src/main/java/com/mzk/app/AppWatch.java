@@ -195,7 +195,7 @@ public class AppWatch extends Service {
                 cur = "";
             }
         }
-        lastEv = now;
+        lastEv = now - 3000L;
         if (now - lastRefresh > 1800000L) {
             lastRefresh = now;
             new Thread(new Runnable() {
