@@ -257,6 +257,7 @@ details.wr{border:1px solid var(--ln);border-radius:12px;margin:8px 0;background
 .xd{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:11px;color:var(--mu)}.xd .ch{font-size:11px;padding:3px 8px}
 .ug{display:flex;align-items:flex-start;gap:4px;margin-top:5px;font-size:10.5px;line-height:1.3;font-weight:600;color:var(--u0)}
 .ug svg{flex:none;margin-top:1px}
+.ug .pn{margin-inline-start:auto;font-size:9px;font-weight:500;opacity:.55;color:var(--mu)}
 .ug.u1{color:var(--u1)}.ug.u2{color:var(--u2)}
 .tk .tkb{padding:6px 10px 10px;border-top:1px dashed var(--ln)}
 .tk .tkx{margin:8px 0 0;justify-content:flex-start}
@@ -413,7 +414,7 @@ function msg(m){$('msg').textContent=m}
 function find(id){return S.items.find(x=>x.id===id)}
 function toggle(id){const it=find(id);it.done=it.done?null:ymd(NOW());if(it.done){tmFin(it);patEval(it)}actMark();save();draw()}
 function delItem(id){const it0=find(id);if(it0){tmStopFor(id,null,null);it0.subs.forEach((s,i)=>{tmStopFor(id,i,null);(s.c||[]).forEach((q,j)=>tmStopFor(id,i,j))})}S.items=S.items.filter(x=>x.id!==id);save();tmSync();draw()}
-function addSub(id,el,soft){const v=el.value.trim();if(!v||el.dataset.busy)return;el.dataset.busy=1;find(id).subs.push({t:v,d:false,on:null});OP['t'+kpath(id,find(id).subs.length-1,null)]=true;delete DR[el.dataset.dr];actMark();save();if(soft){nativeSync();setTimeout(softDraw,250);return}draw();setTimeout(()=>{const e=document.querySelector('[data-i="'+id+'"]');if(e)e.focus()},0)}
+function addSub(id,el,soft){const v=el.value.trim();if(!v||el.dataset.busy)return;el.dataset.busy=1;find(id).subs.push({t:v,d:false,on:null,ad:ymd(NOW())});OP['t'+kpath(id,find(id).subs.length-1,null)]=true;delete DR[el.dataset.dr];actMark();save();if(soft){nativeSync();setTimeout(softDraw,250);return}draw();setTimeout(()=>{const e=document.querySelector('[data-i="'+id+'"]');if(e)e.focus()},0)}
 function setSub(id,i,el,soft){const v=el.value.trim();if(!v||el.dataset.busy)return;el.dataset.busy=1;find(id).subs[i].t=v;OP['t'+kpath(id,i,null)]=true;delete DR[el.dataset.dr];actMark();save();if(soft){nativeSync();setTimeout(softDraw,250)}else draw()}
 function chkDone(it){const nm=it.subs.filter(x=>x.t),T0=mid(NOW()),n0=diff(prs(it.due),T0),ok=it.big?(it.subs.length&&it.subs.every(x=>x.t&&x.d)):it.type==='exam'?(nm.length&&nm.every(x=>x.d)&&!it.subs.some((q,k)=>!q.t&&n0>=2&&planned(it,k)>=T0)):(nm.length&&nm.every(x=>x.d));if(ok){it.done=ymd(NOW());tmFin(it);patEval(it)}}
 function togSub(id,i){const it=find(id),s=it.subs[i];if(!s.d&&estGate(it,i))return;s.d=!s.d;s.on=s.d?ymd(NOW()):null;if(s.c&&s.c.length)s.c.forEach(q=>{q.d=s.d;q.on=s.on});if(s.d){tmStopFor(id,i,null);(s.c||[]).forEach((q,j)=>tmStopFor(id,i,j))}chkDone(it);actMark();save();draw()}
@@ -432,14 +433,14 @@ function expo(){S.lastBackup=ymd(NOW());save();if(window.Android&&Android.saveTe
 function impo(f){if(!f)return;const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);if(o.subjects&&o.items){S=o;norm();save();draw();msg('')}}catch(e){msg('الملف مش صالح')}};r.readAsText(f)}
 function delSubj(id){S.subjects=S.subjects.filter(x=>x.id!==id);Object.keys(S.tt.c).forEach(k=>{if(S.tt.c[k]===id)delete S.tt.c[k]});if(subj===id)subj=null;save();draw()}
 
-const planned=(it,i)=>{const R=(S.al&&S.al.rest!=null)?S.al.rest:4,m=addD(prs(it.due),-1),xd=it.xd||[],rs=q=>q.getDay()===R&&xd.indexOf(ymd(q))<0;let p=prs(it.type==='hw'&&it.big?it.created:(it.start||it.show));if(it.type==='exam'){if(rs(p))p=addD(p,1);for(let k=0;k<i&&p<m;k++){p=addD(p,1);if(rs(p))p=addD(p,1)}}else p=addD(p,i);return p>m?m:p};
+const planned=(it,i)=>{const sx=it.subs[i];if(sx&&sx.ad){const q=prs(sx.ad),m0=addD(prs(it.due),-1);return q>m0?m0:q}const R=(S.al&&S.al.rest!=null)?S.al.rest:4,m=addD(prs(it.due),-1),xd=it.xd||[],rs=q=>q.getDay()===R&&xd.indexOf(ymd(q))<0;let p=prs(it.type==='hw'&&it.big?it.created:(it.start||it.show));if(it.type==='exam'){if(rs(p))p=addD(p,1);for(let k=0;k<i&&p<m;k++){p=addD(p,1);if(rs(p))p=addD(p,1)}}else p=addD(p,i);return p>m?m:p};
 function wdays(a,b,inc){const R=(S.al&&S.al.rest!=null)?S.al.rest:4;let n=0;for(let d=mid(a);d<mid(b);d=addD(d,1))if(inc||d.getDay()!==R)n++;return n}
 function restDates(a,b){const R=(S.al&&S.al.rest!=null)?S.al.rest:4,o=[];for(let d=mid(a);d<mid(b);d=addD(d,1))if(d.getDay()===R)o.push(ymd(d));return o}
 const rdOff=D=>D.getDay()===RD()&&!S.items.some(i=>(i.xd||[]).indexOf(ymd(D))>=0);
 function xdOpts(it){const R=RD(),T=mid(NOW()),m=prs(it.due),o=[];for(let d=T;d<m;d=addD(d,1))if(d.getDay()===R&&(it.xd||[]).indexOf(ymd(d))<0)o.push(ymd(d));return o}
 function daysLeft(it){const T=mid(NOW()),m=prs(it.due),x=it.xd||[];let n=0;for(let d=T;d<m;d=addD(d,1))if(d.getDay()!==RD()||x.indexOf(ymd(d))>=0)n++;return n}
 function xdAdd(id,d){const it=find(id);if(!it)return;it.xd=(it.xd||[]).concat([d]);save();draw();toast('اتضاف '+DN[prs(d).getDay()]+' · فاضل '+daysLeft(it)+' يوم')}
-function exFit(it){if(!it.subs.length)return true;const need=it.subs.length-exStudyDays(it).length;if(need<=0)return true;const ix=[];for(let i=0;i<it.subs.length&&ix.length<need;i++){const s=it.subs[i];if(!s.t&&!s.d&&!s.ts&&!(s.ac>0)&&!isRun(it.id,i,null))ix.push(i)}if(ix.length<need)return false;ix.reverse().forEach(i=>{it.subs.splice(i,1);tmShift(it.id,i,null)});return true}
+function exFit(it){if(!it.subs.length)return true;const need=it.subs.filter(s=>!s.ad).length-exStudyDays(it).length;if(need<=0)return true;const ix=[];for(let i=0;i<it.subs.length&&ix.length<need;i++){const s=it.subs[i];if(!s.t&&!s.d&&!s.ts&&!(s.ac>0)&&!isRun(it.id,i,null))ix.push(i)}if(ix.length<need)return false;ix.reverse().forEach(i=>{it.subs.splice(i,1);tmShift(it.id,i,null)});return true}
 function xdDel(id,d){const it=find(id);if(!it)return;const old=it.xd||[];it.xd=old.filter(x=>x!==d);if(!exFit(it)){it.xd=old;toast('فيه جزء مكتوب في اليوم ده. امسح الجزء الأول');return}save();draw();toast('اتشال '+DN[prs(d).getDay()])}
 function xdChip(it){if(it.type!=='exam'||it.done||it.m||!acc(it))return'';const o=xdOpts(it);if(!o.length)return'';const n=daysLeft(it);return `<div class="xd"><span>فاضل ${n} ${n===1?'يوم':'أيام'}</span><button class="ch" onclick="event.preventDefault();event.stopPropagation();xdAdd('${it.id}','${o[0]}')">＋ أضف ${DN[prs(o[0]).getDay()]} (يبقى ${n+1})</button></div>`}
 function xdBtns(it){if(it.type!=='exam')return'';let h='';const o=xdOpts(it);if(o.length&&!it.done&&!it.m)h+=`<button class="ch" onclick="xdAdd('${it.id}','${o[0]}')">＋ ${DN[prs(o[0]).getDay()]}</button>`;(it.xd||[]).filter(d=>prs(d)>=mid(NOW())).forEach(d=>{h+=`<button class="ch" onclick="xdDel('${it.id}','${d}')">− شيل ${DN[prs(d).getDay()]} ${fd(d)}</button>`});return h}
@@ -463,7 +464,7 @@ function urg(it){
  if(cap<=1)lv=2;
  else if(a>0)lv=1;
  return{lv,R,slack,started}}
-function ugHtml(it){const u=urg(it);return u?`<div class="ug u${u.lv}">${UGI[u.lv]}<span>${UGL[u.lv]}</span></div>`:''}
+function ugHtml(it){const u=urg(it);return u?`<div class="ug u${u.lv}">${UGI[u.lv]}<span>${UGL[u.lv]}</span>${it.pt?'<span class="pn">نمط</span>':''}</div>`:''}
 function dyHtml(it){const n=diff(prs(it.due),mid(NOW())),ex=it.type==='exam';
  return n<0?'<span class="dy">فات</span>':n===0?'<span class="dy">النهاردة</span>':(ex&&n===1)?'<span class="dy">آخر يوم</span>':n===1?'<span class="dy">بكرة</span>':`<span class="dy"><b>${n}</b> أيام</span>`}
 function boxHtml(it,key,tag,subs,tot,dn,st){
@@ -1010,7 +1011,7 @@ function exSetDue(id,k){const it=find(id);if(!it)return;const n0=Math.max(1,exSt
  if(!exFit(it)){Object.assign(it,old);toast('فيه أجزاء مكتوبة أكتر من الأيام. امسح الأجزاء الأقدم الأول');return}
  const n=exStudyDays(it).length;while(it.subs.length&&it.subs.length<n)it.subs.unshift({t:'',d:false,on:null,a:1});
  actMark();save();tmSync();draw();eiDraw(id)}
-const APP_VER=39;
+const APP_VER=40;
 function updApply(html){const m=/APP_VER\s*=\s*(\d+)/.exec(html),v=m?+m[1]:0,sm=/<script>([\s\S]*)<\/script>/.exec(html);
  try{if(!sm||!v)throw 0;new Function(sm[1])}catch(e){toast('الملف ده مش تحديث صالح');return 0}
  return v}
@@ -1141,7 +1142,7 @@ function patKeys(ty,title,sid,kw){const k=[];if(kw)k.push('k:'+String(kw).toLowe
  if(w.length>=3)k.push(ty+'|w:'+w);if(sid)k.push(ty+'|s:'+sid);return k}
 function patFor(ty,title,sid,kw){const ks=patKeys(ty,title,sid,kw);for(let i=0;i<ks.length;i++){const p=S.pat[ks[i]];if(p&&p.samples&&p.samples.length)return{key:ks[i],p}}return null}
 function patLearn(ty,title,sid,kw,v){patKeys(ty,title,sid,kw).forEach(k=>{const p=S.pat[k]=S.pat[k]||{days:v,samples:[],stable:false};p.samples.push(v);if(p.samples.length>5)p.samples.shift();const l=p.samples.slice(-3);p.stable=l.length===3&&l.every(x=>x===l[0]);p.days=p.stable?l[0]:mdn(p.samples);p.ts=Date.now()})}
-function patVal(it){return it.type==='exam'?it.subs.length:(it.big?it.subs.length:0)}
+function patVal(it){const n=it.subs.length,ds={};it.subs.forEach(s=>{if(s.d&&s.on)ds[s.on]=1});const k=Object.keys(ds).length,v=k?Math.min(n,k):n;return it.type==='exam'?v:(it.big?v:0)}
 function patRate(it){if(it.done)return 1;const n=it.subs.length;return n?it.subs.filter(x=>x.t&&x.d).length/n:0}
 function patEval(it){try{if(TM||it.pe||S.al.learn===false)return;const thr=(S.al.patThr||90)/100,r=patRate(it);if(r<thr)return;it.pe=1;const v=patVal(it);if(it.type==='exam'&&v<1)return;const f=patFor(it.type,it.title,it.sid,it.kw);
  if(!f){patLearn(it.type,it.title,it.sid,it.kw,v);return}
@@ -1185,8 +1186,9 @@ function addItem(){
  const n=diff(due,NOW()),big=type==='hw'&&size==='b'&&n>=2,ex=type==='exam';
  const st=ex?ymd(new Date(Math.max(+backWd(due,exd,exX),+mid(NOW())))):null,dd=ex?wdays(prs(st),due,exX):0,xd0=(ex&&exX)?restDates(prs(st),due):[],k=ex?(dd>=2?Math.min(exd,dd):0):(big?Math.max(1,Math.min(curD||999,n-hwd+1)):0);
  const v=ex?exd:(big?k:0),kwW=(type==='exam'&&kwSel)?kwSel.w:null,sid=sb?sb.id:null,ty0=type;
+ const f0=S.al.learn===false?null:patFor(type,t,sb?sb.id:null,kwSel?kwSel.w:null),pt0=!!(f0&&pd==null&&ex&&k>0);
  const go=(learn)=>{
-  S.items.push({id:uid(),type:ty0,kw:kwW,sid,title:t,due:ymd(due),show:ex?st:ymd(addD(due,-hwd)),start:st,created:ymd(NOW()),big,xd:xd0,dropped:false,done:null,
+  S.items.push({pt:pt0?1:0,id:uid(),type:ty0,kw:kwW,sid,title:t,due:ymd(due),show:ex?st:ymd(addD(due,-hwd)),start:st,created:ymd(NOW()),big,xd:xd0,dropped:false,done:null,
    subs:Array.from({length:k},(_,q)=>({t:ex?((exPT[q]||'').trim()):'',d:false,on:null,a:1}))});exPT=[];
   size='s';exX=false;pd=null;pdT=false;pdE=false;sizeT=false;actMark();save();{const at=$('addTab');if(at)at.open=false}$('title').value='';exDate='';dateBtn();subj=null;subjBtn();kwSel=null;kwOff=false;msg('');draw()};
  go(false)}

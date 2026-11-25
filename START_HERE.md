@@ -1,5 +1,5 @@
 # START_HERE — "مذاكرتي" (My Studying Session) Android app
-Guide for editing the app. The project is in `app/` (real files, ready to upload to GitHub). Do NOT read everything: read this guide, then open only the files the task needs (section 5 map for index.html; section 3 for Java). Current page version: **APP_VER=39** (next release = 40).
+Guide for editing the app. The project is in `app/` (real files, ready to upload to GitHub). Do NOT read everything: read this guide, then open only the files the task needs (section 5 map for index.html; section 3 for Java). Current page version: **APP_VER=40** (next release = 41).
 
 ## 0a. HOW TO DELIVER (current flow) - READ FIRST
 The code is in the PUBLIC GitHub repo `yassinsherif145-boop/mozakrati` (branch main). Every push to main builds the APK on GitHub Actions and publishes a Release; the app has a "تحديث التطبيق" button / banner that downloads and installs it. So the user never moves an APK by hand.
@@ -163,3 +163,5 @@ Cards/parts/sub-parts, big hw split, exam auto slots, keywords, per-subject exam
 - v32: categories/sessions module (REMOVED in v33), DND bypass (APK), `APP_VER=32`. Checked: `node --check`, headless Chromium smoke (0 errors), javac parse + call/resource cross-check. Notification redesign NOT done.
 - v33: removed the categories/sessions module (cancelled by the user), removed the card "تعديل" button, bubble stop/ring fix + new panel + size/position settings, `APP_VER=33`. Checks: node --check, Chromium smoke 0 errors, javac parse.
 - (v32 added categories/sessions: now REMOVED) OLD OPEN: ringing as an independent service that survives the app being killed; bubble size/position settings; section 9 items 1-3 and 5 (categories, sessions, weekly category chart, DND bypass).
+
+- v40: pattern value = number of DISTINCT days parts were actually finished (`patVal`, uses `s.on`), so accumulated parts finished together count as one day; items created with the pattern's day-count get `it.pt=1` and show a small "نمط" tag at the end of the urgency row (`ugHtml`, `.pn`); parts added with the "+ جزء إضافي" adder get `s.ad=today` and stay on that day (`planned` honors it, `exFit` ignores them).
