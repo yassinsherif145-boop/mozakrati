@@ -26,6 +26,7 @@ public class AlarmActivity extends Activity {
     WebView wv;
     BroadcastReceiver rc;
     boolean loaded = false;
+    String curRoute = "";
 
     @Override
     protected void onCreate(Bundle b) {
@@ -109,8 +110,10 @@ public class AlarmActivity extends Activity {
         if (r == null) r = "#alarm";
         if (!loaded) {
             loaded = true;
+            curRoute = r;
             wv.loadUrl(Util.pageUrl(this) + r);
-        } else {
+        } else if (!r.equals(curRoute)) {
+            curRoute = r;
             wv.evaluateJavascript("try{MZK.show('" + r + "')}catch(e){}", null);
         }
     }
@@ -126,6 +129,7 @@ public class AlarmActivity extends Activity {
     protected void onResume() {
         super.onResume();
         visible = true;
+        OverlayUi.hideReopen(this);
         try {
             if (OverlayUi.bubbleView != null) OverlayUi.bubbleView.setVisibility(android.view.View.GONE);
         } catch (Exception e) {
