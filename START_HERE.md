@@ -176,3 +176,9 @@ Cards/parts/sub-parts, big hw split, exam auto slots, keywords, per-subject exam
 - v49: online quotes (fetchQuotes/qOk) are accepted only from the curated author list (famous people from the built-in QUOTES); user does not want random/Arab-author quotes.
 - v50: online-quote author filter widened from the 42 built-in authors to ~130 famous NON-Arab people of many fields (AUTH in qOk); user wants many different notable people, not Arab authors.
 - v51: homework big/small restored (szUpdate; the upload 482ac52 had disabled it): small = per timetable (S.al.hwd days before lesson), big ++ = split into parts bounded by available days (curMax=n-hwd+1, can only reduce); patterns for homework learn ONLY from big items (patVal/patEval skip small), pattern may auto-select big and marks it.pt (the small 'نمط' tag); edit dialog (eiDraw) has صغير / كبير ++ switch (eiBig) and part-count −/＋ (eiK) so no need to delete+recreate; patRate counts done parts regardless of part text.
+
+## v52
+- الجدول: grid بعرض الشاشة (minmax(0,1fr)) بشكل جدول المدرسة (أزرق/أخضر/رمادي/أسود).
+- سجل: `S.rvh` تاريخ يوم السجل (`rvOn(date)`)، `lgStat` (ok/no/wait/none)، التقويم: أخضر ملتزم/أحمر لا/إطار رفيع لأيام السجل، عدادات الحضور/السجل للسنة، التقويم محصور في السنة الحالية.
+- السنوي: اختيار سنة + عدادات السجل وحضور التطبيق؛ شاشة نهاية السنة `yEnd` (`S.yend`) بصوت.
+- Next release = 53.
