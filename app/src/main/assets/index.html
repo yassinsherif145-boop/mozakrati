@@ -98,8 +98,8 @@ details.wr{margin:0;border:1px solid var(--ln);border-top:0;background:var(--sf)
 .cd.on{background:#22c55e;color:#fff}
 .cd.fu{background:transparent;border:2px dashed var(--ln)}
 .cd.td{outline:3px solid var(--ac)}
-.cd.lg{box-shadow:inset 0 0 0 1.5px var(--tx)}.cd.lo{background:#16a34a;color:#fff}.cd.lx{background:#ef4444;color:#fff}
-.ctab{display:flex;gap:6px;margin:8px 0}.ctab .ch{padding:4px 12px;font-size:12px}
+.cd.lg{box-shadow:inset 0 0 0 1.5px var(--tx)}.cd.lo{background:#16a34a;color:#fff}.cd.lx{background:#ef4444;color:#fff}.cd.ab{background:rgba(239,68,68,.16);color:#b91c1c}
+.cg>*{min-width:0}.wc .cg{gap:4px}.wc .cd{font-size:15px}.ctab{display:flex;gap:6px;margin:8px 0}.ctab .ch{padding:4px 12px;font-size:12px}
 .tt td{height:46px;min-width:84px;cursor:pointer;padding:3px}
 .tb2{border-radius:8px;color:#fff;padding:5px 7px;font-size:13px;font-weight:700;cursor:grab}
 .tb2 .x{margin-right:8px;cursor:pointer;opacity:.85}
@@ -223,7 +223,7 @@ details.wr{border:1px solid var(--ln);border-radius:12px;margin:8px 0;background
 .tgrid{display:grid;gap:3px;direction:rtl;width:100%;box-sizing:border-box}
 .tgh{text-align:center;font-size:11px;font-weight:700;color:#000;background:#76923c;border-radius:4px;padding:5px 0;min-width:0}
 .tgp{min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:9px;color:var(--mu);line-height:1.2}
-.tgp{background:#31a8c6;border-radius:4px;color:#000}.tgp b{font-size:14px;color:#000}.tgp small{color:#000;font-size:8px}.tgc{white-space:nowrap;text-overflow:ellipsis}.tgc small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;font-weight:400;font-size:8px;opacity:.8}
+.tgp{background:#31a8c6;border-radius:4px;color:#000}.tgp b{font-size:14px;color:#000}.tgp small{color:#000;font-size:8px}.tgc{white-space:normal;font-size:8px!important}.tgh{font-size:9px!important;padding:2px 0!important;writing-mode:horizontal-tb}.tgc small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;font-weight:400;font-size:8px;opacity:.8}
 .tgc{min-width:0;overflow:hidden;min-height:48px;border-radius:6px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:9px;font-weight:700;color:#000;padding:1px;line-height:1.15;background:#e9e9e9;flex-direction:column;user-select:none;-webkit-user-select:none;touch-action:none;cursor:pointer;word-break:break-word}
 .tgc.e{border:1.5px dashed var(--ln);background:transparent;color:var(--mu)}
 .tgc.blk{background:#222}
@@ -484,11 +484,11 @@ function card(it,far){
  else it.subs.forEach((s,i)=>subs+=sr(it,s,i));
  const key='t'+it.id;if(OP[key]===undefined)OP[key]=false;
  const tot=it.subs.filter(s=>s.t).length,dn=it.subs.filter(s=>s.t&&s.d).length;
- return boxHtml(it,key,(ex?(it.kw||'امتحان'):'واجب')+(it.sid?' · '+esc(sname(it.sid)):'')+(a?` · متراكم ${a}`:''),subs,tot,dn,st);
+ return boxHtml(it,key,(ex?(it.kw||'امتحان')+(it.sid?' · '+esc(sname(it.sid)):''):'واجب')+(a?` · متراكم ${a}`:''),subs,tot,dn,st);
 }
 function extra(it){const key='e'+it.id;if(OP[key]===undefined)OP[key]=false;
  const dn=it.subs.filter(s=>s.t&&s.d).length;
- return boxHtml(it,key,'واجب'+(it.sid&&sname(it.sid)?' · '+esc(sname(it.sid)):''),bigSubs(it),it.subs.length,dn,' ++')}
+ return boxHtml(it,key,'واجب',bigSubs(it),it.subs.length,dn,' ++')}
 function refresh(){
  const T=mid(NOW());let ch=false;
  S.items.forEach(it=>{if(!it.big||it.done||it.dropped)return;
@@ -522,7 +522,7 @@ function noteAny(w){const n=S.notes[w]||{};return Object.keys(n).some(f=>String(
 function lgStat(k){const d=prs(k);if(rvOn(k)!==d.getDay()||k<(S.start||k))return null;const w=rvWeek(d),sw=weekData(w);if(!(sw.days.some(x=>x.e)||sw.never.length))return'none';if(S.wkd[w]&&noteAny(w))return'ok';return k<ymd(mid(NOW()))?'no':'wait'}
 function lgCount(y){const t=mid(NOW()),a=prs(y+'-01-01'),e=prs(y+'-12-31');let ok=0,no=0;for(let d=a;d<=e&&d<=t;d=addD(d,1)){const r=lgStat(ymd(d));if(r==='ok')ok++;else if(r==='no')no++}return{ok,no}}
 function appCount(y){const t=mid(NOW()),st=prs(S.start||ymd(t)),a=prs(y+'-01-01'),e=prs(y+'-12-31');let p=0,x=0;for(let d=a<st?st:a;d<=e&&d<=t;d=addD(d,1)){if(S.act[ymd(d)])p++;else if(d<t&&d.getDay()!==RD()&&hadT(ymd(d)))x++}return{p,x}}
-let calTab='a',yrY=null;
+let calTab=false,yrY=null;
 function rvWeek(d){d=d||NOW();const ws=wkStart(d);return ymd(d.getDay()===0?ws:addD(ws,-7))}
 function place(){attDraw();const th=NOW().getDay()===rvDay()||NOW().getDay()===RD();
  mv('wkBody',th?'wkTop':'wkBotBody');
@@ -651,6 +651,7 @@ function moDetail(m,si,data){
 function moRender(){}
 let yrSel=null;
 function yrList(){const a=prs(S.start||ymd(NOW())).getFullYear(),b=NOW().getFullYear(),o=[];for(let y=a;y<=b;y++)o.push(y);return o}
+function yrCal(yr){const t=mid(NOW());if(ycM==null)ycM=t.getMonth();const M=yr===t.getFullYear()?ycM:Math.min(ycM,11);return `<details ${ycOn?'open':''} ontoggle="ycOn=this.open" class="wc" style="margin-top:10px"><summary>📅 التقويم</summary>${calGrid(yr,M,'ycNav',true)}</details>`}
 function yrPick(i){yrSel=yrSel===i?null:i;yrRender()}
 function tlStats(f){const g={};(S.tlog||[]).filter(f).forEach(x=>{if(!(x.est>0||x.act>0))return;let n=x.sub;if(!n){const j=subjOf({title:x.title});n=j?(j.alias||j.name):'غير مصنف'}const o=g[n]=g[n]||{n:0,p:0,e:0,a:0};o.n++;o.p+=(x.parts||[]).length;o.e+=x.est||0;o.a+=x.act||0});return g}
 function avgRows(g){return Object.keys(g).map(k=>{const o=g[k];return `<div class="li"><div class="lt">${esc(k)} <span class="tg">${o.n} ${o.n===1?'مهمة':'مهام'}</span></div><div class="ls">متوسط عدد الأجزاء ${Math.round(o.p/o.n*10)/10} · المتوقع ${hm(o.e/o.n)} · الفعلي ${hm(o.a/o.n)}</div></div>`}).join('')}
@@ -662,13 +663,13 @@ function yrRender(){
  const yr=yrY||NOW().getFullYear(),pv=[],zv=[];{const sm=document.querySelector('#yrBot>summary');if(sm)sm.textContent='السنوي والشهري'+(avgNote().n?' 🔔':'')}
  for(let m=1;m<=12;m++){const i=mInfo(yr+'-'+String(m).padStart(2,'0'),[],{});pv.push(i.pct);zv.push(i.ds.length?i.z:null)}
  const zm=Math.max(3,...zv.map(v=>v||0)),cs=commitStats(yr+'-01-01',yr+'-12-31',activeSet());
- const lc=lgCount(yr),ap=appCount(yr);let det='';if(yrSel!=null){const m=yr+'-'+String(yrSel+1).padStart(2,'0'),W=weeksAll(),si=mInfo(m,W.ks,W.data);det=`<div style="margin-top:10px;border:1px solid var(--ln);border-radius:12px;padding:10px"><b>${MN[yrSel]} ${yr}</b>${moAvg(m)}${moDetail(m,si,W.data)}</div>`}
- $('yrBody').innerHTML=avgNote().h+allAvg()+`<div class="ctab" style="flex-wrap:wrap">${yrList().map(y=>`<button class="ch ${y===yr?'on':''}" onclick="yrY=${y};yrSel=null;draw()">${AR(y)}</button>`).join('')}</div><div style="display:flex;justify-content:space-between;align-items:center"><b>${yr}</b><div class="row" style="margin:0"><button class="ch ${yMode==='m'?'on':''}" onclick="yMode='m';draw()">التقييم</button><button class="ch ${yMode==='z'?'on':''}" onclick="yMode='z';draw()">راكمت كم مرة</button></div></div>`+(yMode==='m'?bars(pv,MS,100,v=>scCol(v/10),'%','yrPick'):bars(zv,MS,zm,cls,'','yrPick'))+det+`<div class="wcm">السنة: ✅ ملتزم ${cs.c} يوم · ⬜ غايب ${cs.a} يوم</div><div class="wcm">📝 السجل: ✅ ${lc.ok} التزمت · ❌ ${lc.no} ما التزمتش</div><div class="wcm">📱 حضور التطبيق: ✅ ${ap.p} يوم · ⬜ ${ap.x} يوم غياب</div>`;
+ const lc=lgCount(yr);let det='';if(yrSel!=null){const m=yr+'-'+String(yrSel+1).padStart(2,'0'),W=weeksAll(),si=mInfo(m,W.ks,W.data);det=`<div style="margin-top:10px;border:1px solid var(--ln);border-radius:12px;padding:10px"><b>${MN[yrSel]} ${yr}</b>${moAvg(m)}${moDetail(m,si,W.data)}</div>`}
+ $('yrBody').innerHTML=avgNote().h+allAvg()+`<div class="ctab" style="flex-wrap:wrap">${yrList().map(y=>`<button class="ch ${y===yr?'on':''}" onclick="yrY=${y};yrSel=null;draw()">${AR(y)}</button>`).join('')}</div><div style="display:flex;justify-content:space-between;align-items:center"><b>${yr}</b><div class="row" style="margin:0"><button class="ch ${yMode==='m'?'on':''}" onclick="yMode='m';draw()">التقييم</button><button class="ch ${yMode==='z'?'on':''}" onclick="yMode='z';draw()">راكمت كم مرة</button></div></div>`+(yMode==='m'?bars(pv,MS,100,v=>scCol(v/10),'%','yrPick'):bars(zv,MS,zm,cls,'','yrPick'))+det+`<div class="wcm">الالتزام: ✅ ${cs.c} يوم · ⬜ غايب ${cs.a} يوم</div><div class="wcm">مراجعة السجل: ✅ ${lc.ok} التزمت · <b style=\"color:#ef4444\">✔</b> ${lc.no} ما التزمتش</div>`+yrCal(yr);
 }
 function yeSound(){try{const C=new (window.AudioContext||window.webkitAudioContext)(),n=[523.25,659.25,783.99,1046.5,783.99,1046.5,1318.5];n.forEach((f,i)=>{const o=C.createOscillator(),g=C.createGain(),t=C.currentTime+i*.22;o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.25,t+.03);g.gain.exponentialRampToValueAtTime(.001,t+.9);o.connect(g);g.connect(C.destination);o.start(t);o.stop(t+1)})}catch(e){}}
-function yEnd(){const cy=NOW().getFullYear();if(TM)return;if(S.yend==null){S.yend=cy;save();return}if(cy<=S.yend||$('yeOv'))return;const y=S.yend,ca=commitStats(y+'-01-01',y+'-12-31',activeSet()),cl=lgCount(y),cp=appCount(y);
+function yEnd(){const cy=NOW().getFullYear();if(TM)return;if(S.yend==null){S.yend=cy;save();return}if(cy<=S.yend||$('yeOv'))return;const y=S.yend,ca=commitStats(y+'-01-01',y+'-12-31',activeSet()),cl=lgCount(y);
  const o=document.createElement('div');o.id='yeOv';o.style.cssText='position:fixed;inset:0;z-index:95;background:linear-gradient(160deg,#1e1b4b,#7c3aed 60%,#f59e0b);color:#fff;display:flex;align-items:center;justify-content:center;padding:20px;text-align:center;overflow:auto';
- o.innerHTML=`<div style="max-width:420px;width:100%"><div style="font-size:64px">🎆</div><div style="font-size:26px;font-weight:800;margin:8px 0">خلصت سنة ${AR(y)}</div><div style="opacity:.9;margin-bottom:16px">برافو عليك، دي حصيلة السنة</div><div style="background:rgba(255,255,255,.15);border-radius:16px;padding:14px;line-height:2;font-size:16px">✅ أيام الحضور: <b>${ca.c}</b> · ⬜ الغياب: <b>${ca.a}</b><br>📝 التزمت بالسجل: <b>${cl.ok}</b> · ❌ لا: <b>${cl.no}</b><br>📱 فتحت التطبيق: <b>${cp.p}</b> يوم</div><button class="go" style="margin-top:18px;padding:12px 28px;font-size:16px" onclick="yeClose(${y})">كمّل لسنة ${AR(y+1)} 🚀</button></div>`;
+ o.innerHTML=`<div style="max-width:420px;width:100%"><div style="font-size:64px">🎆</div><div style="font-size:26px;font-weight:800;margin:8px 0">خلصت سنة ${AR(y)}</div><div style="opacity:.9;margin-bottom:16px">برافو عليك، دي حصيلة السنة</div><div style="background:rgba(255,255,255,.15);border-radius:16px;padding:14px;line-height:2;font-size:16px">✅ أيام الحضور: <b>${ca.c}</b> · ⬜ الغياب: <b>${ca.a}</b><br>📝 التزمت بمراجعة السجل: <b>${cl.ok}</b> · لا: <b>${cl.no}</b></div><button class="go" style="margin-top:18px;padding:12px 28px;font-size:16px" onclick="yeClose(${y})">كمّل لسنة ${AR(y+1)} 🚀</button></div>`;
  document.body.appendChild(o);yeSound();o.addEventListener('touchstart',function f(){yeSound();o.removeEventListener('touchstart',f)})}
 function yeClose(y){S.yend=y+1;save();const o=$('yeOv');if(o)o.remove();calY=null;yrY=null;draw();setTimeout(yEnd,300)}
 function goWeek(k){const th=NOW().getDay()===RD();dV=null;wk=k;OP['w'+k]=true;if(!th)$('wkBot').open=true;draw();setTimeout(()=>{const e=document.querySelector('[data-k="w'+k+'"]')||$('wkBot');e.scrollIntoView({behavior:'smooth',block:'start'})},80)}
@@ -692,16 +693,18 @@ function activeSet(){const A=new Set();const rl=(S.al&&S.al.rule)||'any';S.items
 function calStats(){const A=activeSet(),t=mid(NOW()),st=[S.start||ymd(t)].concat([...A]).sort()[0];let c=0,a=0;
  for(let d=prs(st);d<=t;d=addD(d,1)){if(A.has(ymd(d)))c++;else if(d<t&&d.getDay()!==RD()&&hadT(ymd(d)))a++}return{A,c,a}}
 function calNav(d){const cy=mid(NOW()).getFullYear();calM+=d;if(calM<0){calM=11;calY--}if(calM>11){calM=0;calY++}if(calY!==cy){calY=cy;calM=d<0?0:11}calRender()}
+function calGrid(Y,M,nav,sh){
+ const t=mid(NOW()),A=activeSet(),off=(new Date(Y,M,1).getDay()+1)%7,dim=new Date(Y,M+1,0).getDate();
+ let cells='';for(let i=0;i<off;i++)cells+='<span></span>';
+ for(let d=1;d<=dim;d++){const dd=new Date(Y,M,d),k=ymd(dd),lg=lgStat(k),ab=!A.has(k)&&dd<t&&dd.getDay()!==RD()&&k>=(S.start||k)&&hadT(k);cells+=`<span class="cd${A.has(k)?' on':''}${ab?' ab':''}${dd>t?' fu':''}${k===ymd(t)?' td':''}${lg?' lg':''}${sh&&lg==='ok'?' lo':sh&&lg==='no'?' lx':''}">${AR(d)}</span>`}
+ return `<div style="display:flex;justify-content:space-between;align-items:center;max-width:600px;margin:10px 0"><button class="ch" onclick="${nav}(-1)">›</button><b style="font-size:20px">${MN[M]} ${AR(Y)}</b><button class="ch" onclick="${nav}(1)">‹</button></div><div class="cg">${['سبت','أحد','إثنين','ثلاثاء','أربعاء','خميس','جمعة'].map(n=>`<small class="cw">${n}</small>`).join('')}${cells}</div>`}
 function calRender(){
  const t=mid(NOW());if(calY==null){calY=t.getFullYear();calM=t.getMonth()}
- const A=activeSet(),off=(new Date(calY,calM,1).getDay()+1)%7,dim=new Date(calY,calM+1,0).getDate();
- const w0=ymd(wkStart(t)),ws=commitStats(w0,ymd(addD(prs(w0),6)),A),ms=commitStats(ymd(new Date(calY,calM,1)),ymd(new Date(calY,calM+1,0)),A);
- let cells='';for(let i=0;i<off;i++)cells+='<span></span>';
- for(let d=1;d<=dim;d++){const dd=new Date(calY,calM,d),k=ymd(dd);const lg=lgStat(k);cells+=`<span class="cd${A.has(k)?' on':''}${dd>t?' fu':''}${k===ymd(t)?' td':''}${lg?' lg':''}${lg==='ok'?' lo':lg==='no'?' lx':''}">${AR(d)}</span>`}
- const cy=calY,ca=commitStats(cy+'-01-01',cy+'-12-31',A),cl=lgCount(cy),cp=appCount(cy);
- $('calBlock').innerHTML=attHtml()+`<div class="ctab"><button class="ch ${calTab==='a'?'on':''}" onclick="calTab='a';calRender()">الحضور ${cy}</button><button class="ch ${calTab==='l'?'on':''}" onclick="calTab='l';calRender()">السجل ${cy}</button></div><div class="att"><div>${calTab==='a'?`<span>✅ حضور <b>${ca.c}</b> يوم</span><span>⬜ غياب <b>${ca.a}</b> يوم</span>`:`<span>✅ ملتزم بالسجل <b>${cl.ok}</b></span><span>❌ مش ملتزم <b>${cl.no}</b></span>`}</div></div>  <div style="display:flex;justify-content:space-between;align-items:center;max-width:600px;margin:10px 0"><button class="ch" onclick="calNav(-1)">›</button><b style="font-size:20px">${MN[calM]} ${AR(calY)}</b><button class="ch" onclick="calNav(1)">‹</button></div>
- <div class="cg">${['سبت','أحد','إثنين','ثلاثاء','أربعاء','خميس','جمعة'].map(n=>`<small class="cw">${n}</small>`).join('')}${cells}</div>`;
+ const cl=lgCount(calY),sh=calTab;
+ $('calBlock').innerHTML=attHtml()+`<div class="ctab"><button class="ch ${sh?'on':''}" onclick="calTab=!calTab;calRender()">📝 مراجعة السجل</button></div>${sh?`<div class="att"><div><span>✅ ملتزم <b>${cl.ok}</b></span><span><b style="color:#ef4444">✔</b> مش ملتزم <b>${cl.no}</b></span></div></div>`:''}`+calGrid(calY,calM,'calNav',sh);
 }
+let ycM=null,ycOn=false;
+function ycNav(d){ycM+=d;if(ycM<0)ycM=0;if(ycM>11)ycM=11;yrRender()}
 const IT=['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'],ORD=[1,2,3,4,5,6,0];
 const SCH={title:'4TE',hours:'38 Ore/Sett.',times:['07:40–08:40','08:40–09:40','09:40–10:40','10:40–11:35','12:00–13:00','13:00–14:00','14:00–14:45','14:45–15:30'],days:[1,2,3,4,6],
  subj:{gi:['Ginnastica','Magdy Hakim','تربية رياضية'],it:['Italiano','Giulia Usai','إيطالي'],si:['Sistemi','Maximos I.','نظم'],st:['Storia','Elisa Serioli','تاريخ'],el:['Elettrotecnica','Gherghes William','كهربا'],ing:['Inglese','Emil Atyia','إنجليزي'],ma:['Matematica','Ramy Halim','ماتي'],re:['Religione','Don Dany - Mohamed R.','دين'],ls:['Lab sistemi','Maichel Mamdouh','معمل نظم'],ar:['Arabo','Salah Shabaan','عربي'],tp:['TPSEE','Youssef Raouf',''],le:['Lab Elettro','Nabil Rezq','معمل كهربا'],cm:['C. Mat','Youssef Wagdy',''],mi:['Misure','Youssef Raouf','قياسات']},
@@ -729,10 +732,11 @@ function ttDraw(){
  let h=`<div class="tth"><b style="font-size:19px">الجدول</b><div class="row" style="margin:0"><button class="ch" onclick="ttTimes()">🕒 الأوقات</button><button class="ch ${ttPaint?'on':''}" onclick="ttPaintTog()">🖌 تعبئة سريعة</button><button class="go" onclick="ttClose()">تم</button></div></div>`;
  if(ttImg)h+=`<div class="ttimg"><img src="${ttImg}" alt="" style="width:100%;max-height:34vh;object-fit:contain;border-radius:8px"><button class="ch" onclick="ttImg=null;ttDraw()">إخفاء الصورة</button></div>`;
  if(ttPaint)h+=`<div class="stabs">${S.subjects.map(s=>`<button class="ch ${ttBrush===s.id?'on':''}" style="${ttBrush===s.id?'':'border-color:'+s.color}" onclick="ttBrush='${s.id}';ttDraw()">${esc(s.alias||s.name)}</button>`).join('')}<button class="ch ${ttBrush==='#x'?'on':''}" onclick="ttBrush='#x';ttDraw()">⬛ بدون حصة</button><button class="ch ${ttBrush===''?'on':''}" onclick="ttBrush='';ttDraw()">🧽 مسح</button></div>`;
- h+=`<div class="tgrid" style="grid-template-columns:30px repeat(${ds.length},minmax(0,1fr))"><div></div>${ds.map(d=>`<div class="tgh">${DN[d]}</div>`).join('')}`;
- for(let r=0;r<n;r++){const tm=String(T0.times[r]||'').split(/[–-]/);h+=`<div class="tgp"><b>${r+1}</b><small>${esc(t12(tm[0]))}</small><small>${esc(t12(tm[1]||''))}</small></div>`;
-  ds.forEach(d=>{const id=T0.c[d+'-'+r],s=id&&id!=='#x'&&S.subjects.find(x=>x.id===id);
-   h+=`<div class="tgc ${id==='#x'?'blk':s?'':'e'}" ${id?'data-s="1"':''} data-d="${d}" data-r="${r}" style="${s?'border-bottom:4px solid '+s.color:''}" onclick="ttCell(${d},${r})">${s?esc(s.alias||s.name)+(s.teacher?'<small>'+esc(String(s.teacher).split(' ')[0])+'</small>':''):id==='#x'?'':'＋'}</div>`})}
+ h+=`<div class="tgrid" style="direction:ltr;grid-template-columns:36px repeat(${n},minmax(0,1fr))"><div></div>`;
+ for(let r=0;r<n;r++){const tm=String(T0.times[r]||'').split(/[–-]/);h+=`<div class="tgp"><b>${r+1}</b><small>${esc(t12(tm[0]))}</small><small>${esc(t12(tm[1]||''))}</small></div>`}
+ ds.forEach(d=>{h+=`<div class="tgh">${DN[d]}</div>`;
+  for(let r=0;r<n;r++){const id=T0.c[d+'-'+r],s=id&&id!=='#x'&&S.subjects.find(x=>x.id===id);
+   h+=`<div class="tgc ${id==='#x'?'blk':s?'':'e'}" ${id?'data-s="1"':''} data-d="${d}" data-r="${r}" style="${s?'border-bottom:4px solid '+s.color:''}" onclick="ttCell(${d},${r})">${s?esc(s.alias||s.name):id==='#x'?'':'＋'}</div>`}})
  h+='</div>';
  p.innerHTML=h;ttBind()}
 function ttAfter(){syncDays();save();ttDraw();draw()}
@@ -1047,7 +1051,7 @@ function eiK(id,d){const it=find(id);if(!it||!it.big)return;const mx=hwMx(it);
 function eiDraw(id){const it=find(id),s=$('eiS');if(!it||!s)return;const ex=it.type==='exam',t0=$('eiT')?$('eiT').value:it.title,j0=$('eiSj')?$('eiSj').value:(it.sid||'');
  const sbs=S.subjects.filter(x=>x.days.length||x.id===it.sid);
  let h=`<div style="font-size:16px;margin-bottom:8px"><b>تعديل ${ex?'الامتحان':'الواجب'}</b></div><input type="text" id="eiT" style="width:100%;font-size:16px" value="${esc(t0)}">${ex?'':`<div class="row" style="margin-top:8px"><select id="eiSj" class="ch" style="flex:1">${sbs.map(x=>`<option value="${x.id}" ${x.id===j0?'selected':''}>${esc(x.alias||x.name)}</option>`).join('')}</select></div>`}`;
- if(!ex){const mx=hwMx(it);h+=`<div class="row" style="margin-top:10px"><button class="ch ${it.big?'':'on'}" onclick="eiBig('${id}',false)">صغير</button><button class="ch ${it.big?'on':''}" onclick="eiBig('${id}',true)">كبير ++</button></div>${it.big?`<div class="row pat"><span class="tg">قسّم على</span><button class="ch" onclick="eiK('${id}',-1)">−</button><b>${it.subs.length}</b><button class="ch" onclick="eiK('${id}',1)">＋</button><span class="tg">يوم من ${mx}</span></div>`:''}`}
+ if(!ex){const mx=hwMx(it);h+=`<div class="row" style="margin-top:10px"><button class="ch ${it.big?'':'on'}" onclick="eiBig('${id}',false)">صغير</button><button class="ch ${it.big?'on':''}" onclick="eiBig('${id}',true)">كبير ++</button></div>`}
  if(ex)h+=`<div class="row" style="margin-top:8px"><button class="pk" onclick="eiDate('${id}')">${ICO_CAL}${DN[prs(it.due).getDay()]} ${fd(it.due)}</button></div>`+eiDays(it);
  h+=`<div class="row" style="margin-top:12px"><button class="go" onclick="eiSave('${id}')">حفظ</button><button class="ch" style="color:var(--rd)" onclick="eiDel('${id}')">مسح</button><button class="ch" onclick="closeEI()">إغلاق</button></div>`;
  s.innerHTML=h}
@@ -1067,7 +1071,7 @@ function exSetDue(id,k){const it=find(id);if(!it)return;const n0=Math.max(1,exSt
  if(!exFit(it)){Object.assign(it,old);toast('فيه أجزاء مكتوبة أكتر من الأيام. امسح الأجزاء الأقدم الأول');return}
  const n=exStudyDays(it).length;while(it.subs.length&&it.subs.length<n)it.subs.unshift({t:'',d:false,on:null,a:1});
  actMark();save();tmSync();draw();eiDraw(id)}
-const APP_VER=53;
+const APP_VER=54;
 function updApply(html){const m=/APP_VER\s*=\s*(\d+)/.exec(html),v=m?+m[1]:0,sm=/<script>([\s\S]*)<\/script>/.exec(html);
  try{if(!sm||!v)throw 0;new Function(sm[1])}catch(e){toast('الملف ده مش تحديث صالح');return 0}
  return v}
@@ -1229,8 +1233,8 @@ function szUpdate(){kwUpdate();const el=$('sz');if(!el)return;
  if(!sb){size='s';curD=0;el.innerHTML='';return}const d=dueOf(sb),n=d?diff(d,NOW()):0;if(n<2){el.innerHTML='';size='s';curD=0;return}
  const hwd=S.al.hwd||1,mx=Math.max(1,n-hwd+1);
   if(size==='b'){curMin=1;curMax=mx;curD=Math.min(mx,Math.max(1,pd!=null?pd:(sg>0?sg:mx)))}else curD=0;
- if(size==='b'&&sg>0&&!sizeT&&!pdE){el.innerHTML=`<div class="tg">${size==='b'?'كبير على '+dayW(curD):'صغير'}${tag?' · '+tag:''} <button class="ch" onclick="pdE=true;szUpdate()">تعديل</button></div>`;return}
- el.innerHTML=`<div class="row"><div class="szb"><button class="ch ${size==='s'?'on':''}" onclick="size='s';sizeT=true;szUpdate()">صغير</button></div><div class="szb"><button class="ch ${size==='b'?'on':''}" onclick="size='b';sizeT=true;szUpdate()">كبير ++</button><div class="hint">فاضل ${n} يوم</div></div></div>${size==='b'?`<div class="row pat"><span class="tg">قسّم على</span><button class="ch" onclick="pdAdj(-1)">−</button><b>${curD}</b><button class="ch" onclick="pdAdj(1)">＋</button><span class="tg">يوم من ${mx}</span></div>`:''}`}
+ if(false){el.innerHTML=`<div class="tg">${size==='b'?'كبير على '+dayW(curD):'صغير'}${tag?' · '+tag:''} <button class="ch" onclick="pdE=true;szUpdate()">تعديل</button></div>`;return}
+ el.innerHTML=`<div class="row"><div class="szb"><button class="ch ${size==='s'?'on':''}" onclick="size='s';sizeT=true;szUpdate()">صغير</button></div><div class="szb"><button class="ch ${size==='b'?'on':''}" onclick="size='b';sizeT=true;szUpdate()">كبير ++</button><div class="hint">فاضل ${n} يوم</div></div></div>${size==='b'?`<div class="tg">هيتقسم على ${curD} يوم · امسح الأجزاء الزيادة من جوه المهمة</div>`:''}`}
 function pdAdj(d){if(d<0)exPT.shift();else if(curD<curMax)exPT.unshift('');pdT=true;pd=Math.min(curMax,Math.max(curMin,curD+d));szUpdate()}
 function addItem(){
  const{sb,t}=pick();if(!t)return msg('اكتب اسم المهمة');

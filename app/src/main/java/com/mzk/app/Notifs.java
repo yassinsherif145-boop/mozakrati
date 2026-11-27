@@ -201,7 +201,7 @@ public class Notifs {
             }
             PendingIntent open = PendingIntent.getActivity(c, 1, new Intent(c, MainActivity.class), FLAGS);
             int n = a.length();
-            if ("g".equals(mode) && n >= 2) {
+            if (false && "g".equals(mode) && n >= 2) {
                 // مجمّع: مهمة قدّام والباقي بالسحب لتحت (الأندرويد بيقفله لوحده)
                 long base = System.currentTimeMillis();
                 StringBuilder ids = new StringBuilder("1000,");
