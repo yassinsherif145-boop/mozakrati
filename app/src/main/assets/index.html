@@ -1017,9 +1017,19 @@ function eiSetSub(id,i,el){const it=find(id);if(!it||!it.subs[i])return;it.subs[
 function eiDays(it){const L=exStudyDays(it),ok=it.subs.length>0,s0=ok?it.subs[0]:null,canDel=ok&&L.length>1&&!s0.t&&!s0.d&&!s0.ts&&!(s0.ac>0)&&!isRun(it.id,0,null),dl=daysLeft(it);
  const rows=it.subs.map((s,i)=>{const pp=L[i]?prs(L[i]):planned(it,i);return `<div class="sb"><span class="tg">${DN[pp.getDay()]} ${fd(ymd(pp))}</span><input type="text" style="flex:1" value="${esc(s.t||'')}" placeholder="جزء" onchange="eiSetSub('${it.id}',${i},this)">${i===0&&canDel?`<button class="dx" onclick="exDelDay('${it.id}')" aria-label="شيل اليوم">×</button>`:''}</div>`}).reverse().join('');
  return `<div class="tg" style="margin-top:10px">فاضل ${dl} ${dl===1?'يوم':'أيام'} للامتحان</div>${rows}<div class="row"><button class="ch" ${ok&&exPrev(it)?'':'disabled'} onclick="exAddDay('${it.id}')">＋ يوم</button></div>${ok?'':'<div class="tg">الامتحان قريب، مفيش أيام تتقسم</div>'}`}
+function hwMx(it){const n=diff(prs(it.due),mid(NOW()));return Math.max(1,n-(S.al.hwd||1)+1)}
+function eiBig(id,on){const it=find(id);if(!it||it.type!=='hw'||!!it.big===on)return;
+ if(on){const n=diff(prs(it.due),mid(NOW()));if(n<2){toast('الواجب قرّب، مفيش وقت يتقسم');return}const mx=hwMx(it),f=S.al.learn===false?null:patFor('hw',it.title,it.sid,null),sg=f?(f.p.stable?f.p.days:mdn(f.p.samples)):0,k=Math.max(1,Math.min(mx,sg>0?sg:mx));it.big=true;it.created=ymd(NOW());it.subs=Array.from({length:k},()=>({t:'',d:false,on:null,a:1}))}
+ else{if(it.subs.some(x=>x.d||x.t)){toast('فيه أجزاء اتعملت أو اتكتبت، امسحها الأول');return}it.big=false;it.subs=[]}
+ it.pe=0;actMark();save();eiDraw(id);draw()}
+function eiK(id,d){const it=find(id);if(!it||!it.big)return;const mx=hwMx(it);
+ if(d>0){if(it.subs.length>=mx){toast('مفيش أيام أكتر من كده');return}it.subs.push({t:'',d:false,on:null,a:1})}
+ else{if(it.subs.length<=1)return;const l=it.subs[it.subs.length-1];if(l.d||l.t){toast('آخر جزء فيه شغل، مينفعش يتشال');return}it.subs.pop()}
+ actMark();save();eiDraw(id);draw()}
 function eiDraw(id){const it=find(id),s=$('eiS');if(!it||!s)return;const ex=it.type==='exam',t0=$('eiT')?$('eiT').value:it.title,j0=$('eiSj')?$('eiSj').value:(it.sid||'');
  const sbs=S.subjects.filter(x=>x.days.length||x.id===it.sid);
  let h=`<div style="font-size:16px;margin-bottom:8px"><b>تعديل ${ex?'الامتحان':'الواجب'}</b></div><input type="text" id="eiT" style="width:100%;font-size:16px" value="${esc(t0)}">${ex?'':`<div class="row" style="margin-top:8px"><select id="eiSj" class="ch" style="flex:1">${sbs.map(x=>`<option value="${x.id}" ${x.id===j0?'selected':''}>${esc(x.alias||x.name)}</option>`).join('')}</select></div>`}`;
+ if(!ex){const mx=hwMx(it);h+=`<div class="row" style="margin-top:10px"><button class="ch ${it.big?'':'on'}" onclick="eiBig('${id}',false)">صغير</button><button class="ch ${it.big?'on':''}" onclick="eiBig('${id}',true)">كبير ++</button></div>${it.big?`<div class="row pat"><span class="tg">قسّم على</span><button class="ch" onclick="eiK('${id}',-1)">−</button><b>${it.subs.length}</b><button class="ch" onclick="eiK('${id}',1)">＋</button><span class="tg">يوم من ${mx}</span></div>`:''}`}
  if(ex)h+=`<div class="row" style="margin-top:8px"><button class="pk" onclick="eiDate('${id}')">${ICO_CAL}${DN[prs(it.due).getDay()]} ${fd(it.due)}</button></div>`+eiDays(it);
  h+=`<div class="row" style="margin-top:12px"><button class="go" onclick="eiSave('${id}')">حفظ</button><button class="ch" style="color:var(--rd)" onclick="eiDel('${id}')">مسح</button><button class="ch" onclick="closeEI()">إغلاق</button></div>`;
  s.innerHTML=h}
@@ -1039,7 +1049,7 @@ function exSetDue(id,k){const it=find(id);if(!it)return;const n0=Math.max(1,exSt
  if(!exFit(it)){Object.assign(it,old);toast('فيه أجزاء مكتوبة أكتر من الأيام. امسح الأجزاء الأقدم الأول');return}
  const n=exStudyDays(it).length;while(it.subs.length&&it.subs.length<n)it.subs.unshift({t:'',d:false,on:null,a:1});
  actMark();save();tmSync();draw();eiDraw(id)}
-const APP_VER=50;
+const APP_VER=51;
 function updApply(html){const m=/APP_VER\s*=\s*(\d+)/.exec(html),v=m?+m[1]:0,sm=/<script>([\s\S]*)<\/script>/.exec(html);
  try{if(!sm||!v)throw 0;new Function(sm[1])}catch(e){toast('الملف ده مش تحديث صالح');return 0}
  return v}
@@ -1171,9 +1181,9 @@ function patKeys(ty,title,sid,kw){const k=[];if(kw)k.push('k:'+String(kw).toLowe
 function patFor(ty,title,sid,kw){const ks=patKeys(ty,title,sid,kw);for(let i=0;i<ks.length;i++){const p=S.pat[ks[i]];if(p&&p.samples&&p.samples.length)return{key:ks[i],p}}return null}
 function patLearn(ty,title,sid,kw,v,id){patKeys(ty,title,sid,kw).forEach(k=>{const p=S.pat[k]=S.pat[k]||{days:v,samples:[],stable:false};p.ids=p.ids||[];while(p.ids.length<p.samples.length)p.ids.unshift(null);p.samples.push(v);p.ids.push(id||null);if(p.samples.length>5){p.samples.shift();p.ids.shift()}const l=p.samples.slice(-3);p.stable=l.length===3&&l.every(x=>x===l[0]);p.days=p.stable?l[0]:mdn(p.samples);p.ts=Date.now()})}
 function patVal(it){const n=it.subs.length,ds={};it.subs.forEach(s=>{if(s.d&&s.on)ds[s.on]=1});const k=Object.keys(ds).length,v=k?Math.min(n,k):n;return it.type==='exam'?v:(it.big?v:0)}
-function patRate(it){const n=it.subs.length;if(n)return it.subs.filter(x=>x.t&&x.d).length/n;return it.done?1:0}
+function patRate(it){const n=it.subs.length;if(n)return it.subs.filter(x=>x.d).length/n;return it.done?1:0}
 function patUnlearn(id){try{Object.keys(S.pat||{}).forEach(k=>{const p=S.pat[k],ix=(p.ids||[]).indexOf(id);if(ix<0)return;p.samples.splice(ix,1);p.ids.splice(ix,1);if(!p.samples.length){delete S.pat[k];return}const l=p.samples.slice(-3);p.stable=l.length===3&&l.every(x=>x===l[0]);p.days=p.stable?l[0]:mdn(p.samples)})}catch(e){}}
-function patEval(it){try{if(TM||it.pe||S.al.learn===false)return;const thr=(S.al.patThr||90)/100,r=patRate(it);if(r<thr)return;it.pe=1;const v=patVal(it);if(it.type==='exam'&&v<1)return;const f=patFor(it.type,it.title,it.sid,it.kw);
+function patEval(it){try{if(TM||it.pe||S.al.learn===false)return;const thr=(S.al.patThr||90)/100,r=patRate(it);if(r<thr)return;it.pe=1;const v=patVal(it);if(v<1)return;const f=patFor(it.type,it.title,it.sid,it.kw);
  if(!f){patLearn(it.type,it.title,it.sid,it.kw,v,it.id);return}
  const sg0=f.p.stable?f.p.days:mdn(f.p.samples);if(sg0===v){patLearn(it.type,it.title,it.sid,it.kw,v,it.id);return}
  S.patQ=S.patQ||[];S.patQ.push({id:it.id,ty:it.type,t:it.title,sid:it.sid||null,kw:it.kw||null,v,old:sg0,r:Math.round(r*100)})}catch(e){}}
@@ -1190,7 +1200,7 @@ function exEdit(n,tag){const L=exDayList(prs(exDate),curD,exX);while(exPT.length
  return `<div class="tg">فاضل ${n} ${n===1?'يوم':'أيام'} للامتحان${tag?' · '+tag:''}</div>${rows}<div class="row"><button class="ch" ${curD>=curMax?'disabled':''} onclick="pdAdj(1)">＋ يوم</button></div>`}
 function szUpdate(){kwUpdate();const el=$('sz');if(!el)return;
  const{sb,t}=pick();
- const f=S.al.learn===false?null:patFor(type,t,sb?sb.id:null,kwSel?kwSel.w:null),sg=f?(f.p.stable?f.p.days:mdn(f.p.samples)):null;
+ const f=S.al.learn===false?null:patFor(type,t,sb?sb.id:null,kwSel?kwSel.w:null),sg0=f?(f.p.stable?f.p.days:mdn(f.p.samples)):null,sg=(type!=='exam'&&!(sg0>0))?null:sg0;
  const tag=f?(f.p.stable?'نمط ثابت':'نمط بيتعلّم'):'';
  const edit=(tx,n)=>`<div class="tg">${tx}${tag?' · '+tag:''} <button class="ch" onclick="pdE=!pdE;szUpdate()">${pdE?'تم':'تعديل'}</button></div>${pdE?`<div class="row pat"><button class="ch" onclick="pdAdj(-1)">−</button><b>${curD}</b><button class="ch" onclick="pdAdj(1)">＋</button></div>`:''}`;
  if(type==='exam'){
@@ -1198,11 +1208,11 @@ function szUpdate(){kwUpdate();const el=$('sz');if(!el)return;
   const rds=restDates(NOW(),prs(exDate)).length,n=Math.max(0,wdays(NOW(),prs(exDate),exX)),base=sg!=null?sg:n,want=pd!=null?pd:base;
   curMin=1;curMax=Math.max(1,n);curD=n<2?0:Math.min(want,n);
   el.innerHTML=n<2?'<div class="tg">الامتحان بكرة أو النهاردة، مفيش وقت يتقسم</div>':exEdit(n,tag)+(rds?`<div class="row"><button class="ch ${exX?'on':''}" onclick="exX=!exX;pd=null;szUpdate()">＋ ${DN[RD()]} ضمن الأيام</button></div>`:'');return}
- size='s';curD=0;el.innerHTML='';return;const d=dueOf(sb),n=d?diff(d,NOW()):0;if(n<2){el.innerHTML='';size='s';curD=0;return}
+ if(!sb){size='s';curD=0;el.innerHTML='';return}const d=dueOf(sb),n=d?diff(d,NOW()):0;if(n<2){el.innerHTML='';size='s';curD=0;return}
  const hwd=S.al.hwd||1,mx=Math.max(1,n-hwd+1);
- if(sg!=null&&!sizeT)size=sg>0?'b':'s';
+ if(sg>0&&!sizeT)size='b';
  if(size==='b'){curMin=1;curMax=mx;curD=Math.min(mx,Math.max(1,pd!=null?pd:(sg>0?sg:mx)))}else curD=0;
- if(sg!=null&&!pdE){el.innerHTML=`<div class="tg">${size==='b'?'كبير على '+dayW(curD):'صغير'}${tag?' · '+tag:''} <button class="ch" onclick="pdE=true;szUpdate()">تعديل</button></div>`;return}
+ if(sg>0&&!sizeT&&!pdE){el.innerHTML=`<div class="tg">${size==='b'?'كبير على '+dayW(curD):'صغير'}${tag?' · '+tag:''} <button class="ch" onclick="pdE=true;szUpdate()">تعديل</button></div>`;return}
  el.innerHTML=`<div class="row"><div class="szb"><button class="ch ${size==='s'?'on':''}" onclick="size='s';sizeT=true;szUpdate()">صغير</button></div><div class="szb"><button class="ch ${size==='b'?'on':''}" onclick="size='b';sizeT=true;szUpdate()">كبير ++</button><div class="hint">فاضل ${n} يوم</div></div></div>${size==='b'?`<div class="row pat"><span class="tg">قسّم على</span><button class="ch" onclick="pdAdj(-1)">−</button><b>${curD}</b><button class="ch" onclick="pdAdj(1)">＋</button><span class="tg">يوم من ${mx}</span></div>`:''}`}
 function pdAdj(d){if(d<0)exPT.shift();else if(curD<curMax)exPT.unshift('');pdT=true;pd=Math.min(curMax,Math.max(curMin,curD+d));szUpdate()}
 function addItem(){
@@ -1215,7 +1225,7 @@ function addItem(){
  const n=diff(due,NOW()),big=type==='hw'&&size==='b'&&n>=2,ex=type==='exam';
  const st=ex?ymd(new Date(Math.max(+backWd(due,exd,exX),+mid(NOW())))):null,dd=ex?wdays(prs(st),due,exX):0,xd0=(ex&&exX)?restDates(prs(st),due):[],k=ex?(dd>=2?Math.min(exd,dd):0):(big?Math.max(1,Math.min(curD||999,n-hwd+1)):0);
  const v=ex?exd:(big?k:0),kwW=(type==='exam'&&kwSel)?kwSel.w:null,sid=sb?sb.id:null,ty0=type;
- const f0=S.al.learn===false?null:patFor(type,t,sb?sb.id:null,kwSel?kwSel.w:null),pt0=!!(f0&&pd==null&&ex&&k>0);
+ const f0=S.al.learn===false?null:patFor(type,t,sb?sb.id:null,kwSel?kwSel.w:null),pt0=!!(f0&&pd==null&&k>0&&(ex||(big&&!sizeT)));
  const go=(learn)=>{
   S.items.push({pt:pt0?1:0,id:uid(),type:ty0,kw:kwW,sid,title:t,due:ymd(due),show:ex?st:ymd(addD(due,-hwd)),start:st,created:ymd(NOW()),big,xd:xd0,dropped:false,done:null,
    subs:Array.from({length:k},(_,q)=>({t:ex?((exPT[q]||'').trim()):'',d:false,on:null,a:1}))});exPT=[];
