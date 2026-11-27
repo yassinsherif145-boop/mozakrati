@@ -347,20 +347,33 @@ public class OverlayUi {
                     authOf.put("The main thing is to keep the main thing the main thing.", "Stephen Covey");
                 }
                 java.util.Collections.shuffle(pool);
-                String ctS = wp.getString("ct", "copy");
-                final String[] types = ctS.trim().isEmpty() ? new String[]{"copy"} : ctS.split(",");
+                String ctS = wp.getString("ct", "t");
+                final int lvl = Math.max(1, Math.min(3, wp.getInt("cl", 1)));
+                java.util.List<String> tl = new java.util.ArrayList<String>();
+                for (String x : ctS.split(",")) {
+                    x = x.trim();
+                    if ("copy".equals(x)) x = "t";
+                    if ("calc".equals(x)) x = "m";
+                    if (x.length() == 1 && "mtnsr".indexOf(x) >= 0) tl.add(x);
+                }
+                if (tl.isEmpty()) tl.add("t");
                 final String[][] chs = new String[chn][];
+                java.util.List<String> ord = new java.util.ArrayList<String>(tl);
+                java.util.Collections.shuffle(ord);
+                while (ord.size() > chn) ord.remove(ord.size() - 1);
+                while (ord.size() < chn) ord.add(tl.get((int) (Math.random() * tl.size())));
+                java.util.Collections.shuffle(ord);
                 for (int q = 0; q < chn; q++) {
-                    chs[q] = chal(pool.get(q % pool.size()), types[(int) (Math.random() * types.length)].trim());
+                    chs[q] = chal(pool.get(q % pool.size()), ord.get(q), lvl);
                 }
                 final int[] ix = new int[]{0};
                 final LinearLayout box = new LinearLayout(ctx);
                 box.setOrientation(LinearLayout.VERTICAL);
                 box.setVisibility(View.GONE);
                 col.addView(box, lp(ctx, 4));
-                final TextView st = label(ctx, "وقت أكتر من 15 دقيقة. " + chs[0][0], 16, true);
+                final TextView st = label(ctx, "", 16, true);
                 box.addView(st, lp(ctx, 18));
-                final TextView sl = label(ctx, chs[0][2] + auOf(authOf, chs[0][2]), 18, false);
+                final TextView sl = label(ctx, "", 18, false);
                 sl.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
                 sl.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
                 box.addView(sl, lp(ctx, 8));
@@ -369,6 +382,102 @@ public class OverlayUi {
                 es.setLongClickable(false);
                 es.setTextIsSelectable(false);
                 box.addView(es, lp(ctx, 8));
+                final LinearLayout grid = new LinearLayout(ctx);
+                grid.setOrientation(LinearLayout.VERTICAL);
+                grid.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
+                grid.setVisibility(View.GONE);
+                box.addView(grid, lp(ctx, 8));
+                final Button nb = btn(ctx, "رقم جديد");
+                nb.setVisibility(View.GONE);
+                box.addView(nb, lp(ctx, 8));
+                final Runnable[] render = new Runnable[1];
+                final Runnable advance = new Runnable() {
+                    @Override
+                    public void run() {
+                        ix[0]++;
+                        if (ix[0] >= chn) {
+                            gate[0] = true;
+                            stopRing();
+                            upd.run();
+                        } else {
+                            render[0].run();
+                        }
+                    }
+                };
+                final int[] tick = new int[]{0};
+                render[0] = new Runnable() {
+                    @Override
+                    public void run() {
+                        final String[] cur = chs[ix[0]];
+                        tick[0]++;
+                        final int my = tick[0];
+                        st.setText((ix[0] == 0 ? "وقت أكتر من 15 دقيقة. " : "") + "تحدي " + (ix[0] + 1) + "/" + chn + ": " + cur[0]);
+                        grid.removeAllViews();
+                        nb.setVisibility(View.GONE);
+                        es.setText("");
+                        if ("n".equals(cur[3])) {
+                            es.setVisibility(View.GONE);
+                            sl.setVisibility(View.GONE);
+                            grid.setVisibility(View.VISIBLE);
+                            final int total = Integer.parseInt(cur[1]);
+                            final int[] nxt = new int[]{1};
+                            String[] ordr = cur[4].split(",");
+                            LinearLayout rowL = null;
+                            for (int k = 0; k < ordr.length; k++) {
+                                if (k % 4 == 0) {
+                                    rowL = new LinearLayout(ctx);
+                                    rowL.setOrientation(LinearLayout.HORIZONTAL);
+                                    grid.addView(rowL);
+                                }
+                                final int v = Integer.parseInt(ordr[k]);
+                                final Button nbn = btn(ctx, ordr[k]);
+                                nbn.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View vv) {
+                                        hushRing(ctx, 20000);
+                                        if (v == nxt[0]) {
+                                            nbn.setAlpha(0.25f);
+                                            nxt[0]++;
+                                            if (nxt[0] > total) advance.run();
+                                        } else {
+                                            nxt[0] = 1;
+                                            for (int g = 0; g < grid.getChildCount(); g++) {
+                                                LinearLayout rr = (LinearLayout) grid.getChildAt(g);
+                                                for (int h2 = 0; h2 < rr.getChildCount(); h2++) rr.getChildAt(h2).setAlpha(1f);
+                                            }
+                                        }
+                                    }
+                                });
+                                rowL.addView(nbn, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+                            }
+                        } else {
+                            es.setVisibility(View.VISIBLE);
+                            sl.setVisibility(View.VISIBLE);
+                            grid.setVisibility(View.GONE);
+                            sl.setText(cur[2] + ("t".equals(cur[3]) ? auOf(authOf, cur[2]) : ""));
+                            if ("s".equals(cur[3])) {
+                                H.postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if (my == tick[0] && checkShown) {
+                                            sl.setText("• • • •");
+                                            nb.setVisibility(View.VISIBLE);
+                                        }
+                                    }
+                                }, 3500);
+                                nb.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View vv) {
+                                        String d = digits(lvl);
+                                        cur[1] = d;
+                                        cur[2] = d;
+                                        render[0].run();
+                                    }
+                                });
+                            }
+                        }
+                    }
+                };
                 es.addTextChangedListener(new TextWatcher() {
                     @Override
                     public void beforeTextChanged(CharSequence s, int a1, int b1, int c1) {
@@ -382,19 +491,8 @@ public class OverlayUi {
                     public void afterTextChanged(Editable s) {
                         hushRing(ctx, 20000);
                         String[] cur = chs[ix[0]];
-                        String typed = s.toString().trim();
-                        boolean hit = "ini".equals(cur[3]) ? typed.equalsIgnoreCase(cur[1]) : typed.equals(cur[1]);
-                        if (!hit) return;
-                        ix[0]++;
-                        if (ix[0] >= chn) {
-                            gate[0] = true;
-                            stopRing();
-                            upd.run();
-                        } else {
-                            st.setText("تحدي " + (ix[0] + 1) + "/" + chn + ": " + chs[ix[0]][0]);
-                            sl.setText(chs[ix[0]][2] + auOf(authOf, chs[ix[0]][2]));
-                            es.setText("");
-                        }
+                        if (!same(cur[3], s.toString(), cur[1])) return;
+                        advance.run();
                     }
                 });
                 ev[0] = new Runnable() {
@@ -406,9 +504,7 @@ public class OverlayUi {
                         if (need && !shown) {
                             ix[0] = 0;
                             gate[0] = false;
-                            st.setText("وقت أكتر من 15 دقيقة. " + chs[0][0]);
-                            sl.setText(chs[0][2] + auOf(authOf, chs[0][2]));
-                            es.setText("");
+                            render[0].run();
                             box.setVisibility(View.VISIBLE);
                             startRing(ctx);
                         } else if (!need && shown) {
@@ -455,6 +551,8 @@ public class OverlayUi {
                     }
                     try {
                         if (!"__test".equals(pkg)) {
+                        AppWatch.NU.put(pkg, Long.valueOf(System.currentTimeMillis() + dur * 60000L));
+                        AppWatch.guardUntil = System.currentTimeMillis() + 6000L;
                         Intent s = new Intent(ctx, AppWatch.class);
                         s.setAction("COMMIT");
                         s.putExtra("p", pkg);
@@ -599,38 +697,122 @@ public class OverlayUi {
         return (a == null || a.isEmpty()) ? "" : "\n\u2014 " + a;
     }
 
-    // [instruction, expected answer, text to show, type]
-    static String[] chal(String sent, String type) {
-        if ("calc".equals(type)) {
-            int a = 3 + (int) (Math.random() * 17), b = 3 + (int) (Math.random() * 8), c = 1 + (int) (Math.random() * 30);
-            return new String[]{"احسب الناتج واكتبه:", String.valueOf(a * b + c), a + " × " + b + " + " + c, "calc"};
-        }
-        String[] w = sent.trim().split("\\s+");
-        if ("upper".equals(type)) {
-            return new String[]{"اكتب الجملة دي كلها بحروف كبيرة (CAPITAL):", sent.trim().toUpperCase(java.util.Locale.US), sent.trim(), "upper"};
-        }
-        if ("rev".equals(type)) {
-            StringBuilder b = new StringBuilder();
-            for (int i = w.length - 1; i >= 0; i--) {
-                if (b.length() > 0) b.append(" ");
-                b.append(w[i]);
-            }
-            return new String[]{"اكتب كلمات الجملة بالعكس (من آخر كلمة لأول كلمة، بنفس الترقيم):", b.toString(), sent.trim(), "rev"};
-        }
-        if ("ini".equals(type)) {
-            StringBuilder b = new StringBuilder();
-            for (int i = 0; i < w.length; i++) {
-                for (int k = 0; k < w[i].length(); k++) {
-                    char ch = w[i].charAt(k);
-                    if (Character.isLetterOrDigit(ch)) {
-                        b.append(Character.toUpperCase(ch));
-                        break;
-                    }
+    static String digits(int lvl) {
+        int n = lvl == 1 ? 4 : (lvl == 2 ? 6 : 8);
+        StringBuilder b = new StringBuilder();
+        for (int i = 0; i < n; i++) b.append((int) (Math.random() * 9) + (i == 0 ? 1 : 0));
+        return b.toString();
+    }
+
+    static int rnd(int a, int b) {
+        return a + (int) (Math.random() * (b - a + 1));
+    }
+
+    // [instruction, expected answer, text to show, type, extra]  types: m t n s r
+    static String[] chal(String sent, String type, int lvl) {
+        if ("m".equals(type)) {
+            int x, y, z;
+            String q;
+            int a;
+            int t = rnd(0, lvl == 1 ? 2 : 3);
+            if (lvl == 1) {
+                x = rnd(12, 59);
+                y = rnd(11, 39);
+                if (t == 0) {
+                    q = x + " + " + y;
+                    a = x + y;
+                } else if (t == 1) {
+                    q = (x + y) + " - " + y;
+                    a = x;
+                } else {
+                    z = rnd(5, Math.min(40, x + y - 1));
+                    q = x + " + " + y + " - " + z;
+                    a = x + y - z;
+                }
+            } else if (lvl == 2) {
+                x = rnd(110, 899);
+                y = rnd(110, 499);
+                if (t == 0) {
+                    q = x + " + " + y;
+                    a = x + y;
+                } else if (t == 1) {
+                    q = (x + y) + " - " + y;
+                    a = x;
+                } else if (t == 2) {
+                    x = rnd(12, 29);
+                    y = rnd(3, 9);
+                    q = x + " x " + y;
+                    a = x * y;
+                } else {
+                    z = rnd(20, Math.min(300, x + y - 1));
+                    q = x + " + " + y + " - " + z;
+                    a = x + y - z;
+                }
+            } else {
+                if (t == 0) {
+                    x = rnd(12, 49);
+                    y = rnd(6, 12);
+                    q = x + " x " + y;
+                    a = x * y;
+                } else if (t == 1) {
+                    x = rnd(3, 15);
+                    y = rnd(3, 15);
+                    z = rnd(3, 9);
+                    q = "(" + x + " + " + y + ") x " + z;
+                    a = (x + y) * z;
+                } else if (t == 2) {
+                    y = rnd(3, 12);
+                    x = rnd(11, 49);
+                    q = (x * y) + " / " + y;
+                    a = x;
+                } else {
+                    x = rnd(12, 39);
+                    y = rnd(4, 9);
+                    z = rnd(5, 40);
+                    q = x + " x " + y + " - " + z;
+                    a = x * y - z;
                 }
             }
-            return new String[]{"اكتب أول حرف من كل كلمة ورا بعض:", b.toString(), sent.trim(), "ini"};
+            return new String[]{"احسب الناتج واكتبه:", String.valueOf(a), q + " = ؟", "m", ""};
         }
-        return new String[]{"انسخ الجملة دي بالظبط:", sent.trim(), sent.trim(), "copy"};
+        if ("r".equals(type)) {
+            String d = digits(lvl);
+            return new String[]{"اكتب الرقم بالعكس:", new StringBuilder(d).reverse().toString(), d, "r", ""};
+        }
+        if ("s".equals(type)) {
+            String d = digits(lvl);
+            return new String[]{"احفظ الرقم (بيختفي بعد 3 ثواني) وبعدين اكتبه:", d, d, "s", ""};
+        }
+        if ("n".equals(type)) {
+            int n = lvl == 1 ? rnd(5, 7) : (lvl == 2 ? rnd(8, 10) : rnd(11, 14));
+            java.util.List<Integer> l = new java.util.ArrayList<Integer>();
+            for (int i = 1; i <= n; i++) l.add(i);
+            java.util.Collections.shuffle(l);
+            StringBuilder b = new StringBuilder();
+            for (int i = 0; i < l.size(); i++) {
+                if (i > 0) b.append(",");
+                b.append(l.get(i));
+            }
+            return new String[]{"اضغط الأرقام بالترتيب من 1 لـ " + n, String.valueOf(n), "", "n", b.toString()};
+        }
+        return new String[]{"انسخ الجملة دي (الترقيم والحروف الكبيرة مش مهمين):", sent.trim(), sent.trim(), "t", ""};
+    }
+
+    static String normS(String x) {
+        String o = x.toLowerCase(java.util.Locale.ROOT);
+        StringBuilder b = new StringBuilder();
+        for (int i = 0; i < o.length(); i++) {
+            char c = o.charAt(i);
+            if (c >= '\u0660' && c <= '\u0669') c = (char) ('0' + (c - '\u0660'));
+            if (Character.isLetterOrDigit(c)) b.append(c);
+            else if (Character.isWhitespace(c) && b.length() > 0 && b.charAt(b.length() - 1) != ' ') b.append(' ');
+        }
+        return b.toString().trim();
+    }
+
+    static boolean same(String type, String typed, String ans) {
+        if ("t".equals(type)) return normS(typed).equals(normS(ans));
+        return normS(typed).replace(" ", "").equals(normS(ans).replace(" ", ""));
     }
 
     // ---------- alarm-like ringing (volume forced up while the challenge is open) ----------

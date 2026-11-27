@@ -32,6 +32,9 @@ import java.util.Set;
 // بيراقب التطبيق اللي شغال دلوقتي وبيفتح نافذة السؤال لما تدخل تطبيق مختار. حساب الوقت نفسه في UsageCalc
 public class AppWatch extends Service {
     static volatile boolean running = false;
+    // بيتحدّث فوراً لما تدوس «افتح» عشان السؤال ما يرجعش قبل ما الخدمة تسجّل التخصيص
+    static final java.util.concurrent.ConcurrentHashMap<String, Long> NU = new java.util.concurrent.ConcurrentHashMap<String, Long>();
+    static volatile long guardUntil = 0;
     final Handler h = new Handler(Looper.getMainLooper());
     UsageStatsManager usm;
     long lastEv = 0;
@@ -228,7 +231,9 @@ public class AppWatch extends Service {
         if (!on || !tracked.contains(cur)) return;
         long u = 0L;
         if (until.containsKey(cur)) u = until.get(cur).longValue();
-        if (now >= u && !OverlayUi.checkShown && now - lastPrompt > 4000L) {
+        Long nu = NU.get(cur);
+        if (nu != null && nu.longValue() > u) u = nu.longValue();
+        if (now >= u && !OverlayUi.checkShown && now - lastPrompt > 4000L && now > guardUntil) {
             lastPrompt = now;
             prompt(cur, now);
         }
