@@ -140,7 +140,7 @@ input::placeholder{color:var(--mu);opacity:1}
 .stamp{position:absolute;left:78px;top:50%;transform:translateY(-50%) rotate(-8deg);border:2px solid var(--rd);color:var(--rd);border-radius:8px;padding:0 10px;font-weight:800;font-size:16px;background:var(--sf)}
 .tbw{flex:1;min-width:180px;display:flex;flex-direction:column;gap:10px}
 .tbw:has(details[open]){flex:1 1 100%}
-.xl td{word-break:break-word}
+.xl td{word-break:normal}
 .cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:8px;align-items:start}
 .cgrid .hw,.cgrid .xm{margin:0}
 .subs{flex-direction:column;flex-wrap:nowrap;gap:3px}
@@ -223,8 +223,8 @@ details.wr{border:1px solid var(--ln);border-radius:12px;margin:8px 0;background
 .tgrid{display:grid;gap:3px;direction:rtl;width:100%;box-sizing:border-box}
 .tgh{text-align:center;font-size:11px;font-weight:700;color:#000;background:#76923c;border-radius:4px;padding:5px 0;min-width:0}
 .tgp{min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:9px;color:var(--mu);line-height:1.2}
-.tgp{background:#31a8c6;border-radius:4px;color:#000}.tgp b{font-size:14px;color:#000}.tgp small{color:#000;font-size:8px}.tgc small{display:block;font-weight:400;font-size:8px;opacity:.8}
-.tgc{min-width:0;overflow:hidden;min-height:48px;border-radius:6px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:10px;font-weight:700;color:#000;padding:1px;line-height:1.15;background:#e9e9e9;flex-direction:column;user-select:none;-webkit-user-select:none;touch-action:none;cursor:pointer;word-break:break-word}
+.tgp{background:#31a8c6;border-radius:4px;color:#000}.tgp b{font-size:14px;color:#000}.tgp small{color:#000;font-size:8px}.tgc{white-space:nowrap;text-overflow:ellipsis}.tgc small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;font-weight:400;font-size:8px;opacity:.8}
+.tgc{min-width:0;overflow:hidden;min-height:48px;border-radius:6px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:9px;font-weight:700;color:#000;padding:1px;line-height:1.15;background:#e9e9e9;flex-direction:column;user-select:none;-webkit-user-select:none;touch-action:none;cursor:pointer;word-break:break-word}
 .tgc.e{border:1.5px dashed var(--ln);background:transparent;color:var(--mu)}
 .tgc.blk{background:#222}
 .tgc.lift{opacity:.35}
@@ -517,9 +517,11 @@ function attDraw(){const el=$('attBar');if(el)el.innerHTML=''}
 function rvHist(){if(!S.rvh||!S.rvh.length)S.rvh=[{f:'0000-00-00',d:(S.al&&S.al.rvd!=null)?S.al.rvd:1}];return S.rvh}
 function rvOn(k){let r=rvHist()[0].d;rvHist().forEach(e=>{if(e.f<=k)r=e.d});return r}
 function rvDay(){return rvOn(ymd(NOW()))}
-function lgStat(k){const d=prs(k);if(rvOn(k)!==d.getDay()||k<(S.start||k))return null;const w=rvWeek(d);if(S.wkd[w])return'ok';const sw=weekData(w);if(!(sw.days.some(x=>x.e)||sw.never.length))return'none';return k<ymd(mid(NOW()))?'no':'wait'}
+function hadT(k){const g=S.log[k];if(g)return g.tot>0;return S.items.some(i=>!i.m&&(i.created||i.show)<=k&&i.show<=k&&k<=i.due&&(!i.done||i.done>=k))}
+function noteAny(w){const n=S.notes[w]||{};return Object.keys(n).some(f=>String(n[f]||'').trim())}
+function lgStat(k){const d=prs(k);if(rvOn(k)!==d.getDay()||k<(S.start||k))return null;const w=rvWeek(d),sw=weekData(w);if(!(sw.days.some(x=>x.e)||sw.never.length))return'none';if(S.wkd[w]&&noteAny(w))return'ok';return k<ymd(mid(NOW()))?'no':'wait'}
 function lgCount(y){const t=mid(NOW()),a=prs(y+'-01-01'),e=prs(y+'-12-31');let ok=0,no=0;for(let d=a;d<=e&&d<=t;d=addD(d,1)){const r=lgStat(ymd(d));if(r==='ok')ok++;else if(r==='no')no++}return{ok,no}}
-function appCount(y){const t=mid(NOW()),st=prs(S.start||ymd(t)),a=prs(y+'-01-01'),e=prs(y+'-12-31');let p=0,x=0;for(let d=a<st?st:a;d<=e&&d<=t;d=addD(d,1)){if(S.act[ymd(d)])p++;else if(d<t)x++}return{p,x}}
+function appCount(y){const t=mid(NOW()),st=prs(S.start||ymd(t)),a=prs(y+'-01-01'),e=prs(y+'-12-31');let p=0,x=0;for(let d=a<st?st:a;d<=e&&d<=t;d=addD(d,1)){if(S.act[ymd(d)])p++;else if(d<t&&d.getDay()!==RD()&&hadT(ymd(d)))x++}return{p,x}}
 let calTab='a',yrY=null;
 function rvWeek(d){d=d||NOW();const ws=wkStart(d);return ymd(d.getDay()===0?ws:addD(ws,-7))}
 function place(){attDraw();const th=NOW().getDay()===rvDay()||NOW().getDay()===RD();
@@ -670,7 +672,7 @@ function yEnd(){const cy=NOW().getFullYear();if(TM)return;if(S.yend==null){S.yen
  document.body.appendChild(o);yeSound();o.addEventListener('touchstart',function f(){yeSound();o.removeEventListener('touchstart',f)})}
 function yeClose(y){S.yend=y+1;save();const o=$('yeOv');if(o)o.remove();calY=null;yrY=null;draw();setTimeout(yEnd,300)}
 function goWeek(k){const th=NOW().getDay()===RD();dV=null;wk=k;OP['w'+k]=true;if(!th)$('wkBot').open=true;draw();setTimeout(()=>{const e=document.querySelector('[data-k="w'+k+'"]')||$('wkBot');e.scrollIntoView({behavior:'smooth',block:'start'})},80)}
-function commitStats(a,b,A){const t=mid(NOW()),st=prs([S.start||ymd(t)].concat([...A]).sort()[0]),e=prs(b);let c=0,x=0;for(let d=prs(a);d<=e&&d<=t;d=addD(d,1)){if(d<st)continue;if(A.has(ymd(d)))c++;else if(d<t&&d.getDay()!==RD())x++}return{c,a:x}}
+function commitStats(a,b,A){const t=mid(NOW()),st=prs([S.start||ymd(t)].concat([...A]).sort()[0]),e=prs(b);let c=0,x=0;for(let d=prs(a);d<=e&&d<=t;d=addD(d,1)){if(d<st)continue;if(A.has(ymd(d)))c++;else if(d<t&&d.getDay()!==RD()&&hadT(ymd(d)))x++}return{c,a:x}}
 
 const TD=[6,0,1,2,3,4,5];
 function newCode(n){const u=S.subjects.map(s=>s.code);for(let l=1;l<=n.length;l++){const c=n.slice(0,l);if(!u.includes(c))return c}return n[0]+uid().slice(0,1)}
@@ -688,7 +690,7 @@ const AR=n=>String(n).replace(/\d/g,d=>'٠١٢٣٤٥٦٧٨٩'[d]);
 function actMark(){S.act[ymd(NOW())]=1}
 function activeSet(){const A=new Set();const rl=(S.al&&S.al.rule)||'any';S.items.forEach(i=>{if(i.done)A.add(i.done);if(i.nd)A.add(i.nd);i.subs.forEach(s=>{if(s.on)A.add(s.on);(s.c||[]).forEach(q=>{if(q.on)A.add(q.on)})})});if(rl!=='any'){[...A].forEach(d=>{const g=S.log[d];if(g&&g.tot){const f=g.dn/g.tot;if(rl==='all'?f<1:f<.5)A.delete(d)}})}return A}
 function calStats(){const A=activeSet(),t=mid(NOW()),st=[S.start||ymd(t)].concat([...A]).sort()[0];let c=0,a=0;
- for(let d=prs(st);d<=t;d=addD(d,1)){if(A.has(ymd(d)))c++;else if(d<t&&d.getDay()!==RD())a++}return{A,c,a}}
+ for(let d=prs(st);d<=t;d=addD(d,1)){if(A.has(ymd(d)))c++;else if(d<t&&d.getDay()!==RD()&&hadT(ymd(d)))a++}return{A,c,a}}
 function calNav(d){const cy=mid(NOW()).getFullYear();calM+=d;if(calM<0){calM=11;calY--}if(calM>11){calM=0;calY++}if(calY!==cy){calY=cy;calM=d<0?0:11}calRender()}
 function calRender(){
  const t=mid(NOW());if(calY==null){calY=t.getFullYear();calM=t.getMonth()}
@@ -839,7 +841,7 @@ function alStart(){const a=alState();a.st='started';save();closeAlarm();nat('sta
 function toast(t){const d=document.createElement('div');d.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 16px;border-radius:10px;z-index:99';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),4000)}
 function alLater(){const a=alState();a.n++;closeAlarm();
  if(a.n>=(S.al.max||4)){a.st='reason';save();nat('reason');reasonScreen(alarmTasks())}
- else{a.st='snooze';save();nat('snooze',S.al.gap);toast('هيرن تاني بعد '+S.al.gap+' دقيقة');if(!TM)setTimeout(showAlarm,S.al.gap*60000)}}
+ else{a.st='snooze';save();nat('snooze',S.al.gap);toast('هيرن تاني بعد '+S.al.gap+' دقيقة');if(!TM)setTimeout(()=>{if(alState().st!=='started')showAlarm()},S.al.gap*60000)}}
 function closeReason(){const o=$('rsOv');if(o)o.remove()}
 function reasonScreen(ts){closeReason();RS={ts:ts&&ts.length?ts:todayTasks()};const wr=examsWeek().length?`<div style="background:var(--sf);color:var(--tx);border-radius:12px;padding:6px 14px;max-width:520px;width:100%">${warnRows()}</div>`:'';
  const o=document.createElement('div');o.id='rsOv';o.style.cssText='position:fixed;inset:0;z-index:95;background:#450a0a;color:#fff;display:flex;flex-direction:column;align-items:center;gap:12px;padding:20px;overflow:auto';
@@ -911,7 +913,7 @@ function stDraw(){const p=$('stPanel');if(!p)return;const a=S.al,T=ymd(mid(NOW()
   b+=sRow('وضع التجربة','','<button class="ch" onclick="testMenu()">🧪 تجربة</button>');
  }
  p.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:20px">⚙ الإعدادات</b><button class="go" onclick="setClose()">تم</button></div><div class="stabs">${tabs.map(([k,l])=>`<button class="ch ${stTab===k?'on':''}" onclick="stTabSet('${k}')">${l}</button>`).join('')}</div>${b}`}
-function route(){nat('ready');const h=(location.hash||'').replace('#','');if(h==='alarm'){if(S.rsWait&&pendList().length)pendScreen();else showAlarm()}else if(h==='stop'){tmStop();if(!$('tsOv')){ringOn(false);location.hash='';nat('closeui')}}else if(h==='reason')reasonScreen([]);else if(h==='warn')showWarn();else if(h==='pend')pendScreen();else if(h==='wk')weeklyScreen();else if(h==='pz')pzRoute()}
+function route(){nat('ready');const h=(location.hash||'').replace('#','');if(h==='alarm'){if(S.rsWait&&pendList().length)pendScreen();else if(alState().st==='started'){location.hash='';nat('started')}else showAlarm()}else if(h==='stop'){tmStop();if(!$('tsOv')){ringOn(false);location.hash='';nat('closeui')}}else if(h==='reason')reasonScreen([]);else if(h==='warn')showWarn();else if(h==='pend')pendScreen();else if(h==='wk')weeklyScreen();else if(h==='pz')pzRoute()}
 window.addEventListener('hashchange',route);
 window.MZK={resumeT:()=>{pzPoll();tmResume()},today:todayTasks,
  notif:()=>{const ts=todayTasks();return{title:'مهام النهاردة ('+ts.length+')',lines:ts.map(t=>'• '+t.t+(t.ty==='exam'?' — باقي '+t.n+' أيام':'')+(t.parts.length?' ← '+t.parts.join('، '):''))}},
@@ -1065,7 +1067,7 @@ function exSetDue(id,k){const it=find(id);if(!it)return;const n0=Math.max(1,exSt
  if(!exFit(it)){Object.assign(it,old);toast('فيه أجزاء مكتوبة أكتر من الأيام. امسح الأجزاء الأقدم الأول');return}
  const n=exStudyDays(it).length;while(it.subs.length&&it.subs.length<n)it.subs.unshift({t:'',d:false,on:null,a:1});
  actMark();save();tmSync();draw();eiDraw(id)}
-const APP_VER=52;
+const APP_VER=53;
 function updApply(html){const m=/APP_VER\s*=\s*(\d+)/.exec(html),v=m?+m[1]:0,sm=/<script>([\s\S]*)<\/script>/.exec(html);
  try{if(!sm||!v)throw 0;new Function(sm[1])}catch(e){toast('الملف ده مش تحديث صالح');return 0}
  return v}
@@ -1226,9 +1228,8 @@ function szUpdate(){kwUpdate();const el=$('sz');if(!el)return;
   el.innerHTML=n<2?'<div class="tg">الامتحان بكرة أو النهاردة، مفيش وقت يتقسم</div>':exEdit(n,tag)+(rds?`<div class="row"><button class="ch ${exX?'on':''}" onclick="exX=!exX;pd=null;szUpdate()">＋ ${DN[RD()]} ضمن الأيام</button></div>`:'');return}
  if(!sb){size='s';curD=0;el.innerHTML='';return}const d=dueOf(sb),n=d?diff(d,NOW()):0;if(n<2){el.innerHTML='';size='s';curD=0;return}
  const hwd=S.al.hwd||1,mx=Math.max(1,n-hwd+1);
- if(sg>0&&!sizeT)size='b';
- if(size==='b'){curMin=1;curMax=mx;curD=Math.min(mx,Math.max(1,pd!=null?pd:(sg>0?sg:mx)))}else curD=0;
- if(sg>0&&!sizeT&&!pdE){el.innerHTML=`<div class="tg">${size==='b'?'كبير على '+dayW(curD):'صغير'}${tag?' · '+tag:''} <button class="ch" onclick="pdE=true;szUpdate()">تعديل</button></div>`;return}
+  if(size==='b'){curMin=1;curMax=mx;curD=Math.min(mx,Math.max(1,pd!=null?pd:(sg>0?sg:mx)))}else curD=0;
+ if(size==='b'&&sg>0&&!sizeT&&!pdE){el.innerHTML=`<div class="tg">${size==='b'?'كبير على '+dayW(curD):'صغير'}${tag?' · '+tag:''} <button class="ch" onclick="pdE=true;szUpdate()">تعديل</button></div>`;return}
  el.innerHTML=`<div class="row"><div class="szb"><button class="ch ${size==='s'?'on':''}" onclick="size='s';sizeT=true;szUpdate()">صغير</button></div><div class="szb"><button class="ch ${size==='b'?'on':''}" onclick="size='b';sizeT=true;szUpdate()">كبير ++</button><div class="hint">فاضل ${n} يوم</div></div></div>${size==='b'?`<div class="row pat"><span class="tg">قسّم على</span><button class="ch" onclick="pdAdj(-1)">−</button><b>${curD}</b><button class="ch" onclick="pdAdj(1)">＋</button><span class="tg">يوم من ${mx}</span></div>`:''}`}
 function pdAdj(d){if(d<0)exPT.shift();else if(curD<curMax)exPT.unshift('');pdT=true;pd=Math.min(curMax,Math.max(curMin,curD+d));szUpdate()}
 function addItem(){
@@ -1241,7 +1242,7 @@ function addItem(){
  const n=diff(due,NOW()),big=type==='hw'&&size==='b'&&n>=2,ex=type==='exam';
  const st=ex?ymd(new Date(Math.max(+backWd(due,exd,exX),+mid(NOW())))):null,dd=ex?wdays(prs(st),due,exX):0,xd0=(ex&&exX)?restDates(prs(st),due):[],k=ex?(dd>=2?Math.min(exd,dd):0):(big?Math.max(1,Math.min(curD||999,n-hwd+1)):0);
  const v=ex?exd:(big?k:0),kwW=(type==='exam'&&kwSel)?kwSel.w:null,sid=sb?sb.id:null,ty0=type;
- const f0=S.al.learn===false?null:patFor(type,t,sb?sb.id:null,kwSel?kwSel.w:null),pt0=!!(f0&&pd==null&&k>0&&(ex||(big&&!sizeT)));
+ const f0=S.al.learn===false?null:patFor(type,t,sb?sb.id:null,kwSel?kwSel.w:null),pt0=!!(f0&&pd==null&&k>0&&(ex||big));
  const go=(learn)=>{
   S.items.push({pt:pt0?1:0,id:uid(),type:ty0,kw:kwW,sid,title:t,due:ymd(due),show:ex?st:ymd(addD(due,-hwd)),start:st,created:ymd(NOW()),big,xd:xd0,dropped:false,done:null,
    subs:Array.from({length:k},(_,q)=>({t:ex?((exPT[q]||'').trim()):'',d:false,on:null,a:1}))});exPT=[];
