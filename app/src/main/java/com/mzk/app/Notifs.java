@@ -127,7 +127,7 @@ public class Notifs {
         r.setInt(R.id.ic, "setColorFilter", ugColor(lv));
         if (t.has("dl")) {
             int d = t.optInt("dl");
-            String x = d <= 0 ? "آخر يوم" : d == 1 ? "متبقي يوم" : d == 2 ? "متبقي يومين" : "متبقي " + d + " أيام";
+            String x = d <= 0 ? "آخر يوم" : d <= 2 ? "متبقي " + d + " يوم" : "متبقي " + d + " أيام";
             r.setTextViewText(R.id.r2, x);
             r.setViewVisibility(R.id.r2, View.VISIBLE);
         }
@@ -198,7 +198,7 @@ public class Notifs {
             }
             PendingIntent open = PendingIntent.getActivity(c, 1, new Intent(c, MainActivity.class), FLAGS);
             int n = a.length();
-            if ("g".equals(mode) && n >= 2) {
+            if (n >= 2) {
                 // مجمّع: مهمة قدّام والباقي بالسحب لتحت (الأندرويد بيقفله لوحده)
                 long base = System.currentTimeMillis();
                 StringBuilder ids = new StringBuilder("1000,");
