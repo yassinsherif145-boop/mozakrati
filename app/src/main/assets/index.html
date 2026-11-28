@@ -162,7 +162,7 @@ input::placeholder{color:var(--mu);opacity:1}
 .lst{white-space:pre-wrap;font-size:16px;line-height:1.9}
 .subs .sb{border-right:3px solid #3b82f6;background:rgba(59,130,246,.07)}
 .subs .sb:has(input[type=text]){border-right:0;background:none}
-.kgp{border-radius:14px;background:linear-gradient(135deg,rgba(168,85,247,.14),rgba(168,85,247,.05));border:1.5px solid rgba(168,85,247,.5);padding:3px 4px;margin:5px 0;position:relative}.kgp>.sb .stx{font-weight:800}.kgp .kids{margin:2px 18px 3px 0;border-right:2px dotted #a855f7;background:none;padding-right:6px}.kgp .kids .sb span::before{content:'└ ';color:#a855f7}.kids{margin-right:14px;padding:3px 6px 3px 2px;border-right:3px solid #a855f7;background:rgba(168,85,247,.12);border-radius:8px}
+.sb.hk{border-right:3px solid #a855f7;border-radius:8px}.kgpx{border-radius:14px;background:linear-gradient(135deg,rgba(168,85,247,.14),rgba(168,85,247,.05));border:1.5px solid rgba(168,85,247,.5);padding:3px 4px;margin:5px 0;position:relative}.kgp>.sb .stx{font-weight:800}.kgp .kids{margin:2px 18px 3px 0;border-right:2px dotted #a855f7;background:none;padding-right:6px}.kgp .kids .sb span::before{content:'└ ';color:#a855f7}.kids{margin-right:14px;padding:3px 6px 3px 2px;border-right:3px solid #a855f7;background:rgba(168,85,247,.12);border-radius:8px}
 .kids .sb{border:0!important;background:none!important}
 .kids .sb span::before{content:'↳ ';color:#a855f7;font-weight:800}
 .kids .sb span{font-size:12px}
@@ -450,7 +450,7 @@ function xdChip(it){if(it.type!=='exam'||it.done||it.m||!acc(it))return'';const 
 function xdBtns(it){if(it.type!=='exam')return'';let h='';const o=xdOpts(it);if(o.length&&!it.done&&!it.m)h+=`<button class="ch" onclick="xdAdd('${it.id}','${o[0]}')">＋ ${DN[prs(o[0]).getDay()]}</button>`;(it.xd||[]).filter(d=>prs(d)>=mid(NOW())).forEach(d=>{h+=`<button class="ch" onclick="xdDel('${it.id}','${d}')">− شيل ${DN[prs(d).getDay()]} ${fd(d)}</button>`});return h}
 function backWd(due,k,inc){const R=(S.al&&S.al.rest!=null)?S.al.rest:4;let d=addD(due,-1),c=0;while(true){if(inc||d.getDay()!==R){c++;if(c>=k)return d}d=addD(d,-1)}}
 const acc=it=>{const T=mid(NOW()),cut=(S.al&&S.al.cut)||20;if(it.done||it.m)return 0;if(it.subs.some(s=>s.t))return it.subs.filter((s,i)=>!s.d&&s.t&&isLate(it,i,T)).length;return vis(it,T)&&(prs(it.show)<T||(prs(it.due)>T&&hr()>=cut))?1:0};
-const sr=(it,s,i,tg,nodel)=>(!nodel&&s.c&&s.c.length?'<div class="kgp">':'')+`<div class="sb ${s.d?'d':''}"><input type="checkbox" ${s.d?'checked':''} onchange="togSub('${it.id}',${i})" aria-label="خلصت"><span class="stx" onclick="editSub('${it.id}',${i})">${esc(s.t)}</span>${tg||''}${nodel?'':`<button class="del" onclick="tmTogP('${it.id}',${i},null)" aria-label="الوقت">⏱</button><button class="del" onclick="togK('${it.id}',${i})" aria-label="قسّم">＋</button><button class="del" onclick="delSub('${it.id}',${i})" aria-label="احذف">×</button>`}</div>${nodel?'':tmPanel(it,s,i,null)+kidsHtml(it,s,i)}`+(!nodel&&s.c&&s.c.length?'</div>':'');
+const sr=(it,s,i,tg,nodel)=>`<div class="sb ${s.d?'d':''}${!nodel&&s.c&&s.c.length?' hk':''}"><input type="checkbox" ${s.d?'checked':''} onchange="togSub('${it.id}',${i})" aria-label="خلصت"><span class="stx" onclick="editSub('${it.id}',${i})">${esc(s.t)}</span>${tg||''}${nodel?'':`<button class="del" onclick="tmTogP('${it.id}',${i},null)" aria-label="الوقت">⏱</button><button class="del" onclick="togK('${it.id}',${i})" aria-label="قسّم">＋</button><button class="del" onclick="delSub('${it.id}',${i})" aria-label="احذف">×</button>`}</div>${nodel?'':tmPanel(it,s,i,null)+kidsHtml(it,s,i)}`;
 
 const pin=(it,i,ph)=>`<div class="sb"><input type="checkbox" onchange="partDone('${it.id}',${i},this)" aria-label="خلصت"><input type="text" data-dr="${it.id}:${i}" placeholder="${ph}" oninput="partIn('${it.id}',${i},this)" onblur="partBlur(event,'${it.id}',${i},this)" onkeydown="if(event.key==='Enter')setSub('${it.id}',${i},this)"><button class="del" onclick="pinOpen('${it.id}',${i},'t')" aria-label="الوقت">⏱</button><button class="del" onclick="pinOpen('${it.id}',${i},'k')" aria-label="قسّم">＋</button></div>`;
 function pinOpen(id,i,w){const it=find(id),s=it&&it.subs[i];if(!s)return;const el=document.querySelector('input[data-dr="'+id+':'+i+'"]'),v=el?el.value.trim():'';if(!s.t)s.t=v||('جزء '+(i+1));delete DR[id+':'+i];actMark();save();draw();setTimeout(()=>{if(w==='t')tmTogP(id,i,null);else togK(id,i)},60)}
@@ -1023,7 +1023,7 @@ function firstStart(d){const T0=S.tt;for(let r=0;r<T0.n;r++){const id=T0.c[d+'-'
 function schoolNow(T,nm){try{const d=T.getDay(),a=firstStart(d),b=lastEnd(d);return a!=null&&b!=null&&nm>=a&&nm<b}catch(e){return false}}
 function notifPayload(force){const T=mid(NOW()),ty=ymd(T);const w=n=>n<=0?'النهاردة':n===1?'بكرة':n===2?'بعد يومين':'بعد '+n+' أيام';
  const all=S.items.filter(i=>!i.m&&!i.done).map(i=>({n:diff(prs(i.due),T),t:i.title+(i.sid&&sname(i.sid)?' ('+sname(i.sid)+')':''),d:DN[prs(i.due).getDay()],ty:i.type})).sort((a,b)=>a.n-b.n).map(x=>({t:x.t,w:w(x.n)+' · '+x.d,ty:x.ty}));
- const nm0=nowMin(),inWin=nm0<parseClock(S.al.bed||'22:00');let tk=(inWin||force)?todayTasks():[];if(T.getDay()===RD())tk=tk.filter(x=>{const q=find(x.id);return q&&(q.xd||[]).indexOf(ty)>=0});
+ const nm0=nowMin(),inWin=nm0<parseClock(S.al.bed||'22:00');let tk=(inWin||force)?todayTasks():[];if(T.getDay()===RD())tk=tk.filter(x=>{const q=find(x.id);return q&&(q.xd||[]).indexOf(ty)>=0});tk=tk.map(x=>{const q=find(x.id);return q?Object.assign({},x,{dl:diff(prs(q.due),T)}):x});
  const hush=!force&&(S.al.ntOff===ty||schoolNow(T,nm0));
  return{tasks:hush?[]:tk,hush,all,rest:T.getDay()===RD()&&!tk.length,nm:S.al.ntMode||'g',dn:S.items.filter(i=>i.done===ty).length}}
 function editDlg(t,val,ok,del){const o=document.createElement('div');o.id='edOv';o.className='ov';o.style.cssText='align-items:center;z-index:99';
@@ -1072,7 +1072,7 @@ function exSetDue(id,k){const it=find(id);if(!it)return;const n0=Math.max(1,exSt
  if(!exFit(it)){Object.assign(it,old);toast('فيه أجزاء مكتوبة أكتر من الأيام. امسح الأجزاء الأقدم الأول');return}
  const n=exStudyDays(it).length;while(it.subs.length&&it.subs.length<n)it.subs.unshift({t:'',d:false,on:null,a:1});
  actMark();save();tmSync();draw();eiDraw(id)}
-const APP_VER=56;
+const APP_VER=57;
 function updApply(html){const m=/APP_VER\s*=\s*(\d+)/.exec(html),v=m?+m[1]:0,sm=/<script>([\s\S]*)<\/script>/.exec(html);
  try{if(!sm||!v)throw 0;new Function(sm[1])}catch(e){toast('الملف ده مش تحديث صالح');return 0}
  return v}
@@ -1134,7 +1134,7 @@ function kwDel(i){S.kw.splice(i,1);save();stDraw()}
 function kwAdd(){const e=$('kwNew'),v=(e.value||'').trim();if(!v)return;S.kw=S.kw||[];S.kw.push({w:v,d:7,on:true});save();stDraw()}
 function alDraw(){const o=$('alOv');if(!o)return;const ts=alarmTasks();
  let h='<div style="font-size:26px;font-weight:800">⏰ وقت المذاكرة</div>';
- h+=`<div style="width:100%;max-width:520px">${ts.length?ts.map(t=>`<div style="background:rgba(255,255,255,.1);border-radius:10px;padding:8px 12px;margin:6px 0"><b>${esc(t.t)}</b>${t.ty==='exam'?` <small>(امتحان · باقي ${t.n} أيام)</small>`:''}${t.parts.length?`<div style="font-size:14px;opacity:.9">${t.parts.map(esc).join('، ')}</div>`:''}</div>`).join(''):'<div>مفيش مهام عليك</div>'}</div>`;
+ h+=`<div style="font-size:20px;font-weight:700;text-align:center;max-width:420px">${ts.length?'شوف المهام اللي عليك 👀':'مفيش مهام عليك'}</div>`;
  if(AL.step==='n')h+='<div class="qt">لسه مسجلتش مهام</div><div style="font-size:15px;max-width:420px;text-align:center">سجّل واجباتك وامتحاناتك (وأي حاجة لبكره) دلوقتي. المنبه هيرن تاني لحد ما تسجّل.</div><div class="alb"><button class="alp" onclick="alReg()">سجّل المهام دلوقتي</button></div><button class="ch" style="color:#fff;border-color:#fff" onclick="alNone()">مفيش عندي حاجة النهاردة</button>';
  else if(AL.step==='q'){const q=AL.qs[AL.ok];h+=`<div style="font-size:15px">حل عشان تكمل (${AL.ok+1} من ${AL.qs.length})</div>`;
   if(q.k==='n')h+=`<div style="font-size:15px">اضغط الأرقام بالترتيب من 1 لـ ${q.N}</div><div style="display:grid;grid-template-columns:repeat(4,64px);gap:8px;direction:ltr">${q.order.map(v=>`<button class="go" style="font-size:22px;padding:14px 0;${v<q.nxt?'opacity:.25':''}" onclick="alTap(${v})">${v}</button>`).join('')}</div>`;
