@@ -217,3 +217,6 @@ Cards/parts/sub-parts, big hw split, exam auto slots, keywords, per-subject exam
 
 ## v60
 - إشعار: رجع إشعار واحد بالتصميم القديم (سطر + big view فيه كل المهام)، التجميع معطّل. الفتح التلقائي للأول سلوك EMUI (القناة أصلاً MIN). Next release = 61.
+
+## v61
+- إشعار المهام (≥2) مش ongoing عشان ينزل تحت إشعارات تانية ويبقى مقفول تلقائي؛ صفوف أصغر عشان "متبقي" مايتقصش. Next release = 62.

@@ -258,7 +258,7 @@ public class Notifs {
                     .setCustomContentView(small)
                     .setNumber(n)
                     .setShowWhen(false)
-                    .setOngoing(true)
+                    .setOngoing(n < 2)
                     .setOnlyAlertOnce(true)
                     .setVisibility(Notification.VISIBILITY_PUBLIC)
                     .setContentIntent(open);
