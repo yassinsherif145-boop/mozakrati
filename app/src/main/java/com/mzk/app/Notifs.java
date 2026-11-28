@@ -178,15 +178,6 @@ public class Notifs {
             fillRow(small, a.getJSONObject(0));
             small.setTextViewText(R.id.nc, String.valueOf(a.length()));
             small.setViewVisibility(R.id.nc, View.VISIBLE);
-            StringBuilder others = new StringBuilder();
-            for (int i = 1; i < a.length() && i < 5; i++) {
-                if (others.length() > 0) others.append(" · ");
-                others.append(a.getJSONObject(i).optString("t"));
-            }
-            if (others.length() > 0) {
-                small.setTextViewText(R.id.r2, others.toString());
-                small.setViewVisibility(R.id.r2, View.VISIBLE);
-            }
             RemoteViews big = new RemoteViews(c.getPackageName(), R.layout.notif_big);
             big.removeAllViews(R.id.list);
             for (int i = 0; i < a.length() && i < 6; i++) {
@@ -252,7 +243,7 @@ public class Notifs {
                     .setOnlyAlertOnce(true)
                     .setVisibility(Notification.VISIBILITY_PUBLIC)
                     .setContentIntent(open);
-            if ("o".equals(mode) || "g".equals(mode)) b.setCustomBigContentView(big);
+            if (n >= 2) b.setCustomBigContentView(big);
             nm.notify(1000, b.build());
             p.edit().putString("nids", "1000,").putString("lastjson", json).apply();
         } catch (Exception e) {
