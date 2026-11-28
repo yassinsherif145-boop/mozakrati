@@ -133,6 +133,15 @@ public class Notifs {
         }
     }
 
+    static String plain(JSONObject t) {
+        String x = ugLabel(t.optInt("lv"));
+        if (t.has("dl")) {
+            int d = t.optInt("dl");
+            x += " · " + (d <= 0 ? "آخر يوم" : d <= 2 ? "متبقي " + d + " يوم" : "متبقي " + d + " أيام");
+        }
+        return x;
+    }
+
     static void show(Context c, String json) {
         try {
             SharedPreferences p = c.getSharedPreferences("mzk", Context.MODE_PRIVATE);
@@ -209,6 +218,8 @@ public class Notifs {
                     Notification.Builder kb = new Notification.Builder(c, CH)
                             .setSmallIcon(R.drawable.ic_stat)
                             .setStyle(new Notification.DecoratedCustomViewStyle())
+                            .setContentTitle(a.getJSONObject(i).optString("t"))
+                            .setContentText(plain(a.getJSONObject(i)))
                             .setCustomContentView(row)
                             .setGroup("mzk_tasks")
                             .setGroupAlertBehavior(Notification.GROUP_ALERT_SUMMARY)
@@ -225,6 +236,8 @@ public class Notifs {
                 Notification.Builder sb = new Notification.Builder(c, CH)
                         .setSmallIcon(R.drawable.ic_stat)
                         .setStyle(new Notification.DecoratedCustomViewStyle())
+                        .setContentTitle(a.getJSONObject(0).optString("t"))
+                        .setContentText(plain(a.getJSONObject(0)) + " · +" + (n - 1))
                         .setCustomContentView(small)
                         .setGroup("mzk_tasks")
                         .setGroupSummary(true)

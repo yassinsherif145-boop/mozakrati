@@ -211,3 +211,6 @@ Cards/parts/sub-parts, big hw split, exam auto slots, keywords, per-subject exam
 
 ## v58
 - إشعار: التجميع (summary+أطفال) بقى دايماً لما n>=2 بغض النظر عن `ntMode`. "متبقي N يوم" أرقام. المنبه دايماً "شوف المهام اللي عليك". Next release = 59.
+
+## v59
+- إشعار مجمّع: EMUI كان بيعرض "انقر هنا لعرض التفاصيل" لأن النصوص القياسية فاضية → ضفنا `setContentTitle/Text` للأطفال والـ summary مع الـ custom view. Next release = 60.
