@@ -207,7 +207,7 @@ public class Notifs {
             }
             PendingIntent open = PendingIntent.getActivity(c, 1, new Intent(c, MainActivity.class), FLAGS);
             int n = a.length();
-            if (n >= 2) {
+            if (false && n >= 2) {
                 // مجمّع: مهمة قدّام والباقي بالسحب لتحت (الأندرويد بيقفله لوحده)
                 long base = System.currentTimeMillis();
                 StringBuilder ids = new StringBuilder("1000,");
@@ -262,7 +262,8 @@ public class Notifs {
                     .setOnlyAlertOnce(true)
                     .setVisibility(Notification.VISIBILITY_PUBLIC)
                     .setContentIntent(open);
-            if ("o".equals(mode) || "g".equals(mode)) b.setCustomBigContentView(big);
+            b.setContentTitle(a.getJSONObject(0).optString("t")).setContentText(plain(a.getJSONObject(0)));
+            if (n >= 2) b.setCustomBigContentView(big);
             nm.notify(1000, b.build());
             p.edit().putString("nids", "1000,").putString("lastjson", json).apply();
         } catch (Exception e) {

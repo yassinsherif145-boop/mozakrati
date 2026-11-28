@@ -214,3 +214,6 @@ Cards/parts/sub-parts, big hw split, exam auto slots, keywords, per-subject exam
 
 ## v59
 - إشعار مجمّع: EMUI كان بيعرض "انقر هنا لعرض التفاصيل" لأن النصوص القياسية فاضية → ضفنا `setContentTitle/Text` للأطفال والـ summary مع الـ custom view. Next release = 60.
+
+## v60
+- إشعار: رجع إشعار واحد بالتصميم القديم (سطر + big view فيه كل المهام)، التجميع معطّل. الفتح التلقائي للأول سلوك EMUI (القناة أصلاً MIN). Next release = 61.
